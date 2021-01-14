@@ -1,0 +1,8 @@
+dfpsp
+*.lst
+*.bin
+*.o
+*.tos
+*.prg
+*.pdb
+*.sa

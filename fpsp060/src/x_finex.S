@@ -161,18 +161,18 @@ finex_fmovecr:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  the hardware does not save the default result to memory on enabled */
-/*  inexact exceptions. we do this here before passing control to */
-/*  the user inexact handler. */
-/*  */
-/*  byte, word, and long destination format operations can pass */
-/*  through here. so can double and single precision. */
-/*  although packed opclass three operations can take inexact */
-/*  exceptions, they won't pass through here since they are caught */
-/*  first by the unsupported data format exception handler. that handler */
-/*  sends them directly to _real_inex() if necessary. */
-/*  */
+/*
+ * the hardware does not save the default result to memory on enabled
+ * inexact exceptions. we do this here before passing control to
+ * the user inexact handler.
+ *
+ * byte, word, and long destination format operations can pass
+ * through here. so can double and single precision.
+ * although packed opclass three operations can take inexact
+ * exceptions, they won't pass through here since they are caught
+ * first by the unsupported data format exception handler. that handler
+ * sends them directly to _real_inex() if necessary.
+ */
 finex_out:
 
 	move.b		&NORM,STAG(%a6)		/*  src is a NORM */

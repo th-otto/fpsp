@@ -95,31 +95,31 @@ tbl_ftrapcc:
 /* 									 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  equal: */
-/*  */
-/* 	Z */
-/*  */
+/*
+ * equal:
+ *
+ *	Z
+ */
 ftrapcc_eq:
 	fbeq		ftrapcc_trap		/*  equal? */
 ftrapcc_eq_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  not equal: */
-/* 	_ */
-/* 	Z */
-/*  */
+/*
+ * not equal:
+ *	_
+ *	Z
+ */
 ftrapcc_neq:
 	fbne		ftrapcc_trap		/*  not equal? */
 ftrapcc_neq_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  greater than: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * greater than:
+ *	_______
+ *	NANvZvN
+ */
 ftrapcc_gt:
 	fbgt		ftrapcc_trap		/*  greater than? */
 ftrapcc_gt_no:
@@ -131,11 +131,11 @@ ftrapcc_gt_no:
 ftrapcc_gt_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  not greater than: */
-/*  */
-/* 	NANvZvN */
-/*  */
+/*
+ * not greater than:
+ *
+ *	NANvZvN
+ */
 ftrapcc_ngt:
 	fbngt		ftrapcc_ngt_yes		/*  not greater than? */
 ftrapcc_ngt_no:
@@ -148,11 +148,11 @@ ftrapcc_ngt_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  greater than or equal: */
-/* 	   _____ */
-/* 	Zv(NANvN) */
-/*  */
+/*
+ * greater than or equal:
+ *	   _____
+ *	Zv(NANvN)
+ */
 ftrapcc_ge:
 	fbge		ftrapcc_ge_yes		/*  greater than or equal? */
 ftrapcc_ge_no:
@@ -171,11 +171,11 @@ ftrapcc_ge_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  not (greater than or equal): */
-/* 	       _ */
-/* 	NANv(N^Z) */
-/*  */
+/*
+ * not (greater than or equal):
+ *	       _
+ *	NANv(N^Z)
+ */
 ftrapcc_nge:
 	fbnge		ftrapcc_nge_yes		/*  not (greater than or equal)? */
 ftrapcc_nge_no:
@@ -188,11 +188,11 @@ ftrapcc_nge_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  less than: */
-/* 	   _____ */
-/* 	N^(NANvZ) */
-/*  */
+/*
+ * less than:
+ *	   _____
+ *	N^(NANvZ)
+ */
 ftrapcc_lt:
 	fblt		ftrapcc_trap		/*  less than? */
 ftrapcc_lt_no:
@@ -204,11 +204,11 @@ ftrapcc_lt_no:
 ftrapcc_lt_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  not less than: */
-/* 	       _ */
-/* 	NANv(ZvN) */
-/*  */
+/*
+ * not less than:
+ *	       _
+ *	NANv(ZvN)
+ */
 ftrapcc_nlt:
 	fbnlt		ftrapcc_nlt_yes		/*  not less than? */
 ftrapcc_nlt_no:
@@ -221,11 +221,11 @@ ftrapcc_nlt_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  less than or equal: */
-/* 	     ___ */
-/* 	Zv(N^NAN) */
-/*  */
+/*
+ * less than or equal:
+ *	     ___
+ *	Zv(N^NAN)
+ */
 ftrapcc_le:
 	fble		ftrapcc_le_yes		/*  less than or equal? */
 ftrapcc_le_no:
@@ -244,11 +244,11 @@ ftrapcc_le_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  not (less than or equal): */
-/* 	     ___ */
-/* 	NANv(NvZ) */
-/*  */
+/*
+ * not (less than or equal):
+ *	     ___
+ *	NANv(NvZ)
+ */
 ftrapcc_nle:
 	fbnle		ftrapcc_nle_yes		/*  not (less than or equal)? */
 ftrapcc_nle_no:
@@ -261,11 +261,11 @@ ftrapcc_nle_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  greater or less than: */
-/* 	_____ */
-/* 	NANvZ */
-/*  */
+/*
+ * greater or less than:
+ *	_____
+ *	NANvZ
+ */
 ftrapcc_gl:
 	fbgl		ftrapcc_trap		/*  greater or less than? */
 ftrapcc_gl_no:
@@ -277,11 +277,11 @@ ftrapcc_gl_no:
 ftrapcc_gl_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  not (greater or less than): */
-/*  */
-/* 	NANvZ */
-/*  */
+/*
+ * not (greater or less than):
+ *
+ *	NANvZ
+ */
 ftrapcc_ngl:
 	fbngl		ftrapcc_ngl_yes		/*  not (greater or less than)? */
 ftrapcc_ngl_no:
@@ -294,11 +294,11 @@ ftrapcc_ngl_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  greater, less, or equal: */
-/* 	___ */
-/* 	NAN */
-/*  */
+/*
+ * greater, less, or equal:
+ *	___
+ *	NAN
+ */
 ftrapcc_gle:
 	fbgle		ftrapcc_trap		/*  greater, less, or equal? */
 ftrapcc_gle_no:
@@ -307,11 +307,11 @@ ftrapcc_gle_no:
 	bne.w		ftrapcc_bsun		/*  yes */
 	rts					/*  no; do nothing */
 
-/*  */
-/*  not (greater, less, or equal): */
-/*  */
-/* 	NAN */
-/*  */
+/*
+ * not (greater, less, or equal):
+ *
+ *	NAN
+ */
 ftrapcc_ngle:
 	fbngle		ftrapcc_ngle_yes	/*  not (greater, less, or equal)? */
 ftrapcc_ngle_no:
@@ -332,27 +332,27 @@ ftrapcc_ngle_yes:
 /* 									 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  false: */
-/*  */
-/* 	False */
-/*  */
+/*
+ * false:
+ *
+ *	False
+ */
 ftrapcc_f:
 	rts					/*  do nothing */
 
-/*  */
-/*  true: */
-/*  */
-/* 	True */
-/*  */
+/*
+ * true:
+ *
+ *	True
+ */
 ftrapcc_t:
 	bra.w		ftrapcc_trap		/*  go take trap */
 
-/*  */
-/*  signalling false: */
-/*  */
-/* 	False */
-/*  */
+/*
+ * signalling false:
+ *
+ *	False
+ */
 ftrapcc_sf:
 	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
 	beq.b		ftrapcc_sf_done		/*  no; go finish */
@@ -362,11 +362,11 @@ ftrapcc_sf:
 ftrapcc_sf_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  signalling true: */
-/*  */
-/* 	True */
-/*  */
+/*
+ * signalling true:
+ *
+ *	True
+ */
 ftrapcc_st:
 	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
@@ -375,11 +375,11 @@ ftrapcc_st:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  signalling equal: */
-/*  */
-/* 	Z */
-/*  */
+/*
+ * signalling equal:
+ *
+ *	Z
+ */
 ftrapcc_seq:
 	fbseq		ftrapcc_seq_yes		/*  signalling equal? */
 ftrapcc_seq_no:
@@ -398,11 +398,11 @@ ftrapcc_seq_yes:
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
-/*  */
-/*  signalling not equal: */
-/* 	_ */
-/* 	Z */
-/*  */
+/*
+ * signalling not equal:
+ *	_
+ *	Z
+ */
 ftrapcc_sneq:
 	fbsne	ftrapcc_sneq_yes	/*  signalling equal? */
 ftrapcc_sneq_no:
@@ -431,121 +431,121 @@ ftrapcc_sneq_yes:
 /* 									 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  ordered greater than: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * ordered greater than:
+ *	_______
+ *	NANvZvN
+ */
 ftrapcc_ogt:
 	fbogt		ftrapcc_trap		/*  ordered greater than? */
 ftrapcc_ogt_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  unordered or less or equal: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * unordered or less or equal:
+ *	_______
+ *	NANvZvN
+ */
 ftrapcc_ule:
 	fbule		ftrapcc_trap		/*  unordered or less or equal? */
 ftrapcc_ule_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  ordered greater than or equal: */
-/* 	   _____ */
-/* 	Zv(NANvN) */
-/*  */
+/*
+ * ordered greater than or equal:
+ *	   _____
+ *	Zv(NANvN)
+ */
 ftrapcc_oge:
 	fboge		ftrapcc_trap		/*  ordered greater than or equal? */
 ftrapcc_oge_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  unordered or less than: */
-/* 	       _ */
-/* 	NANv(N^Z) */
-/*  */
+/*
+ * unordered or less than:
+ *	       _
+ *	NANv(N^Z)
+ */
 ftrapcc_ult:
 	fbult		ftrapcc_trap		/*  unordered or less than? */
 ftrapcc_ult_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  ordered less than: */
-/* 	   _____ */
-/* 	N^(NANvZ) */
-/*  */
+/*
+ * ordered less than:
+ *	   _____
+ *	N^(NANvZ)
+ */
 ftrapcc_olt:
 	fbolt		ftrapcc_trap		/*  ordered less than? */
 ftrapcc_olt_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  unordered or greater or equal: */
-/*  */
-/* 	NANvZvN */
-/*  */
+/*
+ * unordered or greater or equal:
+ *
+ *	NANvZvN
+ */
 ftrapcc_uge:
 	fbuge		ftrapcc_trap		/*  unordered or greater than? */
 ftrapcc_uge_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  ordered less than or equal: */
-/* 	     ___ */
-/* 	Zv(N^NAN) */
-/*  */
+/*
+ * ordered less than or equal:
+ *	     ___
+ *	Zv(N^NAN)
+ */
 ftrapcc_ole:
 	fbole		ftrapcc_trap		/*  ordered greater or less than? */
 ftrapcc_ole_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  unordered or greater than: */
-/* 	     ___ */
-/* 	NANv(NvZ) */
-/*  */
+/*
+ * unordered or greater than:
+ *	     ___
+ *	NANv(NvZ)
+ */
 ftrapcc_ugt:
 	fbugt		ftrapcc_trap		/*  unordered or greater than? */
 ftrapcc_ugt_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  ordered greater or less than: */
-/* 	_____ */
-/* 	NANvZ */
-/*  */
+/*
+ * ordered greater or less than:
+ *	_____
+ *	NANvZ
+ */
 ftrapcc_ogl:
 	fbogl		ftrapcc_trap		/*  ordered greater or less than? */
 ftrapcc_ogl_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  unordered or equal: */
-/*  */
-/* 	NANvZ */
-/*  */
+/*
+ * unordered or equal:
+ *
+ *	NANvZ
+ */
 ftrapcc_ueq:
 	fbueq		ftrapcc_trap		/*  unordered or equal? */
 ftrapcc_ueq_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  ordered: */
-/* 	___ */
-/* 	NAN */
-/*  */
+/*
+ * ordered:
+ *	___
+ *	NAN
+ */
 ftrapcc_or:
 	fbor		ftrapcc_trap		/*  ordered? */
 ftrapcc_or_no:
 	rts					/*  do nothing */
 
-/*  */
-/*  unordered: */
-/*  */
-/* 	NAN */
-/*  */
+/*
+ * unordered:
+ *
+ *	NAN
+ */
 ftrapcc_un:
 	fbun		ftrapcc_trap		/*  unordered? */
 ftrapcc_un_no:

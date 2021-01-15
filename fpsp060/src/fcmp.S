@@ -33,9 +33,9 @@ fcmp:
 	or.b		STAG(%a6),%d1
 	bne.b		fcmp_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  COMPARE FP OPs : NORMs, ZEROs, INFs, and "corrected" DENORMs */
-/*  */
+/*
+ * COMPARE FP OPs : NORMs, ZEROs, INFs, and "corrected" DENORMs
+ */
 fcmp_norm:
 	fmovem.x		DST.w(%a1),%fp0		/*  load dst op */
 
@@ -47,9 +47,9 @@ fcmp_norm:
 
 	rts
 
-/*  */
-/*  fcmp: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * fcmp: inputs are not both normalized; what are they?
+ */
 fcmp_not_norm:
 	move.w		(tbl_fcmp_op.b,%pc,%d1.w*2),%d1
 	jmp		(tbl_fcmp_op.b,%pc,%d1.w*1)
@@ -121,17 +121,17 @@ fcmp_res_snan:
 	andi.b		&0xf7,FPSR_CC(%a6)
 	rts
 
-/*  */
-/*  DENORMs are a little more difficult. */
-/*  If you have a 2 DENORMs, then you can just force the j-bit to a one */
-/*  and use the fcmp_norm routine. */
-/*  If you have a DENORM and an INF or ZERO, just force the DENORM's j-bit to a one */
-/*  and use the fcmp_norm routine. */
-/*  If you have a DENORM and a NORM with opposite signs, then use fcmp_norm, also. */
-/*  But with a DENORM and a NORM of the same sign, the neg bit is set if the */
-/*  (1) signs are (+) and the DENORM is the dst or */
-/*  (2) signs are (-) and the DENORM is the src */
-/*  */
+/*
+ * DENORMs are a little more difficult.
+ * If you have a 2 DENORMs, then you can just force the j-bit to a one
+ * and use the fcmp_norm routine.
+ * If you have a DENORM and an INF or ZERO, just force the DENORM's j-bit to a one
+ * and use the fcmp_norm routine.
+ * If you have a DENORM and a NORM with opposite signs, then use fcmp_norm, also.
+ * But with a DENORM and a NORM of the same sign, the neg bit is set if the
+ * (1) signs are (+) and the DENORM is the dst or
+ * (2) signs are (-) and the DENORM is the src
+ */
 
 fcmp_dnrm_s:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)

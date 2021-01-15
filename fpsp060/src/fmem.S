@@ -55,12 +55,13 @@
 	.globl		_load_fop
 _load_fop:
 
-/*   15     13 12 10  9 7  6       0 */
-/*  /        \ /   \ /  \ /         \ */
-/*  --------------------------------- */
-/*  | opclass | RX  | RY | EXTENSION |  (2nd word of general FP instruction) */
-/*  --------------------------------- */
-/*  */
+/*
+ *  15     13 12 10  9 7  6       0
+ * /        \ /   \ /  \ /         \
+ * ---------------------------------
+ * | opclass | RX  | RY | EXTENSION |  (2nd word of general FP instruction)
+ * ---------------------------------
+ */
 
 /* 	bfextu		EXC_CMDREG(%a6){&0:&3}, %d0 ; extract opclass */
 /* 	cmpi.b		&0x2,%d0		; which class is it? ('000,'010,'011) */
@@ -166,9 +167,9 @@ tbl_op010_dreg:
 	.dc.w		opd_byte-tbl_op010_dreg
 	.dc.w		tbl_op010_dreg-tbl_op010_dreg
 
-/*  */
-/*  LONG: can be either NORM or ZERO... */
-/*  */
+/*
+ * LONG: can be either NORM or ZERO...
+ */
 opd_long:
 	bsr.l		fetch_dreg		/*  fetch long in d0 */
 	fmove.l		%d0, %fp0		/*  load a long */
@@ -179,9 +180,9 @@ opd_long_zero:
 	move.b		&ZERO, STAG(%a6)	/*  set ZERO optype flag */
 	rts
 
-/*  */
-/*  WORD: can be either NORM or ZERO... */
-/*  */
+/*
+ * WORD: can be either NORM or ZERO...
+ */
 opd_word:
 	bsr.l		fetch_dreg		/*  fetch word in d0 */
 	fmove.w		%d0, %fp0		/*  load a word */
@@ -192,9 +193,9 @@ opd_word_zero:
 	move.b		&ZERO, STAG(%a6)	/*  set ZERO optype flag */
 	rts
 
-/*  */
-/*  BYTE: can be either NORM or ZERO... */
-/*  */
+/*
+ * BYTE: can be either NORM or ZERO...
+ */
 opd_byte:
 	bsr.l		fetch_dreg		/*  fetch word in d0 */
 	fmove.b		%d0, %fp0		/*  load a byte */
@@ -205,12 +206,12 @@ opd_byte_zero:
 	move.b		&ZERO, STAG(%a6)	/*  set ZERO optype flag */
 	rts
 
-/*  */
-/*  SGL: can be either NORM, DENORM, ZERO, INF, QNAN or SNAN but not UNNORM */
-/*  */
-/*  separate SNANs and DENORMs so they can be loaded w/ special care. */
-/*  all others can simply be moved "in" using fmove. */
-/*  */
+/*
+ * SGL: can be either NORM, DENORM, ZERO, INF, QNAN or SNAN but not UNNORM
+ *
+ * separate SNANs and DENORMs so they can be loaded w/ special care.
+ * all others can simply be moved "in" using fmove.
+ */
 opd_sgl:
 	bsr.l		fetch_dreg		/*  fetch sgl in d0 */
 	move.l		%d0,L_SCR1(%a6)
@@ -231,18 +232,20 @@ opd_sgl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/*  fetch_from_mem():							 */
-/*  - src is out in memory. must:						 */
-/* 	(1) calc ea - must read AFTER you know the src type since	 */
-/* 		      if the ea is -() or ()+, need to know ; of bytes.	 */
-/* 	(2) read it in from either user or supervisor space		 */
-/* 	(3) if (b || w || l) then simply read in			 */
-/* 	    if (s || d || x) then check for SNAN,UNNORM,DENORM		 */
-/* 	    if (packed) then punt for now				 */
-/*  INPUT:								 */
-/* 	%d0 : src type field						 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/*
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ * fetch_from_mem():
+ * - src is out in memory. must:
+ *	(1) calc ea - must read AFTER you know the src type since
+ *		      if the ea is -() or ()+, need to know ; of bytes.
+ *	(2) read it in from either user or supervisor space
+ *	(3) if (b || w || l) then simply read in
+ *	    if (s || d || x) then check for SNAN,UNNORM,DENORM
+ *	    if (packed) then punt for now
+ * INPUT:
+ *	%d0 : src type field
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ */
 fetch_from_mem:
 	clr.b		STAG(%a6)		/*  either NORM or ZERO */
 

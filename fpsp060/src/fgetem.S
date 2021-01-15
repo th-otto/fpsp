@@ -62,10 +62,10 @@ sgetmann:
 	move.b		&neg_bmask,FPSR_CC(%a6)	/*  set 'N' ccode bit */
 	rts
 
-/*  */
-/*  For denormalized numbers, shift the mantissa until the j-bit = 1, */
-/*  then load the exponent with +/1 $3fff. */
-/*  */
+/*
+ * For denormalized numbers, shift the mantissa until the j-bit = 1,
+ * then load the exponent with +/1 $3fff.
+ */
 	.globl		sgetmand
 sgetmand:
 	bsr.l		norm			/*  normalize exponent */

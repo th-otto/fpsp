@@ -33,9 +33,9 @@ sscale:
 	cmpi.w		&0x400c,%d0		/*  no; is src too big? */
 	bgt.w		src_out			/*  yes */
 
-/*  */
-/*  Source is within 2^14 range. */
-/*  */
+/*
+ * Source is within 2^14 range.
+ */
 src_ok:
 	fintrz.x	SRC.w(%a0),%fp0		/*  calc int of src */
 	fmove.l		%fp0,%d0		/*  int src to d0 */
@@ -109,10 +109,10 @@ sok_norm_cont:
 	fmul.x		(%sp)+,%fp0		/*  do the multiply */
 	bra.l		t_catch2		/*  catch any exceptions */
 
-/*  */
-/*  Source is outside of 2^14 range.  Test the sign and branch */
-/*  to the appropriate exception handler. */
-/*  */
+/*
+ * Source is outside of 2^14 range.  Test the sign and branch
+ * to the appropriate exception handler.
+ */
 src_out:
 	move.l		(%sp)+,%d0		/*  restore ctrl bits */
 	exg		%a0,%a1			/*  swap src,dst ptrs */
@@ -120,10 +120,10 @@ src_out:
 	bmi.l		t_unfl			/*  yes; underflow */
 	bra.l		t_ovfl_sc		/*  no; overflow */
 
-/*  */
-/*  The source input is below 1, so we check for denormalized numbers */
-/*  and set unfl. */
-/*  */
+/*
+ * The source input is below 1, so we check for denormalized numbers
+ * and set unfl.
+ */
 src_small:
 	tst.b		DST_HI(%a1)		/*  is dst denormalized? */
 	bpl.b		ssmall_done		/*  yes */

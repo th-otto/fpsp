@@ -90,18 +90,18 @@ unnorm_fix:
 	bfffo		FTEMP_HI(%a0){&0:&32}, %d0 /*  how many shifts are needed? */
 	bne.b		unnorm_shift		/*  hi(man) is not all zeroes */
 
-/*  */
-/*  hi(man) is all zeroes so see if any bits in lo(man) are set */
-/*  */
+/*
+ * hi(man) is all zeroes so see if any bits in lo(man) are set
+ */
 unnorm_chk_lo:
 	bfffo		FTEMP_LO(%a0){&0:&32}, %d0 /*  is operand really a zero? */
 	beq.w		unnorm_zero		/*  yes */
 
 	addi.w		&32,%d0		/*  no; fix shift distance */
 
-/*  */
-/*  d0 = ; shifts needed for complete normalization */
-/*  */
+/*
+ * d0 = ; shifts needed for complete normalization
+ */
 unnorm_shift:
 	clr.l		%d1			/*  clear top word */
 	move.w		FTEMP_EX.w(%a0), %d1	/*  extract exponent */
@@ -110,9 +110,9 @@ unnorm_shift:
 	cmp.w		%d1,%d0		/*  will denorm push exp < 0? */
 	bgt.b		unnorm_nrm_zero		/*  yes; denorm only until exp = 0 */
 
-/*  */
-/*  exponent would not go < 0. Therefore, number stays normalized */
-/*  */
+/*
+ * exponent would not go < 0. Therefore, number stays normalized
+ */
 	sub.w		%d0, %d1		/*  shift exponent value */
 	move.w		FTEMP_EX.w(%a0), %d0	/*  load old exponent */
 	andi.w		&0x8000, %d0		/*  save old sign */
@@ -124,9 +124,9 @@ unnorm_shift:
 	move.b		&NORM, %d0		/*  return new optype tag */
 	rts
 
-/*  */
-/*  exponent would go < 0, so only denormalize until exp = 0 */
-/*  */
+/*
+ * exponent would go < 0, so only denormalize until exp = 0
+ */
 unnorm_nrm_zero:
 	cmpi.b		&32,%d1		/*  is exp <= 32? */
 	bgt.b		unnorm_nrm_zero_lrg	/*  no; go handle large exponent */
@@ -143,9 +143,9 @@ unnorm_nrm_zero:
 	move.b		&DENORM, %d0		/*  return new optype tag */
 	rts
 
-/*  */
-/*  only mantissa bits set are in lo(man) */
-/*  */
+/*
+ * only mantissa bits set are in lo(man)
+ */
 unnorm_nrm_zero_lrg:
 	subi.w		&32,%d1				/*  adjust shft amt by 32 */
 
@@ -160,9 +160,9 @@ unnorm_nrm_zero_lrg:
 	move.b		&DENORM, %d0		/*  return new optype tag */
 	rts
 
-/*  */
-/*  whole mantissa is zero so this UNNORM is actually a zero */
-/*  */
+/*
+ * whole mantissa is zero so this UNNORM is actually a zero
+ */
 unnorm_zero:
 	and.w		&0x8000, FTEMP_EX.w(%a0)	/*  force exponent to zero */
 

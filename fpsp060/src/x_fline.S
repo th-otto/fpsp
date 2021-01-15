@@ -74,14 +74,16 @@ _fpsp_fline:
 	cmpi.b		&0x17,%d1
 	bne.b		fline_fline		/*  no */
 
-/*  it's an fmovecr w/ a non-zero <ea> that has entered through */
-/*  the F-Line Illegal exception. */
-/*  so, we need to convert the F-Line exception stack frame into an */
-/*  FP Unimplemented Instruction stack frame and jump to that entry */
-/*  point. */
-/*  */
-/*  but, if the FPU is disabled, then we need to jump to the FPU disabled */
-/*  entry point. */
+/*
+ * it's an fmovecr w/ a non-zero <ea> that has entered through
+ * the F-Line Illegal exception.
+ * so, we need to convert the F-Line exception stack frame into an
+ * FP Unimplemented Instruction stack frame and jump to that entry
+ * point.
+ *
+ * but, if the FPU is disabled, then we need to jump to the FPU disabled
+ * entry point.
+ */
 	movec		%pcr,%d0
 	btst		&0x1,%d0
 	beq.b		fline_fmovecr

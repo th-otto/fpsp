@@ -88,21 +88,21 @@ foperr_exit:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  the hardware does not save the default result to memory on enabled */
-/*  operand error exceptions. we do this here before passing control to */
-/*  the user operand error handler. */
-/*  */
-/*  byte, word, and long destination format operations can pass */
-/*  through here. we simply need to test the sign of the src */
-/*  operand and save the appropriate minimum or maximum integer value */
-/*  to the effective address as pointed to by the stacked effective address. */
-/*  */
-/*  although packed opclass three operations can take operand error */
-/*  exceptions, they won't pass through here since they are caught */
-/*  first by the unsupported data format exception handler. that handler */
-/*  sends them directly to _real_operr() if necessary. */
-/*  */
+/*
+ * the hardware does not save the default result to memory on enabled
+ * operand error exceptions. we do this here before passing control to
+ * the user operand error handler.
+ *
+ * byte, word, and long destination format operations can pass
+ * through here. we simply need to test the sign of the src
+ * operand and save the appropriate minimum or maximum integer value
+ * to the effective address as pointed to by the stacked effective address.
+ *
+ * although packed opclass three operations can take operand error
+ * exceptions, they won't pass through here since they are caught
+ * first by the unsupported data format exception handler. that handler
+ * sends them directly to _real_operr() if necessary.
+ */
 foperr_out:
 
 	move.w		FP_SRC_EX(%a6),%d1	/*  fetch exponent */

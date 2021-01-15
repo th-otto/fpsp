@@ -28,9 +28,9 @@ smovecr:
 
 	move.l		(%sp)+,%d1		/*  get rom offset */
 
-/*  */
-/*  check range of offset */
-/*  */
+/*
+ * check range of offset
+ */
 	tst.b		%d1			/*  if zero, offset is to pi */
 	beq.b		pi_tbl			/*  it is pi */
 	cmpi.b		&0x0a,%d1		/*  check range $01 - $0a */
@@ -45,12 +45,12 @@ smovecr:
 z_val:
 	bra.l		ld_pzero		/*  return a zero */
 
-/*  */
-/*  the answer is PI rounded to the proper precision. */
-/*  */
-/*  fetch a pointer to the answer table relating to the proper rounding */
-/*  precision. */
-/*  */
+/*
+ * the answer is PI rounded to the proper precision.
+ *
+ * fetch a pointer to the answer table relating to the proper rounding
+ * precision.
+ */
 pi_tbl:
 	tst.b		%d0			/*  is rmode RN? */
 	bne.b		pi_not_rn		/*  no */
@@ -67,16 +67,16 @@ pi_rp:
 	lea.l		(PIRP).l(%pc),%a0		/*  load PI RP table addr */
 	bra.b		set_finx
 
-/*  */
-/*  the answer is one of: */
-/* 	$0B	log10(2)	(inexact) */
-/* 	$0C	e		(inexact) */
-/* 	$0D	log2(e)		(inexact) */
-/* 	$0E	log10(e)	(exact) */
-/*  */
-/*  fetch a pointer to the answer table relating to the proper rounding */
-/*  precision. */
-/*  */
+/*
+ * the answer is one of:
+ *	$0B	log10(2)	(inexact)
+ *	$0C	e		(inexact)
+ *	$0D	log2(e)		(inexact)
+ *	$0E	log10(e)	(exact)
+ *
+ * fetch a pointer to the answer table relating to the proper rounding
+ * precision.
+ */
 sm_tbl:
 	subi.b		&0xb,%d1		/*  make offset in 0-4 range */
 	tst.b		%d0			/*  is rmode RN? */
@@ -97,28 +97,28 @@ sm_rp:
 	lea.l		(SMALRP).l(%pc),%a0		/*  load RP table addr */
 	bra.b		sm_tbl_cont
 
-/*  */
-/*  the answer is one of: */
-/* 	$30	ln(2)		(inexact) */
-/* 	$31	ln(10)		(inexact) */
-/* 	$32	10^0		(exact) */
-/* 	$33	10^1		(exact) */
-/* 	$34	10^2		(exact) */
-/* 	$35	10^4		(exact) */
-/* 	$36	10^8		(exact) */
-/* 	$37	10^16		(exact) */
-/* 	$38	10^32		(inexact) */
-/* 	$39	10^64		(inexact) */
-/* 	$3A	10^128		(inexact) */
-/* 	$3B	10^256		(inexact) */
-/* 	$3C	10^512		(inexact) */
-/* 	$3D	10^1024		(inexact) */
-/* 	$3E	10^2048		(inexact) */
-/* 	$3F	10^4096		(inexact) */
-/*  */
-/*  fetch a pointer to the answer table relating to the proper rounding */
-/*  precision. */
-/*  */
+/*
+ * the answer is one of:
+ *	$30	ln(2)		(inexact)
+ *	$31	ln(10)		(inexact)
+ *	$32	10^0		(exact)
+ *	$33	10^1		(exact)
+ *	$34	10^2		(exact)
+ *	$35	10^4		(exact)
+ *	$36	10^8		(exact)
+ *	$37	10^16		(exact)
+ *	$38	10^32		(inexact)
+ *	$39	10^64		(inexact)
+ *	$3A	10^128		(inexact)
+ *	$3B	10^256		(inexact)
+ *	$3C	10^512		(inexact)
+ *	$3D	10^1024		(inexact)
+ *	$3E	10^2048		(inexact)
+ *	$3F	10^4096		(inexact)
+ *
+ * fetch a pointer to the answer table relating to the proper rounding
+ * precision.
+ */
 bg_tbl:
 	subi.b		&0x30,%d1		/*  make offset in 0-f range */
 	tst.b		%d0			/*  is rmode RN? */

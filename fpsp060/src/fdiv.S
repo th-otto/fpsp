@@ -70,9 +70,9 @@ fdiv:
 
 	bne.w		fdiv_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  DIVIDE: NORMs and DENORMs ONLY! */
-/*  */
+/*
+ * DIVIDE: NORMs and DENORMs ONLY!
+ */
 fdiv_norm:
 	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
@@ -239,9 +239,9 @@ fdiv_unfl_dis:
 	fmovem.x		FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  UNFL is enabled. */
-/*  */
+/*
+ * UNFL is enabled.
+ */
 fdiv_unfl_ena:
 	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op */
 
@@ -280,9 +280,9 @@ fdiv_unfl_ena_sd:
 
 	bra.b		fdiv_unfl_ena_cont
 
-/*  */
-/*  the divide operation MAY underflow: */
-/*  */
+/*
+ * the divide operation MAY underflow:
+ */
 fdiv_may_unfl:
 	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
 
@@ -301,13 +301,13 @@ fdiv_may_unfl:
 	fbgt		fdiv_normal_exit	/*  no; no underflow occurred */
 	fblt		fdiv_unfl		/*  yes; underflow occurred */
 
-/*  */
-/*  we still don't know if underflow occurred. result is ~ equal to 1. but, */
-/*  we don't know if the result was an underflow that rounded up to a 1 */
-/*  or a normalized number that rounded down to a 1. so, redo the entire */
-/*  operation using RZ as the rounding mode to see what the pre-rounded */
-/*  result is. this case should be relatively rare. */
-/*  */
+/*
+ * we still don't know if underflow occurred. result is ~ equal to 1. but,
+ * we don't know if the result was an underflow that rounded up to a 1
+ * or a normalized number that rounded down to a 1. so, redo the entire
+ * operation using RZ as the rounding mode to see what the pre-rounded
+ * result is. this case should be relatively rare.
+ */
 	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op into fp1 */
 
 	move.l		L_SCR3(%a6),%d1
@@ -327,9 +327,9 @@ fdiv_may_unfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  Divide: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * Divide: inputs are not both normalized; what are they?
+ */
 fdiv_not_norm:
 	move.w		(tbl_fdiv_op.b,%pc,%d1.w*2),%d1
 	jmp		(tbl_fdiv_op.b,%pc,%d1.w*1)
@@ -411,11 +411,11 @@ fdiv_zero_load_p:
 	move.b		&z_bmask,FPSR_CC(%a6)	/*  set Z */
 	rts
 
-/*  */
-/*  The destination was In Range and the source was a ZERO. The result, */
-/*  Therefore, is an INF w/ the proper sign. */
-/*  So, determine the sign and return a new INF (w/ the j-bit cleared). */
-/*  */
+/*
+ * The destination was In Range and the source was a ZERO. The result,
+ * Therefore, is an INF w/ the proper sign.
+ * So, determine the sign and return a new INF (w/ the j-bit cleared).
+ */
 	.globl		fdiv_inf_load		/*  global for fsgldiv */
 fdiv_inf_load:
 	ori.w		&dz_mask+adz_mask,2+USER_FPSR(%a6) /*  no; set DZ/ADZ */
@@ -431,12 +431,12 @@ fdiv_inf_load_p:
 	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set INF */
 	rts
 
-/*  */
-/*  The destination was an INF w/ an In Range or ZERO source, the result is */
-/*  an INF w/ the proper sign. */
-/*  The 68881/882 returns the destination INF w/ the new sign(if the j-bit of the */
-/*  dst INF is set, then then j-bit of the result INF is also set). */
-/*  */
+/*
+ * The destination was an INF w/ an In Range or ZERO source, the result is
+ * an INF w/ the proper sign.
+ * The 68881/882 returns the destination INF w/ the new sign(if the j-bit of the
+ * dst INF is set, then then j-bit of the result INF is also set).
+ */
 	.globl		fdiv_inf_dst		/*  global for fsgldiv */
 fdiv_inf_dst:
 	move.b		DST_EX.w(%a1),%d0		/*  load both signs */

@@ -95,18 +95,18 @@ fsnan_exit:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  the hardware does not save the default result to memory on enabled */
-/*  snan exceptions. we do this here before passing control to */
-/*  the user snan handler. */
-/*  */
-/*  byte, word, long, and packed destination format operations can pass */
-/*  through here. since packed format operations already were handled by */
-/*  fpsp_unsupp(), then we need to do nothing else for them here. */
-/*  for byte, word, and long, we simply need to test the sign of the src */
-/*  operand and save the appropriate minimum or maximum integer value */
-/*  to the effective address as pointed to by the stacked effective address. */
-/*  */
+/*
+ * the hardware does not save the default result to memory on enabled
+ * snan exceptions. we do this here before passing control to
+ * the user snan handler.
+ *
+ * byte, word, long, and packed destination format operations can pass
+ * through here. since packed format operations already were handled by
+ * fpsp_unsupp(), then we need to do nothing else for them here.
+ * for byte, word, and long, we simply need to test the sign of the src
+ * operand and save the appropriate minimum or maximum integer value
+ * to the effective address as pointed to by the stacked effective address.
+ */
 fsnan_out:
 
 	bfextu		%d0{&19:&3},%d0		/*  extract dst format field */

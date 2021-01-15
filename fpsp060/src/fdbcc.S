@@ -100,11 +100,11 @@ tbl_fdbcc:
 /* 									 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  equal: */
-/*  */
-/* 	Z */
-/*  */
+/*
+ * equal:
+ *
+ *	Z
+ */
 fdbcc_eq:
 	fbeq		fdbcc_eq_yes		/*  equal? */
 fdbcc_eq_no:
@@ -112,11 +112,11 @@ fdbcc_eq_no:
 fdbcc_eq_yes:
 	rts
 
-/*  */
-/*  not equal: */
-/* 	_ */
-/* 	Z */
-/*  */
+/*
+ * not equal:
+ *	_
+ *	Z
+ */
 fdbcc_neq:
 	fbne		fdbcc_neq_yes		/*  not equal? */
 fdbcc_neq_no:
@@ -124,11 +124,11 @@ fdbcc_neq_no:
 fdbcc_neq_yes:
 	rts
 
-/*  */
-/*  greater than: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * greater than:
+ *	_______
+ *	NANvZvN
+ */
 fdbcc_gt:
 	fbgt		fdbcc_gt_yes		/*  greater than? */
 	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
@@ -140,11 +140,11 @@ fdbcc_gt:
 fdbcc_gt_yes:
 	rts					/*  do nothing */
 
-/*  */
-/*  not greater than: */
-/*  */
-/* 	NANvZvN */
-/*  */
+/*
+ * not greater than:
+ *
+ *	NANvZvN
+ */
 fdbcc_ngt:
 	fbngt		fdbcc_ngt_yes		/*  not greater than? */
 fdbcc_ngt_no:
@@ -158,11 +158,11 @@ fdbcc_ngt_yes:
 fdbcc_ngt_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  greater than or equal: */
-/* 	   _____ */
-/* 	Zv(NANvN) */
-/*  */
+/*
+ * greater than or equal:
+ *	   _____
+ *	Zv(NANvN)
+ */
 fdbcc_ge:
 	fbge		fdbcc_ge_yes		/*  greater than or equal? */
 fdbcc_ge_no:
@@ -181,11 +181,11 @@ fdbcc_ge_yes:
 fdbcc_ge_yes_done:
 	rts					/*  do nothing */
 
-/*  */
-/*  not (greater than or equal): */
-/* 	       _ */
-/* 	NANv(N^Z) */
-/*  */
+/*
+ * not (greater than or equal):
+ *	       _
+ *	NANv(N^Z)
+ */
 fdbcc_nge:
 	fbnge		fdbcc_nge_yes		/*  not (greater than or equal)? */
 fdbcc_nge_no:
@@ -199,11 +199,11 @@ fdbcc_nge_yes:
 fdbcc_nge_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  less than: */
-/* 	   _____ */
-/* 	N^(NANvZ) */
-/*  */
+/*
+ * less than:
+ *	   _____
+ *	N^(NANvZ)
+ */
 fdbcc_lt:
 	fblt		fdbcc_lt_yes		/*  less than? */
 fdbcc_lt_no:
@@ -216,11 +216,11 @@ fdbcc_lt_no:
 fdbcc_lt_yes:
 	rts					/*  do nothing */
 
-/*  */
-/*  not less than: */
-/* 	       _ */
-/* 	NANv(ZvN) */
-/*  */
+/*
+ * not less than:
+ *	       _
+ *	NANv(ZvN)
+ */
 fdbcc_nlt:
 	fbnlt		fdbcc_nlt_yes		/*  not less than? */
 fdbcc_nlt_no:
@@ -234,11 +234,11 @@ fdbcc_nlt_yes:
 fdbcc_nlt_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  less than or equal: */
-/* 	     ___ */
-/* 	Zv(N^NAN) */
-/*  */
+/*
+ * less than or equal:
+ *	     ___
+ *	Zv(N^NAN)
+ */
 fdbcc_le:
 	fble		fdbcc_le_yes		/*  less than or equal? */
 fdbcc_le_no:
@@ -257,11 +257,11 @@ fdbcc_le_yes:
 fdbcc_le_yes_done:
 	rts					/*  do nothing */
 
-/*  */
-/*  not (less than or equal): */
-/* 	     ___ */
-/* 	NANv(NvZ) */
-/*  */
+/*
+ * not (less than or equal):
+ *	     ___
+ *	NANv(NvZ)
+ */
 fdbcc_nle:
 	fbnle		fdbcc_nle_yes		/*  not (less than or equal)? */
 fdbcc_nle_no:
@@ -275,11 +275,11 @@ fdbcc_nle_yes:
 fdbcc_nle_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  greater or less than: */
-/* 	_____ */
-/* 	NANvZ */
-/*  */
+/*
+ * greater or less than:
+ *	_____
+ *	NANvZ
+ */
 fdbcc_gl:
 	fbgl		fdbcc_gl_yes		/*  greater or less than? */
 fdbcc_gl_no:
@@ -292,11 +292,11 @@ fdbcc_gl_no:
 fdbcc_gl_yes:
 	rts					/*  do nothing */
 
-/*  */
-/*  not (greater or less than): */
-/*  */
-/* 	NANvZ */
-/*  */
+/*
+ * not (greater or less than):
+ *
+ *	NANvZ
+ */
 fdbcc_ngl:
 	fbngl		fdbcc_ngl_yes		/*  not (greater or less than)? */
 fdbcc_ngl_no:
@@ -310,11 +310,11 @@ fdbcc_ngl_yes:
 fdbcc_ngl_done:
 	rts					/*  no; do nothing */
 
-/*  */
-/*  greater, less, or equal: */
-/* 	___ */
-/* 	NAN */
-/*  */
+/*
+ * greater, less, or equal:
+ *	___
+ *	NAN
+ */
 fdbcc_gle:
 	fbgle		fdbcc_gle_yes		/*  greater, less, or equal? */
 fdbcc_gle_no:
@@ -325,11 +325,11 @@ fdbcc_gle_no:
 fdbcc_gle_yes:
 	rts					/*  do nothing */
 
-/*  */
-/*  not (greater, less, or equal): */
-/*  */
-/* 	NAN */
-/*  */
+/*
+ * not (greater, less, or equal):
+ *
+ *	NAN
+ */
 fdbcc_ngle:
 	fbngle		fdbcc_ngle_yes		/*  not (greater, less, or equal)? */
 fdbcc_ngle_no:
@@ -348,27 +348,27 @@ fdbcc_ngle_yes:
 /* 									 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  false: */
-/*  */
-/* 	False */
-/*  */
+/*
+ * false:
+ *
+ *	False
+ */
 fdbcc_f:					/*  no bsun possible */
 	bra.w		fdbcc_false		/*  go handle counter */
 
-/*  */
-/*  true: */
-/*  */
-/* 	True */
-/*  */
+/*
+ * true:
+ *
+ *	True
+ */
 fdbcc_t:					/*  no bsun possible */
 	rts					/*  do nothing */
 
-/*  */
-/*  signalling false: */
-/*  */
-/* 	False */
-/*  */
+/*
+ * signalling false:
+ *
+ *	False
+ */
 fdbcc_sf:
 	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
 	beq.w		fdbcc_false		/*  no;go handle counter */
@@ -377,11 +377,11 @@ fdbcc_sf:
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  go handle counter */
 
-/*  */
-/*  signalling true: */
-/*  */
-/* 	True */
-/*  */
+/*
+ * signalling true:
+ *
+ *	True
+ */
 fdbcc_st:
 	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
 	beq.b		fdbcc_st_done		/*  no;go finish */
@@ -391,11 +391,11 @@ fdbcc_st:
 fdbcc_st_done:
 	rts
 
-/*  */
-/*  signalling equal: */
-/*  */
-/* 	Z */
-/*  */
+/*
+ * signalling equal:
+ *
+ *	Z
+ */
 fdbcc_seq:
 	fbseq		fdbcc_seq_yes		/*  signalling equal? */
 fdbcc_seq_no:
@@ -414,11 +414,11 @@ fdbcc_seq_yes:
 fdbcc_seq_yes_done:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  signalling not equal: */
-/* 	_ */
-/* 	Z */
-/*  */
+/*
+ * signalling not equal:
+ *	_
+ *	Z
+ */
 fdbcc_sneq:
 	fbsne	fdbcc_sneq_yes		/*  signalling not equal? */
 fdbcc_sneq_no:
@@ -448,11 +448,11 @@ fdbcc_sneq_done:
 /* 									 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  ordered greater than: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * ordered greater than:
+ *	_______
+ *	NANvZvN
+ */
 fdbcc_ogt:
 	fbogt		fdbcc_ogt_yes		/*  ordered greater than? */
 fdbcc_ogt_no:
@@ -460,11 +460,11 @@ fdbcc_ogt_no:
 fdbcc_ogt_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  unordered or less or equal: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * unordered or less or equal:
+ *	_______
+ *	NANvZvN
+ */
 fdbcc_ule:
 	fbule		fdbcc_ule_yes		/*  unordered or less or equal? */
 fdbcc_ule_no:
@@ -472,11 +472,11 @@ fdbcc_ule_no:
 fdbcc_ule_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  ordered greater than or equal: */
-/* 	   _____ */
-/* 	Zv(NANvN) */
-/*  */
+/*
+ * ordered greater than or equal:
+ *	   _____
+ *	Zv(NANvN)
+ */
 fdbcc_oge:
 	fboge		fdbcc_oge_yes		/*  ordered greater than or equal? */
 fdbcc_oge_no:
@@ -484,11 +484,11 @@ fdbcc_oge_no:
 fdbcc_oge_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  unordered or less than: */
-/* 	       _ */
-/* 	NANv(N^Z) */
-/*  */
+/*
+ * unordered or less than:
+ *	       _
+ *	NANv(N^Z)
+ */
 fdbcc_ult:
 	fbult		fdbcc_ult_yes		/*  unordered or less than? */
 fdbcc_ult_no:
@@ -496,11 +496,11 @@ fdbcc_ult_no:
 fdbcc_ult_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  ordered less than: */
-/* 	   _____ */
-/* 	N^(NANvZ) */
-/*  */
+/*
+ * ordered less than:
+ *	   _____
+ *	N^(NANvZ)
+ */
 fdbcc_olt:
 	fbolt		fdbcc_olt_yes		/*  ordered less than? */
 fdbcc_olt_no:
@@ -508,11 +508,11 @@ fdbcc_olt_no:
 fdbcc_olt_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  unordered or greater or equal: */
-/*  */
-/* 	NANvZvN */
-/*  */
+/*
+ * unordered or greater or equal:
+ *
+ *	NANvZvN
+ */
 fdbcc_uge:
 	fbuge		fdbcc_uge_yes		/*  unordered or greater than? */
 fdbcc_uge_no:
@@ -520,11 +520,11 @@ fdbcc_uge_no:
 fdbcc_uge_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  ordered less than or equal: */
-/* 	     ___ */
-/* 	Zv(N^NAN) */
-/*  */
+/*
+ * ordered less than or equal:
+ *	     ___
+ *	Zv(N^NAN)
+ */
 fdbcc_ole:
 	fbole		fdbcc_ole_yes		/*  ordered greater or less than? */
 fdbcc_ole_no:
@@ -532,11 +532,11 @@ fdbcc_ole_no:
 fdbcc_ole_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  unordered or greater than: */
-/* 	     ___ */
-/* 	NANv(NvZ) */
-/*  */
+/*
+ * unordered or greater than:
+ *	     ___
+ *	NANv(NvZ)
+ */
 fdbcc_ugt:
 	fbugt		fdbcc_ugt_yes		/*  unordered or greater than? */
 fdbcc_ugt_no:
@@ -544,11 +544,11 @@ fdbcc_ugt_no:
 fdbcc_ugt_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  ordered greater or less than: */
-/* 	_____ */
-/* 	NANvZ */
-/*  */
+/*
+ * ordered greater or less than:
+ *	_____
+ *	NANvZ
+ */
 fdbcc_ogl:
 	fbogl		fdbcc_ogl_yes		/*  ordered greater or less than? */
 fdbcc_ogl_no:
@@ -556,11 +556,11 @@ fdbcc_ogl_no:
 fdbcc_ogl_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  unordered or equal: */
-/*  */
-/* 	NANvZ */
-/*  */
+/*
+ * unordered or equal:
+ *
+ *	NANvZ
+ */
 fdbcc_ueq:
 	fbueq		fdbcc_ueq_yes		/*  unordered or equal? */
 fdbcc_ueq_no:
@@ -568,11 +568,11 @@ fdbcc_ueq_no:
 fdbcc_ueq_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  ordered: */
-/* 	___ */
-/* 	NAN */
-/*  */
+/*
+ * ordered:
+ *	___
+ *	NAN
+ */
 fdbcc_or:
 	fbor		fdbcc_or_yes		/*  ordered? */
 fdbcc_or_no:
@@ -580,11 +580,11 @@ fdbcc_or_no:
 fdbcc_or_yes:
 	rts					/*  yes; do nothing */
 
-/*  */
-/*  unordered: */
-/*  */
-/* 	NAN */
-/*  */
+/*
+ * unordered:
+ *
+ *	NAN
+ */
 fdbcc_un:
 	fbun		fdbcc_un_yes		/*  unordered? */
 fdbcc_un_no:
@@ -594,15 +594,15 @@ fdbcc_un_yes:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  the bsun exception bit was not set. */
-/*  */
-/*  (1) subtract 1 from the count register */
-/*  (2) if (cr == -1) then */
-/* 	pc = pc of next instruction */
-/*      else */
-/* 	pc += sign_ext(16-bit displacement) */
-/*  */
+/*
+ * the bsun exception bit was not set.
+ *
+ * (1) subtract 1 from the count register
+ * (2) if (cr == -1) then
+ *	pc = pc of next instruction
+ *     else
+ *	pc += sign_ext(16-bit displacement)
+ */
 fdbcc_false:
 	move.b		1+EXC_OPWORD(%a6), %d1	/*  fetch lo opword */
 	andi.w		&0x7, %d1		/*  extract count register */

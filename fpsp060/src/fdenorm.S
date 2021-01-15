@@ -33,9 +33,9 @@
 
 	.text
 
-/*  */
-/*  table of exponent threshold values for each precision */
-/*  */
+/*
+ * table of exponent threshold values for each precision
+ */
 tbl_thresh:
 	.dc.w		0x0
 	.dc.w		sgl_thresh
@@ -43,12 +43,12 @@ tbl_thresh:
 
 	.globl		_denorm
 _denorm:
-/*  */
-/*  Load the exponent threshold for the precision selected and check */
-/*  to see if (threshold - exponent) is > 65 in which case we can */
-/*  simply calculate the sticky bit and zero the mantissa. otherwise */
-/*  we have to call the denormalization routine. */
-/*  */
+/*
+ * Load the exponent threshold for the precision selected and check
+ * to see if (threshold - exponent) is > 65 in which case we can
+ * simply calculate the sticky bit and zero the mantissa. otherwise
+ * we have to call the denormalization routine.
+ */
 	lsr.b		&0x2,%d0		/*  shift prec to lo bits */
 	move.w		(tbl_thresh.b,%pc,%d0.w*2), %d1 /*  load prec threshold */
 	move.w		%d1, %d0		/*  copy d1 into d0 */
@@ -65,10 +65,10 @@ denorm_call:
 	bsr.l		dnrm_lp			/*  denormalize the number */
 	rts
 
-/*  */
-/*  all bit would have been shifted off during the denorm so simply */
-/*  calculate if the sticky should be set and clear the entire mantissa. */
-/*  */
+/*
+ * all bit would have been shifted off during the denorm so simply
+ * calculate if the sticky should be set and clear the entire mantissa.
+ */
 denorm_set_stky:
 	move.l		&0x20000000, %d0	/*  set sticky bit in return value */
 	move.w		%d1, FTEMP_EX.w(%a0)	/*  load exp with threshold */
@@ -95,17 +95,17 @@ denorm_set_stky:
 	.globl		dnrm_lp
 dnrm_lp:
 
-/*  */
-/*  make a copy of FTEMP_LO and place the g,r,s bits directly after it */
-/*  in memory so as to make the bitfield extraction for denormalization easier. */
-/*  */
+/*
+ * make a copy of FTEMP_LO and place the g,r,s bits directly after it
+ * in memory so as to make the bitfield extraction for denormalization easier.
+ */
 	move.l		FTEMP_LO(%a0), FTEMP_LO2(%a6) /*  make FTEMP_LO copy */
 	move.l		%d0, GRS(%a6)		/*  place g,r,s after it */
 
-/*  */
-/*  check to see how much less than the underflow threshold the operand */
-/*  exponent is. */
-/*  */
+/*
+ * check to see how much less than the underflow threshold the operand
+ * exponent is.
+ */
 	move.l		%d1, %d0		/*  copy the denorm threshold */
 	sub.w		FTEMP_EX.w(%a0), %d1	/*  d1 = threshold - uns exponent */
 	ble.b		dnrm_no_lp		/*  d1 <= 0 */
@@ -115,36 +115,36 @@ dnrm_lp:
 	blt.b		case_2			/*  yes */
 	bra.w		case_3			/*  (d1 >= 64) */
 
-/*  */
-/*  No normalization necessary */
-/*  */
+/*
+ * No normalization necessary
+ */
 dnrm_no_lp:
 	move.l		GRS(%a6), %d0		/*  restore original g,r,s */
 	rts
 
-/*  */
-/*  case (0<d1<32) */
-/*  */
-/*  %d0 = denorm threshold */
-/*  %d1 = "n" = amt to shift */
-/*  */
-/* 	--------------------------------------------------------- */
-/* 	|     FTEMP_HI	  |	FTEMP_LO     |grs000.........000| */
-/* 	--------------------------------------------------------- */
-/* 	<-(32 - n)-><-(n)-><-(32 - n)-><-(n)-><-(32 - n)-><-(n)-> */
-/* 	\	   \		      \			 \ */
-/* 	 \	    \		       \		  \ */
-/* 	  \	     \			\		   \ */
-/* 	   \	      \			 \		    \ */
-/* 	    \	       \		  \		     \ */
-/* 	     \		\		   \		      \ */
-/* 	      \		 \		    \		       \ */
-/* 	       \	  \		     \			\ */
-/* 	<-(n)-><-(32 - n)-><------(32)-------><------(32)-------> */
-/* 	--------------------------------------------------------- */
-/* 	|0.....0| NEW_HI  |  NEW_FTEMP_LO     |grs		| */
-/* 	--------------------------------------------------------- */
-/*  */
+/*
+ * case (0<d1<32)
+ *
+ * %d0 = denorm threshold
+ * %d1 = "n" = amt to shift
+ *
+ *      ---------------------------------------------------------
+ *      |     FTEMP_HI    |     FTEMP_LO     |grs000.........000|
+ *      ---------------------------------------------------------
+ *      <-(32 - n)-><-(n)-><-(32 - n)-><-(n)-><-(32 - n)-><-(n)->
+ *      \          \                  \                  \
+ *       \          \                  \                  \
+ *        \          \                  \                  \
+ *         \          \                  \                  \
+ *          \          \                  \                  \
+ *           \          \                  \                  \
+ *            \          \                  \                  \
+ *             \          \                  \                  \
+ *      <-(n)-><-(32 - n)-><------(32)-------><------(32)------->
+ *      ---------------------------------------------------------
+ *      |0.....0| NEW_HI  |  NEW_FTEMP_LO     |grs              |
+ *      ---------------------------------------------------------
+ */
 case_1:
 	move.l		%d2, -(%sp)		/*  create temp storage */
 
@@ -174,29 +174,29 @@ case1_sticky_clear:
 	move.l		(%sp)+, %d2		/*  restore temp register */
 	rts
 
-/*  */
-/*  case (32<=d1<64) */
-/*  */
-/*  %d0 = denorm threshold */
-/*  %d1 = "n" = amt to shift */
-/*  */
-/* 	--------------------------------------------------------- */
-/* 	|     FTEMP_HI	  |	FTEMP_LO     |grs000.........000| */
-/* 	--------------------------------------------------------- */
-/* 	<-(32 - n)-><-(n)-><-(32 - n)-><-(n)-><-(32 - n)-><-(n)-> */
-/* 	\	   \		      \ */
-/* 	 \	    \		       \ */
-/* 	  \	     \			------------------- */
-/* 	   \	      --------------------		   \ */
-/* 	    -------------------		  \		    \ */
-/* 			       \	   \		     \ */
-/* 				\	    \		      \ */
-/* 				 \	     \		       \ */
-/* 	<-------(32)------><-(n)-><-(32 - n)-><------(32)-------> */
-/* 	--------------------------------------------------------- */
-/* 	|0...............0|0....0| NEW_LO     |grs		| */
-/* 	--------------------------------------------------------- */
-/*  */
+/*
+ * case (32<=d1<64)
+ *
+ * %d0 = denorm threshold
+ * %d1 = "n" = amt to shift
+ *
+ *      ---------------------------------------------------------
+ *      |     FTEMP_HI    |     FTEMP_LO     |grs000.........000|
+ *      ---------------------------------------------------------
+ *      <-(32 - n)-><-(n)-><-(32 - n)-><-(n)-><-(32 - n)-><-(n)->
+ *      \          \                  \
+ *       \          \                  \
+ *        \          \                  -------------------
+ *         \          --------------------                 \
+ *          -------------------           \                 \
+ *                             \           \                 \
+ *                              \           \                 \
+ *                               \           \                 \
+ *      <-------(32)------><-(n)-><-(32 - n)-><------(32)------->
+ *      ---------------------------------------------------------
+ *      |0...............0|0....0| NEW_LO     |grs              |
+ *      ---------------------------------------------------------
+ */
 case_2:
 	move.l		%d2, -(%sp)		/*  create temp storage */
 
@@ -234,12 +234,12 @@ case2_end:
 	move.l		(%sp)+,%d2		/*  restore temp register */
 	rts
 
-/*  */
-/*  case (d1>=64) */
-/*  */
-/*  %d0 = denorm threshold */
-/*  %d1 = amt to shift */
-/*  */
+/*
+ * case (d1>=64)
+ *
+ * %d0 = denorm threshold
+ * %d1 = amt to shift
+ */
 case_3:
 	move.w		%d0, FTEMP_EX.w(%a0)	/*  insert denorm threshold */
 
@@ -247,37 +247,37 @@ case_3:
 	blt.b		case3_64		/*  no; it's == 64 */
 	beq.b		case3_65		/*  no; it's == 65 */
 
-/*  */
-/*  case (d1>65) */
-/*  */
-/*  Shift value is > 65 and out of range. All bits are shifted off. */
-/*  Return a zero mantissa with the sticky bit set */
-/*  */
+/*
+ * case (d1>65)
+ *
+ * Shift value is > 65 and out of range. All bits are shifted off.
+ * Return a zero mantissa with the sticky bit set
+ */
 	clr.l		FTEMP_HI(%a0)		/*  clear hi(mantissa) */
 	clr.l		FTEMP_LO(%a0)		/*  clear lo(mantissa) */
 	move.l		&0x20000000, %d0	/*  set sticky bit */
 	rts
 
-/*  */
-/*  case (d1 == 64) */
-/*  */
-/* 	--------------------------------------------------------- */
-/* 	|     FTEMP_HI	  |	FTEMP_LO     |grs000.........000| */
-/* 	--------------------------------------------------------- */
-/* 	<-------(32)------> */
-/* 	\		   \ */
-/* 	 \		    \ */
-/* 	  \		     \ */
-/* 	   \		      ------------------------------ */
-/* 	    -------------------------------		    \ */
-/* 					   \		     \ */
-/* 					    \		      \ */
-/* 					     \		       \ */
-/* 					      <-------(32)------> */
-/* 	--------------------------------------------------------- */
-/* 	|0...............0|0................0|grs		| */
-/* 	--------------------------------------------------------- */
-/*  */
+/*
+ * case (d1 == 64)
+ *
+ *      ---------------------------------------------------------
+ *      |     FTEMP_HI    |     FTEMP_LO     |grs000.........000|
+ *      ---------------------------------------------------------
+ *      <-------(32)------>
+ *      \                  \
+ *       \                  \
+ *        \                  \
+ *         \                  ------------------------------
+ *          -------------------------------                 \
+ *                                         \                 \
+ *                                          \                 \
+ *                                           \                 \
+ *                                            <-------(32)------>
+ *      ---------------------------------------------------------
+ *      |0...............0|0................0|grs               |
+ *      ---------------------------------------------------------
+ */
 case3_64:
 	move.l		FTEMP_HI(%a0), %d0	/*  fetch hi(mantissa) */
 	move.l		%d0, %d1		/*  make a copy */
@@ -286,26 +286,26 @@ case3_64:
 
 	bra.b		case3_complete
 
-/*  */
-/*  case (d1 == 65) */
-/*  */
-/* 	--------------------------------------------------------- */
-/* 	|     FTEMP_HI	  |	FTEMP_LO     |grs000.........000| */
-/* 	--------------------------------------------------------- */
-/* 	<-------(32)------> */
-/* 	\		   \ */
-/* 	 \		    \ */
-/* 	  \		     \ */
-/* 	   \		      ------------------------------ */
-/* 	    --------------------------------		    \ */
-/* 					    \		     \ */
-/* 					     \		      \ */
-/* 					      \		       \ */
-/* 					       <-------(31)-----> */
-/* 	--------------------------------------------------------- */
-/* 	|0...............0|0................0|0rs		| */
-/* 	--------------------------------------------------------- */
-/*  */
+/*
+ * case (d1 == 65)
+ *
+ *      ---------------------------------------------------------
+ *      |     FTEMP_HI    |     FTEMP_LO     |grs000.........000|
+ *      ---------------------------------------------------------
+ *      <-------(32)------>
+ *      \                  \
+ *       \                  \
+ *        \                  \
+ *         \                  ------------------------------
+ *          --------------------------------                \
+ *                                          \                \
+ *                                           \                \
+ *                                            \                \
+ *                                             <-------(31)----->
+ *      ---------------------------------------------------------
+ *      |0...............0|0................0|0rs               |
+ *      ---------------------------------------------------------
+ */
 case3_65:
 	move.l		FTEMP_HI(%a0), %d0	/*  fetch hi(mantissa) */
 	andi.l		&0x80000000, %d0	/*  extract R bit */
@@ -321,19 +321,19 @@ case3_complete:
 	tst.b		GRS(%a6)		/*  were any bits shifted off? */
 	bne.b		case3_set_sticky	/*  yes; go set new sticky */
 
-/*  */
-/*  no bits were shifted off so don't set the sticky bit. */
-/*  the guard and */
-/*  the entire mantissa is zero. */
-/*  */
+/*
+ * no bits were shifted off so don't set the sticky bit.
+ * the guard and
+ * the entire mantissa is zero.
+ */
 	clr.l		FTEMP_HI(%a0)		/*  clear hi(mantissa) */
 	clr.l		FTEMP_LO(%a0)		/*  clear lo(mantissa) */
 	rts
 
-/*  */
-/*  some bits were shifted off so set the sticky bit. */
-/*  the entire mantissa is zero. */
-/*  */
+/*
+ * some bits were shifted off so set the sticky bit.
+ * the entire mantissa is zero.
+ */
 case3_set_sticky:
 	bset		&rnd_stky_bit,%d0	/*  set new sticky bit */
 	clr.l		FTEMP_HI(%a0)		/*  clear hi(mantissa) */

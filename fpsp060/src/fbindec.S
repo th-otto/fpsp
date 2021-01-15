@@ -128,41 +128,43 @@ RBDTBL:
 	.dc.b		3,2,2,3
 	.dc.b		2,3,3,2
 
-/* 	Implementation Notes: */
-/*  */
-/* 	The registers are used as follows: */
-/*  */
-/* 		d0: scratch; LEN input to binstr */
-/* 		d1: scratch */
-/* 		d2: upper 32-bits of mantissa for binstr */
-/* 		d3: scratch;lower 32-bits of mantissa for binstr */
-/* 		d4: LEN */
-/* 		d5: LAMBDA/ICTR */
-/* 		d6: ILOG */
-/* 		d7: k-factor */
-/* 		a0: ptr for original operand/final result */
-/* 		a1: scratch pointer */
-/* 		a2: pointer to FP_X; abs(original value) in ext */
-/* 		fp0: scratch */
-/* 		fp1: scratch */
-/* 		fp2: scratch */
-/* 		F_SCR1: */
-/* 		F_SCR2: */
-/* 		L_SCR1: */
-/* 		L_SCR2: */
-
+/*
+ * Implementation Notes:
+ *
+ *	The registers are used as follows:
+ *
+ *		d0: scratch; LEN input to binstr
+ *		d1: scratch
+ *		d2: upper 32-bits of mantissa for binstr
+ *		d3: scratch;lower 32-bits of mantissa for binstr
+ *		d4: LEN
+ *		d5: LAMBDA/ICTR
+ *		d6: ILOG
+ *		d7: k-factor
+ *		a0: ptr for original operand/final result
+ *		a1: scratch pointer
+ *		a2: pointer to FP_X; abs(original value) in ext
+ *		fp0: scratch
+ *		fp1: scratch
+ *		fp2: scratch
+ *		F_SCR1:
+ *		F_SCR2:
+ *		L_SCR1:
+ *		L_SCR2:
+ */
 	.globl		bindec
 bindec:
 	movem.l		%d2-%d7/%a2,-(%sp)	/*   {%d2-%d7/%a2} */
 	fmovem.x		%fp0-%fp2,-(%sp)	/*   {%fp0-%fp2} */
 
-/*  A1. Set RM and size ext. Set SIGMA = sign input; */
-/*      The k-factor is saved for use in d7.  Clear BINDEC_FLG for */
-/*      separating  normalized/denormalized input.  If the input */
-/*      is a denormalized number, set the BINDEC_FLG memory word */
-/*      to signal denorm.  If the input is unnormalized, normalize */
-/*      the input and test for denormalized result. */
-/*  */
+/*
+ * A1. Set RM and size ext. Set SIGMA = sign input;
+ *     The k-factor is saved for use in d7.  Clear BINDEC_FLG for
+ *     separating  normalized/denormalized input.  If the input
+ *     is a denormalized number, set the BINDEC_FLG memory word
+ *     to signal denorm.  If the input is unnormalized, normalize
+ *     the input and test for denormalized result.
+ */
 	fmove.l		&rm_mode*0x10,%fpcr	/*  set RM and ext */
 	move.l		(%a0),L_SCR2(%a6)	/*  save exponent for sign check */
 	move.l		%d0,%d7		/*  move k-factor to d7 */
@@ -171,9 +173,9 @@ bindec:
 	cmpi.b		&DENORM,STAG(%a6) /*  is input a DENORM? */
 	bne.w		A2_str		/*  no; input is a NORM */
 
-/*  */
-/*  Normalize the denorm */
-/*  */
+/*
+ * Normalize the denorm
+ */
 un_de_norm:
 	move.w		(%a0),%d0
 	andi.w		&0x7fff,%d0	/*  strip sign of normalized exp */
@@ -185,9 +187,9 @@ norm_loop:
 	roxl.l		&1,%d1
 	tst.l		%d1
 	bge.b		norm_loop
-/*  */
-/*  Test if the normalized input is denormalized */
-/*  */
+/*
+ * Test if the normalized input is denormalized
+ */
 	tst.w		%d0
 	bgt.b		pos_exp		/*  if greater than zero, it is a norm */
 	st		BINDEC_FLG(%a6)	/*  set flag for denorm */
@@ -197,39 +199,42 @@ pos_exp:
 	move.l		%d1,4(%a0)
 	move.l		%d2,8(%a0)
 
-/*  A2. Set X = abs(input). */
-/*  */
+/*
+ * A2. Set X = abs(input).
+ */
 A2_str:
 	move.l		(%a0),FP_SCR1(%a6)	/*  move input to work space */
 	move.l		4(%a0),FP_SCR1+4(%a6)	/*  move input to work space */
 	move.l		8(%a0),FP_SCR1+8(%a6)	/*  move input to work space */
 	and.l		&0x7fffffff,FP_SCR1(%a6)	/*  create abs(X) */
 
-/*  A3. Compute ILOG. */
-/*      ILOG is the log base 10 of the input value.  It is approx- */
-/*      imated by adding e + 0.f when the original value is viewed */
-/*      as 2^^e * 1.f in extended precision.  This value is stored */
-/*      in d6. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: k-factor/exponent */
-/* 	d2: x/x */
-/* 	d3: x/x */
-/* 	d4: x/x */
-/* 	d5: x/x */
-/* 	d6: x/ILOG */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr for original operand/final result */
-/* 	a1: x/x */
-/* 	a2: x/x */
-/* 	fp0: x/float(ILOG) */
-/* 	fp1: x/x */
-/* 	fp2: x/x */
-/* 	F_SCR1:x/x */
-/* 	F_SCR2:Abs(X)/Abs(X) with $3fff exponent */
-/* 	L_SCR1:x/x */
-/* 	L_SCR2:first word of X packed/Unchanged */
+/*
+ * A3. Compute ILOG.
+ *     ILOG is the log base 10 of the input value.  It is approx-
+ *     imated by adding e + 0.f when the original value is viewed
+ *     as 2^^e * 1.f in extended precision.  This value is stored
+ *     in d6.
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: k-factor/exponent
+ *	d2: x/x
+ *	d3: x/x
+ *	d4: x/x
+ *	d5: x/x
+ *	d6: x/ILOG
+ *	d7: k-factor/Unchanged
+ *	a0: ptr for original operand/final result
+ *	a1: x/x
+ *	a2: x/x
+ *	fp0: x/float(ILOG)
+ *	fp1: x/x
+ *	fp2: x/x
+ *	F_SCR1:x/x
+ *	F_SCR2:Abs(X)/Abs(X) with $3fff exponent
+ *	L_SCR1:x/x
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 
 	tst.b		BINDEC_FLG(%a6)	/*  check for denorm */
 	beq.b		A3_cont		/*  if clr, continue with norm */
@@ -251,48 +256,51 @@ pos_res:
 	fmove.l		%fp0,%d6	/*  put ILOG in d6 as a lword */
 
 
-/*  A4. Clr INEX bit. */
-/*      The operation in A3 above may have set INEX2. */
-
+/*
+ * A4. Clr INEX bit.
+ *     The operation in A3 above may have set INEX2.
+ */
 A4_str:
 	fmove.l		&0,%fpsr	/*  zero all of fpsr - nothing needed */
 
 
-/*  A5. Set ICTR = 0; */
-/*      ICTR is a flag used in A13.  It must be set before the */
-/*      loop entry A6. The lower word of d5 is used for ICTR. */
-
+/*
+ * A5. Set ICTR = 0;
+ *     ICTR is a flag used in A13.  It must be set before the
+ *     loop entry A6. The lower word of d5 is used for ICTR.
+ */
 	clr.w		%d5		/*  clear ICTR */
 
-/*  A6. Calculate LEN. */
-/*      LEN is the number of digits to be displayed.  The k-factor */
-/*      can dictate either the total number of digits, if it is */
-/*      a positive number, or the number of digits after the */
-/*      original decimal point which are to be included as */
-/*      significant.  See the 68882 manual for examples. */
-/*      If LEN is computed to be greater than 17, set OPERR in */
-/*      USER_FPSR.  LEN is stored in d4. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: exponent/Unchanged */
-/* 	d2: x/x/scratch */
-/* 	d3: x/x */
-/* 	d4: exc picture/LEN */
-/* 	d5: ICTR/Unchanged */
-/* 	d6: ILOG/Unchanged */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr for original operand/final result */
-/* 	a1: x/x */
-/* 	a2: x/x */
-/* 	fp0: float(ILOG)/Unchanged */
-/* 	fp1: x/x */
-/* 	fp2: x/x */
-/* 	F_SCR1:x/x */
-/* 	F_SCR2:Abs(X) with $3fff exponent/Unchanged */
-/* 	L_SCR1:x/x */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A6. Calculate LEN.
+ *     LEN is the number of digits to be displayed.  The k-factor
+ *     can dictate either the total number of digits, if it is
+ *     a positive number, or the number of digits after the
+ *     original decimal point which are to be included as
+ *     significant.  See the 68882 manual for examples.
+ *     If LEN is computed to be greater than 17, set OPERR in
+ *     USER_FPSR.  LEN is stored in d4.
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: exponent/Unchanged
+ *	d2: x/x/scratch
+ *	d3: x/x
+ *	d4: exc picture/LEN
+ *	d5: ICTR/Unchanged
+ *	d6: ILOG/Unchanged
+ *	d7: k-factor/Unchanged
+ *	a0: ptr for original operand/final result
+ *	a1: x/x
+ *	a2: x/x
+ *	fp0: float(ILOG)/Unchanged
+ *	fp1: x/x
+ *	fp2: x/x
+ *	F_SCR1:x/x
+ *	F_SCR2:Abs(X) with $3fff exponent/Unchanged
+ *	L_SCR1:x/x
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A6_str:
 	tst.l		%d7		/*  branch on sign of k */
 	ble.b		k_neg		/*  if k <= 0, LEN = ILOG + 1 - k */
@@ -316,55 +324,56 @@ LEN_ng:
 	moveq.l		&1,%d4		/*  min LEN is 1 */
 
 
-/*  A7. Calculate SCALE. */
-/*      SCALE is equal to 10^ISCALE, where ISCALE is the number */
-/*      of decimal places needed to insure LEN integer digits */
-/*      in the output before conversion to bcd. LAMBDA is the sign */
-/*      of ISCALE, used in A9.  Fp1 contains 10^^(abs(ISCALE)) using */
-/*      the rounding mode as given in the following table (see */
-/*      Coonen, p. 7.23 as ref.; however, the SCALE variable is */
-/*      of opposite sign in bindec.sa from Coonen). */
-/*  */
-/* 	Initial					USE */
-/* 	FPCR[6:5]	LAMBDA	SIGN(X)		FPCR[6:5] */
-/* 	---------------------------------------------- */
-/* 	 RN	00	   0	   0		00/0	RN */
-/* 	 RN	00	   0	   1		00/0	RN */
-/* 	 RN	00	   1	   0		00/0	RN */
-/* 	 RN	00	   1	   1		00/0	RN */
-/* 	 RZ	01	   0	   0		11/3	RP */
-/* 	 RZ	01	   0	   1		11/3	RP */
-/* 	 RZ	01	   1	   0		10/2	RM */
-/* 	 RZ	01	   1	   1		10/2	RM */
-/* 	 RM	10	   0	   0		11/3	RP */
-/* 	 RM	10	   0	   1		10/2	RM */
-/* 	 RM	10	   1	   0		10/2	RM */
-/* 	 RM	10	   1	   1		11/3	RP */
-/* 	 RP	11	   0	   0		10/2	RM */
-/* 	 RP	11	   0	   1		11/3	RP */
-/* 	 RP	11	   1	   0		11/3	RP */
-/* 	 RP	11	   1	   1		10/2	RM */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: exponent/scratch - final is 0 */
-/* 	d2: x/0 or 24 for A9 */
-/* 	d3: x/scratch - offset ptr into PTENRM array */
-/* 	d4: LEN/Unchanged */
-/* 	d5: 0/ICTR:LAMBDA */
-/* 	d6: ILOG/ILOG or k if ((k<=0)&(ILOG<k)) */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr for original operand/final result */
-/* 	a1: x/ptr to PTENRM array */
-/* 	a2: x/x */
-/* 	fp0: float(ILOG)/Unchanged */
-/* 	fp1: x/10^ISCALE */
-/* 	fp2: x/x */
-/* 	F_SCR1:x/x */
-/* 	F_SCR2:Abs(X) with $3fff exponent/Unchanged */
-/* 	L_SCR1:x/x */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A7. Calculate SCALE.
+ *     SCALE is equal to 10^ISCALE, where ISCALE is the number
+ *     of decimal places needed to insure LEN integer digits
+ *     in the output before conversion to bcd. LAMBDA is the sign
+ *     of ISCALE, used in A9.  Fp1 contains 10^^(abs(ISCALE)) using
+ *     the rounding mode as given in the following table (see
+ *     Coonen, p. 7.23 as ref.; however, the SCALE variable is
+ *     of opposite sign in bindec.sa from Coonen).
+ *
+ *	Initial					USE
+ *	FPCR[6:5]	LAMBDA	SIGN(X)		FPCR[6:5]
+ *	----------------------------------------------
+ *	 RN	00	   0	   0		00/0	RN
+ *	 RN	00	   0	   1		00/0	RN
+ *	 RN	00	   1	   0		00/0	RN
+ *	 RN	00	   1	   1		00/0	RN
+ *	 RZ	01	   0	   0		11/3	RP
+ *	 RZ	01	   0	   1		11/3	RP
+ *	 RZ	01	   1	   0		10/2	RM
+ *	 RZ	01	   1	   1		10/2	RM
+ *	 RM	10	   0	   0		11/3	RP
+ *	 RM	10	   0	   1		10/2	RM
+ *	 RM	10	   1	   0		10/2	RM
+ *	 RM	10	   1	   1		11/3	RP
+ *	 RP	11	   0	   0		10/2	RM
+ *	 RP	11	   0	   1		11/3	RP
+ *	 RP	11	   1	   0		11/3	RP
+ *	 RP	11	   1	   1		10/2	RM
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: exponent/scratch - final is 0
+ *	d2: x/0 or 24 for A9
+ *	d3: x/scratch - offset ptr into PTENRM array
+ *	d4: LEN/Unchanged
+ *	d5: 0/ICTR:LAMBDA
+ *	d6: ILOG/ILOG or k if ((k<=0)&(ILOG<k))
+ *	d7: k-factor/Unchanged
+ *	a0: ptr for original operand/final result
+ *	a1: x/ptr to PTENRM array
+ *	a2: x/x
+ *	fp0: float(ILOG)/Unchanged
+ *	fp1: x/10^ISCALE
+ *	fp2: x/x
+ *	F_SCR1:x/x
+ *	F_SCR2:Abs(X) with $3fff exponent/Unchanged
+ *	L_SCR1:x/x
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A7_str:
 	tst.l		%d7		/*  test sign of k */
 	bgt.b		k_pos		/*  if pos and > 0, skip this */
@@ -424,50 +433,52 @@ e_next2:
 	tst.l		%d0		/*  test if ISCALE is zero */
 	bne.b		e_loop2		/*  if not, loop */
 
-/*  A8. Clr INEX; Force RZ. */
-/*      The operation in A3 above may have set INEX2. */
-/*      RZ mode is forced for the scaling operation to insure */
-/*      only one rounding error.  The grs bits are collected in */
-/*      the INEX flag for use in A10. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-
+/*
+ * A8. Clr INEX; Force RZ.
+ *     The operation in A3 above may have set INEX2.
+ *     RZ mode is forced for the scaling operation to insure
+ *     only one rounding error.  The grs bits are collected in
+ *     the INEX flag for use in A10.
+ *
+ * Register usage:
+ *	Input/Output
+ */
 	fmove.l		&0,%fpsr	/*  clr INEX */
 	fmove.l		&rz_mode*0x10,%fpcr	/*  set RZ rounding mode */
 
-/*  A9. Scale X -> Y. */
-/*      The mantissa is scaled to the desired number of significant */
-/*      digits.  The excess digits are collected in INEX2. If mul, */
-/*      Check d2 for excess 10 exponential value.  If not zero, */
-/*      the iscale value would have caused the pwrten calculation */
-/*      to overflow.  Only a negative iscale can cause this, so */
-/*      multiply by 10^(d2), which is now only allowed to be 24, */
-/*      with a multiply by 10^8 and 10^16, which is exact since */
-/*      10^24 is exact.  If the input was denormalized, we must */
-/*      create a busy stack frame with the mul command and the */
-/*      two operands, and allow the fpu to complete the multiply. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: FPCR with RZ mode/Unchanged */
-/* 	d2: 0 or 24/unchanged */
-/* 	d3: x/x */
-/* 	d4: LEN/Unchanged */
-/* 	d5: ICTR:LAMBDA */
-/* 	d6: ILOG/Unchanged */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr for original operand/final result */
-/* 	a1: ptr to PTENRM array/Unchanged */
-/* 	a2: x/x */
-/* 	fp0: float(ILOG)/X adjusted for SCALE (Y) */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: x/x */
-/* 	F_SCR1:x/x */
-/* 	F_SCR2:Abs(X) with $3fff exponent/Unchanged */
-/* 	L_SCR1:x/x */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A9. Scale X -> Y.
+ *     The mantissa is scaled to the desired number of significant
+ *     digits.  The excess digits are collected in INEX2. If mul,
+ *     Check d2 for excess 10 exponential value.  If not zero,
+ *     the iscale value would have caused the pwrten calculation
+ *     to overflow.  Only a negative iscale can cause this, so
+ *     multiply by 10^(d2), which is now only allowed to be 24,
+ *     with a multiply by 10^8 and 10^16, which is exact since
+ *     10^24 is exact.  If the input was denormalized, we must
+ *     create a busy stack frame with the mul command and the
+ *     two operands, and allow the fpu to complete the multiply.
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: FPCR with RZ mode/Unchanged
+ *	d2: 0 or 24/unchanged
+ *	d3: x/x
+ *	d4: LEN/Unchanged
+ *	d5: ICTR:LAMBDA
+ *	d6: ILOG/Unchanged
+ *	d7: k-factor/Unchanged
+ *	a0: ptr for original operand/final result
+ *	a1: ptr to PTENRM array/Unchanged
+ *	a2: x/x
+ *	fp0: float(ILOG)/X adjusted for SCALE (Y)
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: x/x
+ *	F_SCR1:x/x
+ *	F_SCR2:Abs(X) with $3fff exponent/Unchanged
+ *	L_SCR1:x/x
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A9_str:
 	fmove.x		(%a0),%fp0	/*  load X from memory */
 	fabs.x		%fp0		/*  use abs(X) */
@@ -532,26 +543,27 @@ A9_norm:
 A9_con:
 	fmul.x		%fp1,%fp0	/*  calculate X * SCALE -> Y to fp0 */
 
-/*  A10. Or in INEX. */
-/*       If INEX is set, round error occurred.  This is compensated */
-/*       for by 'or-ing' in the INEX2 flag to the lsb of Y. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: FPCR with RZ mode/FPSR with INEX2 isolated */
-/* 	d2: x/x */
-/* 	d3: x/x */
-/* 	d4: LEN/Unchanged */
-/* 	d5: ICTR:LAMBDA */
-/* 	d6: ILOG/Unchanged */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr for original operand/final result */
-/* 	a1: ptr to PTENxx array/Unchanged */
-/* 	a2: x/ptr to FP_SCR1(a6) */
-/* 	fp0: Y/Y with lsb adjusted */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: x/x */
-
+/*
+ * A10. Or in INEX.
+ *      If INEX is set, round error occurred.  This is compensated
+ *      for by 'or-ing' in the INEX2 flag to the lsb of Y.
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: FPCR with RZ mode/FPSR with INEX2 isolated
+ *	d2: x/x
+ *	d3: x/x
+ *	d4: LEN/Unchanged
+ *	d5: ICTR:LAMBDA
+ *	d6: ILOG/Unchanged
+ *	d7: k-factor/Unchanged
+ *	a0: ptr for original operand/final result
+ *	a1: ptr to PTENxx array/Unchanged
+ *	a2: x/ptr to FP_SCR1(a6)
+ *	fp0: Y/Y with lsb adjusted
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: x/x
+ */
 A10_st:
 	fmove.l		%fpsr,%d0	/*  get FPSR */
 	fmove.x		%fp0,FP_SCR1(%a6)	/*  move Y to memory */
@@ -562,42 +574,44 @@ A10_st:
 	fmove.x		FP_SCR1(%a6),%fp0	/*  write adjusted Y back to fpu */
 
 
-/*  A11. Restore original FPCR; set size ext. */
-/*       Perform FINT operation in the user's rounding mode.  Keep */
-/*       the size to extended.  The sintdo entry point in the sint */
-/*       routine expects the FPCR value to be in USER_FPCR for */
-/*       mode and precision.  The original FPCR is saved in L_SCR1. */
-
+/*
+ * A11. Restore original FPCR; set size ext.
+ *      Perform FINT operation in the user's rounding mode.  Keep
+ *      the size to extended.  The sintdo entry point in the sint
+ *      routine expects the FPCR value to be in USER_FPCR for
+ *      mode and precision.  The original FPCR is saved in L_SCR1.
+ */
 A11_st:
 	move.l		USER_FPCR(%a6),L_SCR1(%a6)	/*  save it for later */
 	and.l		&0x00000030,USER_FPCR(%a6)	/*  set size to ext, */
 /* 					;block exceptions */
 
 
-/*  A12. Calculate YINT = FINT(Y) according to user's rounding mode. */
-/*       The FPSP routine sintd0 is used.  The output is in fp0. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: FPSR with AINEX cleared/FPCR with size set to ext */
-/* 	d2: x/x/scratch */
-/* 	d3: x/x */
-/* 	d4: LEN/Unchanged */
-/* 	d5: ICTR:LAMBDA/Unchanged */
-/* 	d6: ILOG/Unchanged */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr for original operand/src ptr for sintdo */
-/* 	a1: ptr to PTENxx array/Unchanged */
-/* 	a2: ptr to FP_SCR1(a6)/Unchanged */
-/* 	a6: temp pointer to FP_SCR1(a6) - orig value saved and restored */
-/* 	fp0: Y/YINT */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: x/x */
-/* 	F_SCR1:x/x */
-/* 	F_SCR2:Y adjusted for inex/Y with original exponent */
-/* 	L_SCR1:x/original USER_FPCR */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A12. Calculate YINT = FINT(Y) according to user's rounding mode.
+ *      The FPSP routine sintd0 is used.  The output is in fp0.
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: FPSR with AINEX cleared/FPCR with size set to ext
+ *	d2: x/x/scratch
+ *	d3: x/x
+ *	d4: LEN/Unchanged
+ *	d5: ICTR:LAMBDA/Unchanged
+ *	d6: ILOG/Unchanged
+ *	d7: k-factor/Unchanged
+ *	a0: ptr for original operand/src ptr for sintdo
+ *	a1: ptr to PTENxx array/Unchanged
+ *	a2: ptr to FP_SCR1(a6)/Unchanged
+ *	a6: temp pointer to FP_SCR1(a6) - orig value saved and restored
+ *	fp0: Y/YINT
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: x/x
+ *	F_SCR1:x/x
+ *	F_SCR2:Y adjusted for inex/Y with original exponent
+ *	L_SCR1:x/original USER_FPCR
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A12_st:
 	movem.l	%d0-%d1/%a0-%a1,-(%sp)	/*  save regs used by sintd0	{%d0-%d1/%a0-%a1} */
 	move.l	L_SCR1(%a6),-(%sp)
@@ -634,44 +648,45 @@ do_fint12:
 	move.l	L_SCR2(%a6),FP_SCR1(%a6)	/*  restore original exponent */
 	move.l	L_SCR1(%a6),USER_FPCR(%a6)	/*  restore user's FPCR */
 
-/*  A13. Check for LEN digits. */
-/*       If the int operation results in more than LEN digits, */
-/*       or less than LEN -1 digits, adjust ILOG and repeat from */
-/*       A6.  This test occurs only on the first pass.  If the */
-/*       result is exactly 10^LEN, decrement ILOG and divide */
-/*       the mantissa by 10.  The calculation of 10^LEN cannot */
-/*       be inexact, since all powers of ten up to 10^27 are exact */
-/*       in extended precision, so the use of a previous power-of-ten */
-/*       table will introduce no error. */
-/*  */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: FPCR with size set to ext/scratch final = 0 */
-/* 	d2: x/x */
-/* 	d3: x/scratch final = x */
-/* 	d4: LEN/LEN adjusted */
-/* 	d5: ICTR:LAMBDA/LAMBDA:ICTR */
-/* 	d6: ILOG/ILOG adjusted */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: pointer into memory for packed bcd string formation */
-/* 	a1: ptr to PTENxx array/Unchanged */
-/* 	a2: ptr to FP_SCR1(a6)/Unchanged */
-/* 	fp0: int portion of Y/abs(YINT) adjusted */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: x/10^LEN */
-/* 	F_SCR1:x/x */
-/* 	F_SCR2:Y with original exponent/Unchanged */
-/* 	L_SCR1:original USER_FPCR/Unchanged */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A13. Check for LEN digits.
+ *      If the int operation results in more than LEN digits,
+ *      or less than LEN -1 digits, adjust ILOG and repeat from
+ *      A6.  This test occurs only on the first pass.  If the
+ *      result is exactly 10^LEN, decrement ILOG and divide
+ *      the mantissa by 10.  The calculation of 10^LEN cannot
+ *      be inexact, since all powers of ten up to 10^27 are exact
+ *      in extended precision, so the use of a previous power-of-ten
+ *      table will introduce no error.
+ *
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: FPCR with size set to ext/scratch final = 0
+ *	d2: x/x
+ *	d3: x/scratch final = x
+ *	d4: LEN/LEN adjusted
+ *	d5: ICTR:LAMBDA/LAMBDA:ICTR
+ *	d6: ILOG/ILOG adjusted
+ *	d7: k-factor/Unchanged
+ *	a0: pointer into memory for packed bcd string formation
+ *	a1: ptr to PTENxx array/Unchanged
+ *	a2: ptr to FP_SCR1(a6)/Unchanged
+ *	fp0: int portion of Y/abs(YINT) adjusted
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: x/10^LEN
+ *	F_SCR1:x/x
+ *	F_SCR2:Y with original exponent/Unchanged
+ *	L_SCR1:original USER_FPCR/Unchanged
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A13_st:
 	swap		%d5		/*  put ICTR in lower word of d5 */
 	tst.w		%d5		/*  check if ICTR = 0 */
 	bne.l		not_zr		/*  if non-zero, go to second test */
-/*  */
-/*  Compute 10^(LEN-1) */
-/*  */
+/*
+ * Compute 10^(LEN-1)
+ */
 	fmove.s		FONE(%pc),%fp2	/*  init fp2 to 1.0 */
 	move.l		%d4,%d0		/*  put LEN in d0 */
 	subq.l		&1,%d0		/*  d0 = LEN -1 */
@@ -684,17 +699,17 @@ l_next:
 	addi.l		&12,%d3		/*  inc d3 to next pwrten table entry */
 	tst.l		%d0		/*  test if LEN is zero */
 	bne.b		l_loop		/*  if not, loop */
-/*  */
-/*  10^LEN-1 is computed for this test and A14.  If the input was */
-/*  denormalized, check only the case in which YINT > 10^LEN. */
-/*  */
+/*
+ * 10^LEN-1 is computed for this test and A14.  If the input was
+ * denormalized, check only the case in which YINT > 10^LEN.
+ */
 	tst.b		BINDEC_FLG(%a6)	/*  check if input was norm */
 	beq.b		A13_con		/*  if norm, continue with checking */
 	fabs.x		%fp0		/*  take abs of YINT */
 	bra.l		test_2
-/*  */
-/*  Compare abs(YINT) to 10^(LEN-1) and 10^LEN */
-/*  */
+/*
+ * Compare abs(YINT) to 10^(LEN-1) and 10^LEN
+ */
 A13_con:
 	fabs.x		%fp0		/*  take abs of YINT */
 	fcmp.x		%fp2,%fp0	/*  compare abs(YINT) with 10^(LEN-1) */
@@ -717,12 +732,12 @@ fix_ex:
 	move.w		&1,%d5		/*  set ICTR */
 	fmove.l		&rm_mode*0x10,%fpcr	/*  set rmode to RM */
 	bra.w		A6_str		/*  return to A6 and recompute YINT */
-/*  */
-/*  Since ICTR <> 0, we have already been through one adjustment, */
-/*  and shouldn't have another; this is to check if abs(YINT) = 10^LEN */
-/*  10^LEN is again computed using whatever table is in a1 since the */
-/*  value calculated cannot be inexact. */
-/*  */
+/*
+ * Since ICTR <> 0, we have already been through one adjustment,
+ * and shouldn't have another; this is to check if abs(YINT) = 10^LEN
+ * 10^LEN is again computed using whatever table is in a1 since the
+ * value calculated cannot be inexact.
+ */
 not_zr:
 	fmove.s		FONE(%pc),%fp2	/*  init fp2 to 1.0 */
 	move.l		%d4,%d0		/*  put LEN in d0 */
@@ -743,37 +758,38 @@ z_next:
 	addq.l		&1,%d4		/*  and inc LEN */
 	fmul.s		FTEN(%pc),%fp2	/*  if LEN++, the get 10^^LEN */
 
-/*  A14. Convert the mantissa to bcd. */
-/*       The binstr routine is used to convert the LEN digit */
-/*       mantissa to bcd in memory.  The input to binstr is */
-/*       to be a fraction; i.e. (mantissa)/10^LEN and adjusted */
-/*       such that the decimal point is to the left of bit 63. */
-/*       The bcd digits are stored in the correct position in */
-/*       the final string area in memory. */
-/*  */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: x/LEN call to binstr - final is 0 */
-/* 	d1: x/0 */
-/* 	d2: x/ms 32-bits of mant of abs(YINT) */
-/* 	d3: x/ls 32-bits of mant of abs(YINT) */
-/* 	d4: LEN/Unchanged */
-/* 	d5: ICTR:LAMBDA/LAMBDA:ICTR */
-/* 	d6: ILOG */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: pointer into memory for packed bcd string formation */
-/* 	    /ptr to first mantissa byte in result string */
-/* 	a1: ptr to PTENxx array/Unchanged */
-/* 	a2: ptr to FP_SCR1(a6)/Unchanged */
-/* 	fp0: int portion of Y/abs(YINT) adjusted */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: 10^LEN/Unchanged */
-/* 	F_SCR1:x/Work area for final result */
-/* 	F_SCR2:Y with original exponent/Unchanged */
-/* 	L_SCR1:original USER_FPCR/Unchanged */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A14. Convert the mantissa to bcd.
+ *      The binstr routine is used to convert the LEN digit
+ *      mantissa to bcd in memory.  The input to binstr is
+ *      to be a fraction; i.e. (mantissa)/10^LEN and adjusted
+ *      such that the decimal point is to the left of bit 63.
+ *      The bcd digits are stored in the correct position in
+ *      the final string area in memory.
+ *
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: x/LEN call to binstr - final is 0
+ *	d1: x/0
+ *	d2: x/ms 32-bits of mant of abs(YINT)
+ *	d3: x/ls 32-bits of mant of abs(YINT)
+ *	d4: LEN/Unchanged
+ *	d5: ICTR:LAMBDA/LAMBDA:ICTR
+ *	d6: ILOG
+ *	d7: k-factor/Unchanged
+ *	a0: pointer into memory for packed bcd string formation
+ *	    /ptr to first mantissa byte in result string
+ *	a1: ptr to PTENxx array/Unchanged
+ *	a2: ptr to FP_SCR1(a6)/Unchanged
+ *	fp0: int portion of Y/abs(YINT) adjusted
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: 10^LEN/Unchanged
+ *	F_SCR1:x/Work area for final result
+ *	F_SCR2:Y with original exponent/Unchanged
+ *	L_SCR1:original USER_FPCR/Unchanged
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A14_st:
 	fmove.l		&rz_mode*0x10,%fpcr	/*  force rz for conversion */
 	fdiv.x		%fp2,%fp0	/*  divide abs(YINT) by 10^LEN */
@@ -810,42 +826,43 @@ zer_m:
 	bsr.l		binstr		/*  call binstr to convert mant */
 
 
-/*  A15. Convert the exponent to bcd. */
-/*       As in A14 above, the exp is converted to bcd and the */
-/*       digits are stored in the final string. */
-/*  */
-/*       Digits are stored in L_SCR1(a6) on return from BINDEC as: */
-/*  */
-/* 	 32               16 15                0 */
-/* 	----------------------------------------- */
-/* 	|  0 | e3 | e2 | e1 | e4 |  X |  X |  X | */
-/* 	----------------------------------------- */
-/*  */
-/*  And are moved into their proper places in FP_SCR0.  If digit e4 */
-/*  is non-zero, OPERR is signaled.  In all cases, all 4 digits are */
-/*  written as specified in the 881/882 manual for packed decimal. */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: x/LEN call to binstr - final is 0 */
-/* 	d1: x/scratch (0);shift count for final exponent packing */
-/* 	d2: x/ms 32-bits of exp fraction/scratch */
-/* 	d3: x/ls 32-bits of exp fraction */
-/* 	d4: LEN/Unchanged */
-/* 	d5: ICTR:LAMBDA/LAMBDA:ICTR */
-/* 	d6: ILOG */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr to result string/ptr to L_SCR1(a6) */
-/* 	a1: ptr to PTENxx array/Unchanged */
-/* 	a2: ptr to FP_SCR1(a6)/Unchanged */
-/* 	fp0: abs(YINT) adjusted/float(ILOG) */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: 10^LEN/Unchanged */
-/* 	F_SCR1:Work area for final result/BCD result */
-/* 	F_SCR2:Y with original exponent/ILOG/10^4 */
-/* 	L_SCR1:original USER_FPCR/Exponent digits on return from binstr */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A15. Convert the exponent to bcd.
+ *      As in A14 above, the exp is converted to bcd and the
+ *      digits are stored in the final string.
+ *
+ *      Digits are stored in L_SCR1(a6) on return from BINDEC as:
+ *
+ *	 32               16 15                0
+ *	-----------------------------------------
+ *	|  0 | e3 | e2 | e1 | e4 |  X |  X |  X |
+ *	-----------------------------------------
+ *
+ * And are moved into their proper places in FP_SCR0.  If digit e4
+ * is non-zero, OPERR is signaled.  In all cases, all 4 digits are
+ * written as specified in the 881/882 manual for packed decimal.
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: x/LEN call to binstr - final is 0
+ *	d1: x/scratch (0);shift count for final exponent packing
+ *	d2: x/ms 32-bits of exp fraction/scratch
+ *	d3: x/ls 32-bits of exp fraction
+ *	d4: LEN/Unchanged
+ *	d5: ICTR:LAMBDA/LAMBDA:ICTR
+ *	d6: ILOG
+ *	d7: k-factor/Unchanged
+ *	a0: ptr to result string/ptr to L_SCR1(a6)
+ *	a1: ptr to PTENxx array/Unchanged
+ *	a2: ptr to FP_SCR1(a6)/Unchanged
+ *	fp0: abs(YINT) adjusted/float(ILOG)
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: 10^LEN/Unchanged
+ *	F_SCR1:Work area for final result/BCD result
+ *	F_SCR2:Y with original exponent/ILOG/10^4
+ *	L_SCR1:original USER_FPCR/Exponent digits on return from binstr
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A15_st:
 	tst.b		BINDEC_FLG(%a6)	/*  check for denorm */
 	beq.b		not_denorm
@@ -903,29 +920,30 @@ x_loop_fin:
 	ori.l		&opaop_mask,USER_FPSR(%a6)	/*  set OPERR & AIOP in USER_FPSR */
 
 
-/*  A16. Write sign bits to final string. */
-/* 	   Sigma is bit 31 of initial value; RHO is bit 31 of d6 (ILOG). */
-/*  */
-/*  Register usage: */
-/* 	Input/Output */
-/* 	d0: x/scratch - final is x */
-/* 	d2: x/x */
-/* 	d3: x/x */
-/* 	d4: LEN/Unchanged */
-/* 	d5: ICTR:LAMBDA/LAMBDA:ICTR */
-/* 	d6: ILOG/ILOG adjusted */
-/* 	d7: k-factor/Unchanged */
-/* 	a0: ptr to L_SCR1(a6)/Unchanged */
-/* 	a1: ptr to PTENxx array/Unchanged */
-/* 	a2: ptr to FP_SCR1(a6)/Unchanged */
-/* 	fp0: float(ILOG)/Unchanged */
-/* 	fp1: 10^ISCALE/Unchanged */
-/* 	fp2: 10^LEN/Unchanged */
-/* 	F_SCR1:BCD result with correct signs */
-/* 	F_SCR2:ILOG/10^4 */
-/* 	L_SCR1:Exponent digits on return from binstr */
-/* 	L_SCR2:first word of X packed/Unchanged */
-
+/*
+ * A16. Write sign bits to final string.
+ *	   Sigma is bit 31 of initial value; RHO is bit 31 of d6 (ILOG).
+ *
+ * Register usage:
+ *	Input/Output
+ *	d0: x/scratch - final is x
+ *	d2: x/x
+ *	d3: x/x
+ *	d4: LEN/Unchanged
+ *	d5: ICTR:LAMBDA/LAMBDA:ICTR
+ *	d6: ILOG/ILOG adjusted
+ *	d7: k-factor/Unchanged
+ *	a0: ptr to L_SCR1(a6)/Unchanged
+ *	a1: ptr to PTENxx array/Unchanged
+ *	a2: ptr to FP_SCR1(a6)/Unchanged
+ *	fp0: float(ILOG)/Unchanged
+ *	fp1: 10^ISCALE/Unchanged
+ *	fp2: 10^LEN/Unchanged
+ *	F_SCR1:BCD result with correct signs
+ *	F_SCR2:ILOG/10^4
+ *	L_SCR1:Exponent digits on return from binstr
+ *	L_SCR2:first word of X packed/Unchanged
+ */
 A16_st:
 	clr.l		%d0		/*  clr d0 for collection of signs */
 	and.b		&0x0f,FP_SCR0(%a6)	/*  clear first nibble of FP_SCR0 */

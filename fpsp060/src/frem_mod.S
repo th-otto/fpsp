@@ -100,7 +100,6 @@ Mod_Rem:
 	move.w		%d3,SignY(%a6)
 	andi.l		&0x00007FFF,%d3		/*  Y := |Y| */
 
-/*  */
 	move.l		SRC_HI(%a0),%d4
 	move.l		SRC_LO(%a0),%d5		/*  (D3,D4,D5) is |Y| */
 
@@ -186,7 +185,7 @@ X_Normal:
 /*                                        ...with bias $7FFD */
 
 Init:
-/*  */
+
 	move.l		%d3,L_SCR1(%a6)		/*  save biased exp(Y) */
 	move.l		%d0,-(%sp)		/*  save biased exp(X) */
 	sub.l		%d3,%d0			/*  L := expo(X)-expo(Y) */
@@ -200,7 +199,6 @@ Init:
 	bge.b		Mod_Loop_pre
 
 /* ..expo(X) < expo(Y). Thus X = mod(X,Y) */
-/*  */
 	move.l		(%sp)+,%d0		/*  restore d0 */
 	bra.w		Get_Mod
 
@@ -279,7 +277,6 @@ HiR_not0:
 	lsr.l		%d6,%d7
 	or.l		%d7,%d1			/*  (D0,D1,D2) normalized */
 
-/*  */
 Get_Mod:
 	cmpi.l		&0x000041FE,%d0
 	bge.b		No_Scale
@@ -308,7 +305,6 @@ No_Scale:
 	move.l		%d5,Y_Lo(%a6)
 	clr.b		Sc_Flag(%a6)
 
-/*  */
 ModOrRem:
 	tst.b		Mod_Flag(%a6)
 	beq.b		Fix_Sign
@@ -329,11 +325,9 @@ Not_EQ:
 	bcs.b		Fix_Sign
 
 Last_Sub:
-/*  */
 	fsub.x		Y(%a6),%fp0		/*  no exceptions */
 	addq.l		&1,%d3			/*  Q := Q + 1 */
 
-/*  */
 Fix_Sign:
 /* ..Get sign of X */
 	move.w		SignX(%a6),%d6
@@ -341,7 +335,6 @@ Fix_Sign:
 	fneg.x		%fp0
 
 /* ..Get Q */
-/*  */
 Get_Q:
 	clr.l		%d6
 	move.w		SignQ(%a6),%d6		/*  D6 is sign(Q) */
@@ -356,7 +349,6 @@ Get_Q:
 /* 	fmove.l		%d6,%fpsr		; put Q in fpsr */
 	move.b		%d3,FPSR_QBYTE(%a6)	/*  put Q in fpsr */
 
-/*  */
 Restore:
 	movem.l		(%sp)+,%d2-%d7		/*   {%d2-%d7} */
 	move.l		(%sp)+,%d0

@@ -58,14 +58,14 @@ fsub:
 
 	bne.w		fsub_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  SUB: norms and denorms */
-/*  */
+/*
+ * SUB: norms and denorms
+ */
 fsub_norm:
 	bsr.l		addsub_scaler2		/*  scale exponents */
 
 fsub_zero_entry:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
@@ -81,7 +81,7 @@ fsub_zero_entry:
 
 	move.l		%d2,-(%sp)		/*  save d2 */
 
-	fmovem.x		%fp0,-(%sp)		/*  save result to stack */
+	fmovem.x	%fp0,-(%sp)		/*  save result to stack */
 
 	move.w		2+L_SCR3(%a6),%d1
 	lsr.b		&0x6,%d1
@@ -103,7 +103,7 @@ fsub_normal:
 	or.w		%d2,%d1			/*  insert new exponent */
 	move.w		%d1,(%sp)		/*  insert new exponent */
 
-	fmovem.x		(%sp)+,%fp0		/*  return result in fp0 */
+	fmovem.x	(%sp)+,%fp0		/*  return result in fp0 */
 
 	move.l		(%sp)+,%d2		/*  restore d2 */
 	rts
@@ -132,11 +132,11 @@ fsub_ovfl:
 	add.l		&0xc,%sp
 fsub_ovfl_dis:
 	btst		&neg_bit,FPSR_CC(%a6)	/*  is result negative? */
-	sne		%d1			/*  set sign param accordingly */
+	sne			%d1			/*  set sign param accordingly */
 	move.l		L_SCR3(%a6),%d0		/*  pass prec:rnd */
 	bsr.l		ovf_res			/*  calculate default result */
 	or.b		%d0,FPSR_CC(%a6)	/*  set INF,N if applicable */
-	fmovem.x		(%a0),%fp0		/*  return default result in fp0 */
+	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
 	move.l		(%sp)+,%d2		/*  restore d2 */
 	rts
 
@@ -153,11 +153,11 @@ fsub_ovfl_ena_cont:
 	or.w		%d2,%d1			/*  concat sign,exp */
 	move.w		%d1,(%sp)		/*  insert new exponent */
 
-	fmovem.x		(%sp)+,%fp1		/*  return EXOP in fp1 */
+	fmovem.x	(%sp)+,%fp1		/*  return EXOP in fp1 */
 	bra.b		fsub_ovfl_dis
 
 fsub_ovfl_ena_sd:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0x30,%d1		/*  clear rnd prec */
@@ -168,7 +168,7 @@ fsub_ovfl_ena_sd:
 	fmove.l		&0x0,%fpcr		/*  clear FPCR */
 
 	add.l		&0xc,%sp
-	fmovem.x		%fp0,-(%sp)
+	fmovem.x	%fp0,-(%sp)
 	bra.b		fsub_ovfl_ena_cont
 
 fsub_unfl:
@@ -176,7 +176,7 @@ fsub_unfl:
 
 	add.l		&0xc,%sp
 
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		&rz_mode*0x10,%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -193,18 +193,18 @@ fsub_unfl:
 	bne.b		fsub_unfl_ena		/*  yes */
 
 fsub_unfl_dis:
-	fmovem.x		%fp0,FP_SCR0(%a6)	/*  store out result */
+	fmovem.x	%fp0,FP_SCR0(%a6)	/*  store out result */
 
-	lea		FP_SCR0(%a6),%a0	/*  pass: result addr */
+	lea			FP_SCR0(%a6),%a0	/*  pass: result addr */
 	move.l		L_SCR3(%a6),%d1		/*  pass: rnd prec,mode */
 	bsr.l		unf_res			/*  calculate default result */
 	or.b		%d0,FPSR_CC(%a6)	/*  'Z' may have been set */
-	fmovem.x		FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
+	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	move.l		(%sp)+,%d2		/*  restore d2 */
 	rts
 
 fsub_unfl_ena:
-	fmovem.x		FP_SCR1(%a6),%fp1
+	fmovem.x	FP_SCR1(%a6),%fp1
 
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0xc0,%d1		/*  is precision extended? */
@@ -219,7 +219,7 @@ fsub_unfl_ena_cont:
 
 	fmove.l		&0x0,%fpcr		/*  clear FPCR */
 
-	fmovem.x		%fp1,FP_SCR0(%a6)	/*  store result to stack */
+	fmovem.x	%fp1,FP_SCR0(%a6)	/*  store result to stack */
 	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
 	move.l		%d1,%d2			/*  make a copy */
 	andi.l		&0x7fff,%d1		/*  strip sign */
@@ -239,11 +239,11 @@ fsub_unfl_ena_sd:
 
 	bra.b		fsub_unfl_ena_cont
 
-/*  */
-/*  result is equal to the smallest normalized number in the selected precision */
-/*  if the precision is extended, this result could not have come from an */
-/*  underflow that rounded up. */
-/*  */
+/*
+ * result is equal to the smallest normalized number in the selected precision
+ * if the precision is extended, this result could not have come from an
+ * underflow that rounded up.
+ */
 fsub_may_unfl:
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0xc0,%d1		/*  fetch rnd prec */
@@ -259,17 +259,17 @@ fsub_may_unfl:
 	btst		&inex2_bit,FPSR_EXCEPT(%a6) /*  is INEX2 set? */
 	beq.w		fsub_normal		/*  no; no underflow occurred */
 
-/*  */
-/*  ok, so now the result has a exponent equal to the smallest normalized */
-/*  exponent for the selected precision. also, the mantissa is equal to */
-/*  0x8000000000000000 and this mantissa is the result of rounding non-zero */
-/*  g,r,s. */
-/*  now, we must determine whether the pre-rounded result was an underflow */
-/*  rounded "up" or a normalized number rounded "down". */
-/*  so, we do this be re-executing the add using RZ as the rounding mode and */
-/*  seeing if the new result is smaller or equal to the current result. */
-/*  */
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op into fp1 */
+/*
+ * ok, so now the result has a exponent equal to the smallest normalized
+ * exponent for the selected precision. also, the mantissa is equal to
+ * 0x8000000000000000 and this mantissa is the result of rounding non-zero
+ * g,r,s.
+ * now, we must determine whether the pre-rounded result was an underflow
+ * rounded "up" or a normalized number rounded "down".
+ * so, we do this be re-executing the add using RZ as the rounding mode and
+ * seeing if the new result is smaller or equal to the current result.
+ */
+	fmovem.x	FP_SCR1(%a6),%fp1	/*  load dst op into fp1 */
 
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0xc0,%d1		/*  keep rnd prec */
@@ -290,9 +290,9 @@ fsub_may_unfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  Sub: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * Sub: inputs are not both normalized; what are they?
+ */
 fsub_not_norm:
 	move.w		(tbl_fsub_op.b,%pc,%d1.w*2),%d1
 	jmp		(tbl_fsub_op.b,%pc,%d1.w*1)
@@ -358,9 +358,9 @@ fsub_res_qnan:
 fsub_res_snan:
 	bra.l		res_snan
 
-/*  */
-/*  both operands are ZEROes */
-/*  */
+/*
+ * both operands are ZEROes
+ */
 fsub_zero_2:
 	move.b		SRC_EX.w(%a0),%d0
 	move.b		DST_EX.w(%a1),%d1
@@ -374,11 +374,11 @@ fsub_zero_2:
 	move.b		&z_bmask,FPSR_CC(%a6)	/*  set Z */
 	rts
 
-/*  */
-/*  the ZEROes have the same signs: */
-/*  - Therefore, we return +ZERO if the rounding mode is RN,RZ, or RP */
-/*  - -ZERO is returned in the case of RM. */
-/*  */
+/*
+ * the ZEROes have the same signs:
+ * - Therefore, we return +ZERO if the rounding mode is RN,RZ, or RP
+ * - -ZERO is returned in the case of RM.
+ */
 fsub_zero_2_chk_rm:
 	move.b		3+L_SCR3(%a6),%d1
 	andi.b		&0x30,%d1		/*  extract rnd mode */
@@ -393,10 +393,10 @@ fsub_zero_2_rm:
 	move.b		&z_bmask+neg_bmask,FPSR_CC(%a6)	/*  set Z/NEG */
 	rts
 
-/*  */
-/*  one operand is a ZERO and the other is a DENORM or a NORM. */
-/*  scale the DENORM or NORM and jump to the regular fsub routine. */
-/*  */
+/*
+ * one operand is a ZERO and the other is a DENORM or a NORM.
+ * scale the DENORM or NORM and jump to the regular fsub routine.
+ */
 fsub_zero_dst:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -417,10 +417,10 @@ fsub_zero_src:
 	clr.l		FP_SCR0_LO(%a6)
 	bra.w		fsub_zero_entry		/*  go execute fsub */
 
-/*  */
-/*  both operands are INFs. an OPERR will result if the INFs have the */
-/*  same signs. else, */
-/*  */
+/*
+ * both operands are INFs. an OPERR will result if the INFs have the
+ * same signs. else,
+ */
 fsub_inf_2:
 	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
 	move.b		DST_EX.w(%a1),%d1

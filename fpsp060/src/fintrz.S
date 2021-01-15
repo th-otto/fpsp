@@ -33,9 +33,9 @@ fintrz:
 	move.b		STAG(%a6),%d1
 	bne.b		fintrz_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  Norm: */
-/*  */
+/*
+ * Norm:
+ */
 fintrz_norm:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 
@@ -46,9 +46,9 @@ fintrz_norm:
 
 	rts
 
-/*  */
-/*  input is not normalized; what is it? */
-/*  */
+/*
+ * input is not normalized; what is it?
+ */
 fintrz_not_norm:
 	cmpi.b		&ZERO,%d1		/*  weed out ZERO */
 	beq.b		fintrz_zero
@@ -60,24 +60,24 @@ fintrz_not_norm:
 	beq.l		res_snan_1op
 	bra.l		res_qnan_1op		/*  weed out QNAN */
 
-/*  */
-/*  Denorm: */
-/*  */
-/*  for DENORMs, the result will be (+/-)ZERO. */
-/*  also, the INEX2 and AINEX exception bits will be set. */
-/*  so, we could either set these manually or force the DENORM */
-/*  to a very small NORM and ship it to the NORM routine. */
-/*  I do the latter. */
-/*  */
+/*
+ * Denorm:
+ *
+ * for DENORMs, the result will be (+/-)ZERO.
+ * also, the INEX2 and AINEX exception bits will be set.
+ * so, we could either set these manually or force the DENORM
+ * to a very small NORM and ship it to the NORM routine.
+ * I do the latter.
+ */
 fintrz_denorm:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6) /*  copy sign, zero exp */
 	move.b		&0x80,FP_SCR0_HI(%a6)	/*  force DENORM ==> small NORM */
 	lea		FP_SCR0(%a6),%a0
 	bra.b		fintrz_norm
 
-/*  */
-/*  Zero: */
-/*  */
+/*
+ * Zero:
+ */
 fintrz_zero:
 	tst.b		SRC_EX.w(%a0)		/*  is ZERO negative? */
 	bmi.b		fintrz_zero_m		/*  yes */
@@ -90,9 +90,9 @@ fintrz_zero_m:
 	move.b		&z_bmask+neg_bmask,FPSR_CC(%a6) /*  set 'Z','N' ccode bits */
 	rts
 
-/*  */
-/*  Infinity: */
-/*  */
+/*
+ * Infinity:
+ */
 fintrz_inf:
 	fmovem.x	SRC.w(%a0),%fp0		/*  return result in fp0 */
 	tst.b		SRC_EX.w(%a0)		/*  is INF negative? */

@@ -124,25 +124,25 @@ _fpsp_effadd:
 	tst.w		%d0			/*  is operation fmovem? */
 	bmi.w		iea_fmovem		/*  yes */
 
-/*  */
-/*  here, we will have: */
-/* 	fabs	fdabs	fsabs		facos		fmod */
-/* 	fadd	fdadd	fsadd		fasin		frem */
-/* 	fcmp				fatan		fscale */
-/* 	fdiv	fddiv	fsdiv		fatanh		fsin */
-/* 	fint				fcos		fsincos */
-/* 	fintrz				fcosh		fsinh */
-/* 	fmove	fdmove	fsmove		fetox		ftan */
-/* 	fmul	fdmul	fsmul		fetoxm1		ftanh */
-/* 	fneg	fdneg	fsneg		fgetexp		ftentox */
-/* 	fsgldiv				fgetman		ftwotox */
-/* 	fsglmul				flog10 */
-/* 	fsqrt				flog2 */
-/* 	fsub	fdsub	fssub		flogn */
-/* 	ftst				flognp1 */
-/*  which can all use f<op>.{x,p} */
-/*  so, now it's immediate data extended precision AND PACKED FORMAT! */
-/*  */
+/*
+ * here, we will have:
+ *      fabs    fdabs   fsabs           facos           fmod
+ *      fadd    fdadd   fsadd           fasin           frem
+ *      fcmp                            fatan           fscale
+ *      fdiv    fddiv   fsdiv           fatanh          fsin
+ *      fint                            fcos            fsincos
+ *      fintrz                          fcosh           fsinh
+ *      fmove   fdmove  fsmove          fetox           ftan
+ *      fmul    fdmul   fsmul           fetoxm1         ftanh
+ *      fneg    fdneg   fsneg           fgetexp         ftentox
+ *      fsgldiv                         fgetman         ftwotox
+ *      fsglmul                         flog10
+ *      fsqrt                           flog2
+ *      fsub    fdsub   fssub           flogn
+ *      ftst                            flognp1
+ * which can all use f<op>.{x,p}
+ * so, now it's immediate data extended precision AND PACKED FORMAT!
+ */
 iea_op:
 	andi.l		&0x00ff00ff,USER_FPSR(%a6)
 
@@ -247,17 +247,17 @@ iea_op_extract:
 	move.l		(tbl_unsupp.l,%pc,%d1.w*4),%d1 /*  fetch routine addr */
 	jsr		(tbl_unsupp.l,%pc,%d1.l*1)
 
-/*  */
-/*  Exceptions in order of precedence: */
-/* 	BSUN	: none */
-/* 	SNAN	: all operations */
-/* 	OPERR	: all reg-reg or mem-reg operations that can normally operr */
-/* 	OVFL	: same as OPERR */
-/* 	UNFL	: same as OPERR */
-/* 	DZ	: same as OPERR */
-/* 	INEX2	: same as OPERR */
-/* 	INEX1	: all packed immediate operations */
-/*  */
+/*
+ * Exceptions in order of precedence:
+ *	BSUN	: none
+ *	SNAN	: all operations
+ *	OPERR	: all reg-reg or mem-reg operations that can normally operr
+ *	OVFL	: same as OPERR
+ *	UNFL	: same as OPERR
+ *	DZ	: same as OPERR
+ *	INEX2	: same as OPERR
+ *	INEX1	: all packed immediate operations
+ */
 
 /*  we determine the highest priority exception(if any) set by the */
 /*  emulation routine that has also been enabled by the user. */
@@ -351,23 +351,24 @@ iea_op_exit2:
 
 	bra.l		_fpsp_done		/*  exit to os */
 
-/*  */
-/*  The opclass two instruction that took an "Unimplemented Effective Address" */
-/*  exception was being traced. Make the "current" PC the FPIAR and put it in */
-/*  the trace stack frame then jump to _real_trace(). */
-/*  */
-/* 		 UNIMP EA FRAME		   TRACE FRAME */
-/* 		*****************	***************** */
-/* 		* 0x0 *  0x0f0	*	*    Current	* */
-/* 		*****************	*      PC	* */
-/* 		*    Current	*	***************** */
-/* 		*      PC	*	* 0x2 *  0x024	* */
-/* 		*****************	***************** */
-/* 		*      SR	*	*     Next	* */
-/* 		*****************	*      PC	* */
-/* 					***************** */
-/* 					*      SR	* */
-/* 					***************** */
+/*
+ * The opclass two instruction that took an "Unimplemented Effective Address"
+ * exception was being traced. Make the "current" PC the FPIAR and put it in
+ * the trace stack frame then jump to _real_trace().
+ *
+ *               UNIMP EA FRAME            TRACE FRAME
+ *              *****************       *****************
+ *              * 0x0 *  0x0f0  *       *    Current    *
+ *              *****************       *      PC       *
+ *              *    Current    *       *****************
+ *              *      PC       *       * 0x2 *  0x024  *
+ *              *****************       *****************
+ *              *      SR       *       *     Next      *
+ *              *****************       *      PC       *
+ *                                      *****************
+ *                                      *      SR       *
+ *                                      *****************
+ */
 iea_op_trace:
 	move.l		(%sp),-(%sp)		/*  shift stack frame "down" */
 	move.w		0x8(%sp),0x4(%sp)
@@ -552,28 +553,29 @@ iea_fmovem_exit:
 
 	bra.l		_fpsp_done		/*  exit to os */
 
-/*  */
-/*  The control reg instruction that took an "Unimplemented Effective Address" */
-/*  exception was being traced. The "Current PC" for the trace frame is the */
-/*  PC stacked for Unimp EA. The "Next PC" is in EXC_EXTWPTR. */
-/*  After fixing the stack frame, jump to _real_trace(). */
-/*  */
-/* 		 UNIMP EA FRAME		   TRACE FRAME */
-/* 		*****************	***************** */
-/* 		* 0x0 *  0x0f0	*	*    Current	* */
-/* 		*****************	*      PC	* */
-/* 		*    Current	*	***************** */
-/* 		*      PC	*	* 0x2 *  0x024	* */
-/* 		*****************	***************** */
-/* 		*      SR	*	*     Next	* */
-/* 		*****************	*      PC	* */
-/* 					***************** */
-/* 					*      SR	* */
-/* 					***************** */
-/*  this ain't a pretty solution, but it works: */
-/*  -restore a6 (not with unlk) */
-/*  -shift stack frame down over where old a6 used to be */
-/*  -add LOCAL_SIZE to stack pointer */
+/*
+ * The control reg instruction that took an "Unimplemented Effective Address"
+ * exception was being traced. The "Current PC" for the trace frame is the
+ * PC stacked for Unimp EA. The "Next PC" is in EXC_EXTWPTR.
+ * After fixing the stack frame, jump to _real_trace().
+ *
+ *               UNIMP EA FRAME            TRACE FRAME
+ *              *****************       *****************
+ *              * 0x0 *  0x0f0  *       *    Current    *
+ *              *****************       *      PC       *
+ *              *    Current    *       *****************
+ *              *      PC       *       * 0x2 *  0x024  *
+ *              *****************       *****************
+ *              *      SR       *       *     Next      *
+ *              *****************       *      PC       *
+ *                                      *****************
+ *                                      *      SR       *
+ *                                      *****************
+ * this ain't a pretty solution, but it works:
+ * -restore a6 (not with unlk)
+ * -shift stack frame down over where old a6 used to be
+ * -add LOCAL_SIZE to stack pointer
+ */
 iea_fmovem_trace:
 	move.l		(%a6),%a6		/*  restore frame pointer */
 	move.w		EXC_SR+LOCAL_SIZE(%sp),0x0+LOCAL_SIZE(%sp)

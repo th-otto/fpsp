@@ -52,7 +52,7 @@ t_dz2:
 t_operr:
 	ori.l		&opnan_mask,USER_FPSR(%a6) /*  set NaN/OPERR/AIOP */
 	/* fmovem.x		qnan(%pc),%fp0 */		/*  return default NAN in fp0 */
-	.dc.w 0xf23a,0xd080,0xffbe /* XXX: invalid on 060 */
+	.dc.w 0xf23a,0xd080,0xffbe /* rejected by gas */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -383,9 +383,9 @@ src_zero:
 	tst.b		SRC_EX.w(%a0)		/*  get sign of src operand */
 	bmi.b		ld_mzero		/*  if neg, load neg zero */
 
-/*  */
-/*  ld_pzero(): return a positive zero. */
-/*  */
+/*
+ * ld_pzero(): return a positive zero.
+ */
 	.globl		ld_pzero
 ld_pzero:
 	fmove.s		&0x00000000,%fp0	/*  load +0 */
@@ -416,18 +416,18 @@ src_inf:
 	tst.b		SRC_EX.w(%a0)		/*  get sign of src operand */
 	bmi.b		ld_minf			/*  if negative branch */
 
-/*  */
-/*  ld_pinf(): return a positive infinity. */
-/*  */
+/*
+ * ld_pinf(): return a positive infinity.
+ */
 	.globl		ld_pinf
 ld_pinf:
 	fmove.s		&0x7f800000,%fp0	/*  load +INF */
 	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set 'INF' ccode bit */
 	rts
 
-/*  */
-/*  ld_minf():return a negative infinity. */
-/*  */
+/*
+ * ld_minf():return a negative infinity.
+ */
 	.globl		ld_minf
 ld_minf:
 	fmove.s		&0xff800000,%fp0	/*  load -INF */
@@ -484,18 +484,18 @@ src_one:
 	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
 	bmi.b		ld_mone
 
-/*  */
-/*  ld_pone(): return positive one. */
-/*  */
+/*
+ * ld_pone(): return positive one.
+ */
 	.globl		ld_pone
 ld_pone:
 	fmove.s		&0x3f800000,%fp0	/*  load +1 */
 	clr.b		FPSR_CC(%a6)
 	rts
 
-/*  */
-/*  ld_mone(): return negative one. */
-/*  */
+/*
+ * ld_mone(): return negative one.
+ */
 	.globl		ld_mone
 ld_mone:
 	fmove.s		&0xbf800000,%fp0	/*  load -1 */
@@ -513,18 +513,18 @@ spi_2:
 	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
 	bmi.b		ld_mpi2
 
-/*  */
-/*  ld_ppi2(): return positive PI/2. */
-/*  */
+/*
+ * ld_ppi2(): return positive PI/2.
+ */
 	.globl		ld_ppi2
 ld_ppi2:
 	fmove.l		%d0,%fpcr
 	fmove.x		ppiby2(%pc),%fp0	/*  load +pi/2 */
 	bra.w		t_pinx2			/*  set INEX2 */
 
-/*  */
-/*  ld_mpi2(): return negative PI/2. */
-/*  */
+/*
+ * ld_mpi2(): return negative PI/2.
+ */
 	.globl		ld_mpi2
 ld_mpi2:
 	fmove.l		%d0,%fpcr
@@ -535,11 +535,11 @@ ld_mpi2:
 /*  The following routines give support for fsincos.  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  ssincosz(): When the src operand is ZERO, store a one in the */
-/* 	      cosine register and return a ZERO in fp0 w/ the same sign */
-/* 	      as the src operand. */
-/*  */
+/*
+ * ssincosz(): When the src operand is ZERO, store a one in the
+ *	      cosine register and return a ZERO in fp0 w/ the same sign
+ *	      as the src operand.
+ */
 	.globl		ssincosz
 ssincosz:
 	fmove.s		&0x3f800000,%fp1
@@ -553,31 +553,31 @@ sincoszp:
 	move.b		&z_bmask,FPSR_CC(%a6)
 	bra.b		sto_cos			/*  store cosine result */
 
-/*  */
-/*  ssincosi(): When the src operand is INF, store a QNAN in the cosine */
-/* 	      register and jump to the operand error routine for negative */
-/* 	      src operands. */
-/*  */
+/*
+ * ssincosi(): When the src operand is INF, store a QNAN in the cosine
+ *	      register and jump to the operand error routine for negative
+ *	      src operands.
+ */
 	.globl		ssincosi
 ssincosi:
 	fmove.x		qnan(%pc),%fp1		/*  load NAN */
 	bsr.l		sto_cos			/*  store cosine result */
 	bra.w		t_operr
 
-/*  */
-/*  ssincosqnan(): When the src operand is a QNAN, store the QNAN in the cosine */
-/* 		 register and branch to the src QNAN routine. */
-/*  */
+/*
+ * ssincosqnan(): When the src operand is a QNAN, store the QNAN in the cosine
+ *		 register and branch to the src QNAN routine.
+ */
 	.globl		ssincosqnan
 ssincosqnan:
 	fmove.x		LOCAL_EX.w(%a0),%fp1
 	bsr.l		sto_cos
 	bra.w		src_qnan
 
-/*  */
-/*  ssincossnan(): When the src operand is an SNAN, store the SNAN w/ the SNAN bit set */
-/* 		 in the cosine register and branch to the src SNAN routine. */
-/*  */
+/*
+ * ssincossnan(): When the src operand is an SNAN, store the SNAN w/ the SNAN bit set
+ *		 in the cosine register and branch to the src SNAN routine.
+ */
 	.globl		ssincossnan
 ssincossnan:
 	fmove.x		LOCAL_EX.w(%a0),%fp1
@@ -586,15 +586,17 @@ ssincossnan:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/*  sto_cos(): store fp1 to the fpreg designated by the CMDREG dst field.	 */
-/* 	     fp1 holds the result of the cosine portion of ssincos().	 */
-/* 	     the value in fp1 will not take any exceptions when moved.	 */
-/*  INPUT:								 */
-/* 	fp1 : fp value to store						 */
-/*  MODIFIED:								 */
-/* 	d0								 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/*
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ * sto_cos(): store fp1 to the fpreg designated by the CMDREG dst field.
+ *	     fp1 holds the result of the cosine portion of ssincos().
+ *	     the value in fp1 will not take any exceptions when moved.
+ * INPUT:
+ *	fp1 : fp value to store
+ * MODIFIED:
+ *	d0
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ */
 	.globl		sto_cos
 sto_cos:
 	move.b		1+EXC_CMDREG(%a6),%d0
@@ -806,9 +808,9 @@ sscale_sinf:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  sop_sqnan(): The src op for frem/fmod/fscale was a QNAN. */
-/*  */
+/*
+ * sop_sqnan(): The src op for frem/fmod/fscale was a QNAN.
+ */
 	.globl		sop_sqnan
 sop_sqnan:
 	move.b		DTAG(%a6),%d1
@@ -818,9 +820,9 @@ sop_sqnan:
 	beq.b		dst_snan
 	bra.b		src_qnan
 
-/*  */
-/*  sop_ssnan(): The src op for frem/fmod/fscale was an SNAN. */
-/*  */
+/*
+ * sop_ssnan(): The src op for frem/fmod/fscale was an SNAN.
+ */
 	.globl		sop_ssnan
 sop_ssnan:
 	move.b		DTAG(%a6),%d1
@@ -834,9 +836,9 @@ dst_qnan_src_snan:
 	ori.l		&snaniop_mask,USER_FPSR(%a6) /*  set NAN/SNAN/AIOP */
 	bra.b		dst_qnan
 
-/*  */
-/*  dst_qnan(): Return the dst SNAN w/ the SNAN bit set. */
-/*  */
+/*
+ * dst_qnan(): Return the dst SNAN w/ the SNAN bit set.
+ */
 	.globl		dst_snan
 dst_snan:
 	fmove.x		DST.w(%a1),%fp0		/*  the fmove sets the SNAN bit */
@@ -844,9 +846,9 @@ dst_snan:
 	or.l		%d0,USER_FPSR(%a6)	/*  store status */
 	rts
 
-/*  */
-/*  dst_qnan(): Return the dst QNAN. */
-/*  */
+/*
+ * dst_qnan(): Return the dst QNAN.
+ */
 	.globl		dst_qnan
 dst_qnan:
 	fmove.x		DST.w(%a1),%fp0		/*  return the non-signalling nan */
@@ -859,9 +861,9 @@ dst_qnan_m:
 	move.b		&neg_bmask+nan_bmask,FPSR_CC(%a6)
 	rts
 
-/*  */
-/*  src_snan(): Return the src SNAN w/ the SNAN bit set. */
-/*  */
+/*
+ * src_snan(): Return the src SNAN w/ the SNAN bit set.
+ */
 	.globl		src_snan
 src_snan:
 	fmove.x		SRC.w(%a0),%fp0		/*  the fmove sets the SNAN bit */
@@ -869,9 +871,9 @@ src_snan:
 	or.l		%d0,USER_FPSR(%a6)	/*  store status */
 	rts
 
-/*  */
-/*  src_qnan(): Return the src QNAN. */
-/*  */
+/*
+ * src_qnan(): Return the src QNAN.
+ */
 	.globl		src_qnan
 src_qnan:
 	fmove.x		SRC.w(%a0),%fp0		/*  return the non-signalling nan */
@@ -884,14 +886,14 @@ src_qnan_m:
 	move.b		&neg_bmask+nan_bmask,FPSR_CC(%a6)
 	rts
 
-/*  */
-/*  fkern2.s: */
-/* 	These entry points are used by the exception handler */
-/*  routines where an instruction is selected by an index into */
-/*  a large jump table corresponding to a given instruction which */
-/*  has been decoded. Flow continues here where we now decode */
-/*  further according to the source operand type. */
-/*  */
+/*
+ * fkern2.s:
+ *	These entry points are used by the exception handler
+ * routines where an instruction is selected by an index into
+ * a large jump table corresponding to a given instruction which
+ * has been decoded. Flow continues here where we now decode
+ * further according to the source operand type.
+ */
 
 	.globl		fsinh
 fsinh:

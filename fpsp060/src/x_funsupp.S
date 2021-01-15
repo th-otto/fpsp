@@ -221,17 +221,17 @@ fu_extract:
 	move.l		(tbl_unsupp.l,%pc,%d1.l*4),%d1 /*  fetch routine addr */
 	jsr		(tbl_unsupp.l,%pc,%d1.l*1)
 
-/*  */
-/*  Exceptions in order of precedence: */
-/* 	BSUN	: none */
-/* 	SNAN	: all dyadic ops */
-/* 	OPERR	: fsqrt(-NORM) */
-/* 	OVFL	: all except ftst,fcmp */
-/* 	UNFL	: all except ftst,fcmp */
-/* 	DZ	: fdiv */
-/* 	INEX2	: all except ftst,fcmp */
-/* 	INEX1	: none (packed doesn't go through here) */
-/*  */
+/*
+ * Exceptions in order of precedence:
+ * BSUN	: none
+ * SNAN	: all dyadic ops
+ * OPERR: fsqrt(-NORM)
+ * OVFL	: all except ftst,fcmp
+ * UNFL	: all except ftst,fcmp
+ * DZ	: fdiv
+ * INEX2: all except ftst,fcmp
+ * INEX1: none (packed doesn't go through here)
+ */
 
 /*  we determine the highest priority exception(if any) set by the */
 /*  emulation routine that has also been enabled by the user. */
@@ -263,16 +263,16 @@ fu_in_ena:
 	bfffo		%d0{&24:&8},%d0		/*  find highest priority exception */
 	bne.b		fu_in_exc		/*  there is at least one set */
 
-/*  */
-/*  No exceptions occurred that were also enabled. Now: */
-/*  */
-/* 	if (OVFL && ovfl_disabled && inexact_enabled) { */
-/* 	    branch to _real_inex() (even if the result was exact!); */
-/* 	} else { */
-/* 	    save the result in the proper fp reg (unless the op is fcmp or ftst); */
-/* 	    return; */
-/* 	} */
-/*  */
+/*
+ * No exceptions occurred that were also enabled. Now:
+ *
+ *	if (OVFL && ovfl_disabled && inexact_enabled) {
+ *	    branch to _real_inex() (even if the result was exact!);
+ *	} else {
+ *	    save the result in the proper fp reg (unless the op is fcmp or ftst);
+ *	    return;
+ *	}
+ */
 	btst		&ovfl_bit,FPSR_EXCEPT(%a6) /*  was overflow set? */
 	beq.b		fu_in_cont		/*  no */
 
@@ -281,21 +281,21 @@ fu_in_ovflchk:
 	beq.b		fu_in_cont		/*  no */
 	bra.w		fu_in_exc_ovfl		/*  go insert overflow frame */
 
-/*  */
-/*  An exception occurred and that exception was enabled: */
-/*  */
-/* 	shift enabled exception field into lo byte of d0; */
-/* 	if (((INEX2 || INEX1) && inex_enabled && OVFL && ovfl_disabled) || */
-/* 	    ((INEX2 || INEX1) && inex_enabled && UNFL && unfl_disabled)) { */
-/* 		/* */
-/* 		 * this is the case where we must call _real_inex() now or else */
-/* 		 * there will be no other way to pass it the exceptional operand */
-/* 		 */ */
-/* 		call _real_inex(); */
-/* 	} else { */
-/* 		restore exc state (SNAN||OPERR||OVFL||UNFL||DZ||INEX) into the FPU; */
-/* 	} */
-/*  */
+/*
+ * An exception occurred and that exception was enabled:
+ *
+ *	shift enabled exception field into lo byte of d0;
+ *	if (((INEX2 || INEX1) && inex_enabled && OVFL && ovfl_disabled) ||
+ *	    ((INEX2 || INEX1) && inex_enabled && UNFL && unfl_disabled)) {
+ *		/*
+ *		 * this is the case where we must call _real_inex() now or else
+ *		 * there will be no other way to pass it the exceptional operand
+ *		 */
+ *		call _real_inex();
+ *	} else {
+ *		restore exc state (SNAN||OPERR||OVFL||UNFL||DZ||INEX) into the FPU;
+ *	}
+ */
 fu_in_exc:
 	subi.l		&24,%d0			/*  fix offset to be 0-8 */
 	cmpi.b		&0x6,%d0		/*  is exception INEX? (6) */
@@ -543,24 +543,24 @@ fu_out_ovflchk:
 	beq.w		fu_out_done		/*  no */
 	bra.w		fu_inex			/*  yes */
 
-/*  */
-/*  The fp move out that took the "Unimplemented Data Type" exception was */
-/*  being traced. Since the stack frames are similar, get the "current" PC */
-/*  from FPIAR and put it in the trace stack frame then jump to _real_trace(). */
-/*  */
-/* 		  UNSUPP FRAME		   TRACE FRAME */
-/* 		*****************	***************** */
-/* 		*      EA	*	*    Current	* */
-/* 		*		*	*      PC	* */
-/* 		*****************	***************** */
-/* 		* 0x3 *  0x0dc	*	* 0x2 *  0x024	* */
-/* 		*****************	***************** */
-/* 		*     Next	*	*     Next	* */
-/* 		*      PC	*	*      PC	* */
-/* 		*****************	***************** */
-/* 		*      SR	*	*      SR	* */
-/* 		*****************	***************** */
-/*  */
+/*
+ * The fp move out that took the "Unimplemented Data Type" exception was
+ * being traced. Since the stack frames are similar, get the "current" PC
+ * from FPIAR and put it in the trace stack frame then jump to _real_trace().
+ *
+ *                UNSUPP FRAME             TRACE FRAME
+ *              *****************       *****************
+ *              *      EA       *       *    Current    *
+ *              *               *       *      PC       *
+ *              *****************       *****************
+ *              * 0x3 *  0x0dc  *       * 0x2 *  0x024  *
+ *              *****************       *****************
+ *              *     Next      *       *     Next      *
+ *              *      PC       *       *      PC       *
+ *              *****************       *****************
+ *              *      SR       *       *      SR       *
+ *              *****************       *****************
+ */
 fu_out_trace:
 	move.w		&0x2024,0x6(%sp)
 	fmove.l		%fpiar,0x8(%sp)
@@ -766,17 +766,17 @@ fu_extract_p:
 	move.l		(tbl_unsupp.l,%pc,%d1.l*4),%d1 /*  fetch routine addr */
 	jsr		(tbl_unsupp.l,%pc,%d1.l*1)
 
-/*  */
-/*  Exceptions in order of precedence: */
-/* 	BSUN	: none */
-/* 	SNAN	: all dyadic ops */
-/* 	OPERR	: fsqrt(-NORM) */
-/* 	OVFL	: all except ftst,fcmp */
-/* 	UNFL	: all except ftst,fcmp */
-/* 	DZ	: fdiv */
-/* 	INEX2	: all except ftst,fcmp */
-/* 	INEX1	: all */
-/*  */
+/*
+ * Exceptions in order of precedence:
+ *	BSUN	: none
+ *	SNAN	: all dyadic ops
+ *	OPERR	: fsqrt(-NORM)
+ *	OVFL	: all except ftst,fcmp
+ *	UNFL	: all except ftst,fcmp
+ *	DZ	: fdiv
+ *	INEX2	: all except ftst,fcmp
+ *	INEX1	: all
+ */
 
 /*  we determine the highest priority exception(if any) set by the */
 /*  emulation routine that has also been enabled by the user. */
@@ -841,16 +841,16 @@ fu_in_ena_p:
 	bfffo		%d0{&24:&8},%d0		/*  find highest priority exception */
 	bne.b		fu_in_exc_p		/*  at least one was set */
 
-/*  */
-/*  No exceptions occurred that were also enabled. Now: */
-/*  */
-/* 	if (OVFL && ovfl_disabled && inexact_enabled) { */
-/* 	    branch to _real_inex() (even if the result was exact!); */
-/* 	} else { */
-/* 	    save the result in the proper fp reg (unless the op is fcmp or ftst); */
-/* 	    return; */
-/* 	} */
-/*  */
+/*
+ * No exceptions occurred that were also enabled. Now:
+ *
+ *	if (OVFL && ovfl_disabled && inexact_enabled) {
+ *	    branch to _real_inex() (even if the result was exact!);
+ *	} else {
+ *	    save the result in the proper fp reg (unless the op is fcmp or ftst);
+ *	    return;
+ *	}
+ */
 	btst		&ovfl_bit,FPSR_EXCEPT(%a6) /*  was overflow set? */
 	beq.w		fu_in_cont_p		/*  no */
 
@@ -859,21 +859,21 @@ fu_in_ovflchk_p:
 	beq.w		fu_in_cont_p		/*  no */
 	bra.w		fu_in_exc_ovfl_p	/*  do _real_inex() now */
 
-/*  */
-/*  An exception occurred and that exception was enabled: */
-/*  */
-/* 	shift enabled exception field into lo byte of d0; */
-/* 	if (((INEX2 || INEX1) && inex_enabled && OVFL && ovfl_disabled) || */
-/* 	    ((INEX2 || INEX1) && inex_enabled && UNFL && unfl_disabled)) { */
-/* 		/* */
-/* 		 * this is the case where we must call _real_inex() now or else */
-/* 		 * there will be no other way to pass it the exceptional operand */
-/* 		 */ */
-/* 		call _real_inex(); */
-/* 	} else { */
-/* 		restore exc state (SNAN||OPERR||OVFL||UNFL||DZ||INEX) into the FPU; */
-/* 	} */
-/*  */
+/*
+ * An exception occurred and that exception was enabled:
+ *
+ *	shift enabled exception field into lo byte of d0;
+ *	if (((INEX2 || INEX1) && inex_enabled && OVFL && ovfl_disabled) ||
+ *	    ((INEX2 || INEX1) && inex_enabled && UNFL && unfl_disabled)) {
+ *		/*
+ *		 * this is the case where we must call _real_inex() now or else
+ *		 * there will be no other way to pass it the exceptional operand
+ *		 */
+ *		call _real_inex();
+ *	} else {
+ *		restore exc state (SNAN||OPERR||OVFL||UNFL||DZ||INEX) into the FPU;
+ *	}
+ */
 fu_in_exc_p:
 	subi.l		&24,%d0			/*  fix offset to be 0-8 */
 	cmpi.b		&0x6,%d0		/*  is exception INEX? (6 or 7) */
@@ -950,23 +950,24 @@ fu_in_exc_exit_s_p:
 
 	bra.l		_fpsp_done		/*  exit to os */
 
-/*  */
-/*  The opclass two PACKED instruction that took an "Unimplemented Data Type" */
-/*  exception was being traced. Make the "current" PC the FPIAR and put it in the */
-/*  trace stack frame then jump to _real_trace(). */
-/*  */
-/* 		  UNSUPP FRAME		   TRACE FRAME */
-/* 		*****************	***************** */
-/* 		*      EA	*	*    Current	* */
-/* 		*		*	*      PC	* */
-/* 		*****************	***************** */
-/* 		* 0x2 *	0x0dc	*	* 0x2 *  0x024	* */
-/* 		*****************	***************** */
-/* 		*     Next	*	*     Next	* */
-/* 		*      PC	*	*      PC	* */
-/* 		*****************	***************** */
-/* 		*      SR	*	*      SR	* */
-/* 		*****************	***************** */
+/*
+ * The opclass two PACKED instruction that took an "Unimplemented Data Type"
+ * exception was being traced. Make the "current" PC the FPIAR and put it in the
+ * trace stack frame then jump to _real_trace().
+ *
+ *                UNSUPP FRAME             TRACE FRAME
+ *              *****************       *****************
+ *              *      EA       *       *    Current    *
+ *              *               *       *      PC       *
+ *              *****************       *****************
+ *              * 0x2 * 0x0dc   *       * 0x2 *  0x024  *
+ *              *****************       *****************
+ *              *     Next      *       *     Next      *
+ *              *      PC       *       *      PC       *
+ *              *****************       *****************
+ *              *      SR       *       *      SR       *
+ *              *****************       *****************
+ */
 fu_trace_p:
 	move.w		&0x2024,0x6(%sp)
 	fmove.l		%fpiar,0x8(%sp)
@@ -1208,11 +1209,11 @@ fu_inex_s_p2:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  if we're stuffing a source operand back into an fsave frame then we */
-/*  have to make sure that for single or double source operands that the */
-/*  format stuffed is as weird as the hardware usually makes it. */
-/*  */
+/*
+ * if we're stuffing a source operand back into an fsave frame then we
+ * have to make sure that for single or double source operands that the
+ * format stuffed is as weird as the hardware usually makes it.
+ */
 	.globl		funimp_skew
 funimp_skew:
 	bfextu		EXC_EXTWORD(%a6){&3:&3},%d0 /*  extract src specifier */

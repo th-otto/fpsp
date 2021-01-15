@@ -43,20 +43,21 @@
  * 									
  */
 
-/* 	Implementation Notes: */
-/*  */
-/* 	The registers are used as follows: */
-/*  */
-/* 		d0: LEN counter */
-/* 		d1: temp used to form the digit */
-/* 		d2: upper 32-bits of fraction for mul by 8 */
-/* 		d3: lower 32-bits of fraction for mul by 8 */
-/* 		d4: upper 32-bits of fraction for mul by 2 */
-/* 		d5: lower 32-bits of fraction for mul by 2 */
-/* 		d6: temp for bit-field extracts */
-/* 		d7: byte digit formation word;digit count {0,1} */
-/* 		a0: pointer into memory for packed bcd string formation */
-/*  */
+/*
+ * Implementation Notes:
+ *
+ *	The registers are used as follows:
+ *
+ *		d0: LEN counter
+ *		d1: temp used to form the digit
+ *		d2: upper 32-bits of fraction for mul by 8
+ *		d3: lower 32-bits of fraction for mul by 8
+ *		d4: upper 32-bits of fraction for mul by 2
+ *		d5: lower 32-bits of fraction for mul by 2
+ *		d6: temp for bit-field extracts
+ *		d7: byte digit formation word;digit count {0,1}
+ *		a0: pointer into memory for packed bcd string formation
+ */
 
 	.include "hdr.fpu"
 
@@ -66,44 +67,44 @@
 binstr:
 	movem.l		%d0-%d7,-(%sp)	/*   {%d0-%d7} */
 
-/*  */
-/*  A1: Init d7 */
-/*  */
+/*
+ * A1: Init d7
+ */
 	moveq.l		&1,%d7		/*  init d7 for second digit */
 	subq.l		&1,%d0		/*  for dbf d0 would have LEN+1 passes */
-/*  */
-/*  A2. Copy d2:d3 to d4:d5.  Start loop. */
-/*  */
+/*
+ * A2. Copy d2:d3 to d4:d5.  Start loop.
+ */
 loop:
 	move.l		%d2,%d4		/*  copy the fraction before muls */
 	move.l		%d3,%d5		/*  to d4:d5 */
-/*  */
-/*  A3. Multiply d2:d3 by 8; extract msbs into d1. */
-/*  */
+/*
+ * A3. Multiply d2:d3 by 8; extract msbs into d1.
+ */
 	bfextu		%d2{&0:&3},%d1	/*  copy 3 msbs of d2 into d1 */
 	asl.l		&3,%d2		/*  shift d2 left by 3 places */
 	bfextu		%d3{&0:&3},%d6	/*  copy 3 msbs of d3 into d6 */
 	asl.l		&3,%d3		/*  shift d3 left by 3 places */
 	or.l		%d6,%d2		/*  or in msbs from d3 into d2 */
-/*  */
-/*  A4. Multiply d4:d5 by 2; add carry out to d1. */
-/*  */
+/*
+ * A4. Multiply d4:d5 by 2; add carry out to d1.
+ */
 	asl.l		&1,%d5		/*  mul d5 by 2 */
 	roxl.l		&1,%d4		/*  mul d4 by 2 */
 	swap		%d6		/*  put 0 in d6 lower word */
 	addx.w		%d6,%d1		/*  add in extend from mul by 2 */
-/*  */
-/*  A5. Add mul by 8 to mul by 2.  D1 contains the digit formed. */
-/*  */
+/*
+ * A5. Add mul by 8 to mul by 2.  D1 contains the digit formed.
+ */
 	add.l		%d5,%d3		/*  add lower 32 bits */
 	nop				/*  ERRATA FIX #13 (Rev. 1.2 6/6/90) */
 	addx.l		%d4,%d2		/*  add with extend upper 32 bits */
 	nop				/*  ERRATA FIX #13 (Rev. 1.2 6/6/90) */
 	addx.w		%d6,%d1		/*  add in extend from add to d1 */
 	swap		%d6		/*  with d6 = 0; put 0 in upper word */
-/*  */
-/*  A6. Test d7 and branch. */
-/*  */
+/*
+ * A6. Test d7 and branch.
+ */
 	tst.w		%d7		/*  if zero, store digit & to loop */
 	beq.b		first_d		/*  if non-zero, form byte & write */
 sec_d:
@@ -124,9 +125,9 @@ first_d:
 	swap		%d7		/*  put last digit in string */
 	lsl.w		&4,%d7		/*  move it to upper 4 bits */
 	move.b		%d7,(%a0)+	/*  store it in memory string */
-/*  */
-/*  Clean up and return with result in fp0. */
-/*  */
+/*
+ * Clean up and return with result in fp0.
+ */
 end_bstr:
 	movem.l		(%sp)+,%d0-%d7	/*   {%d0-%d7} */
 	rts

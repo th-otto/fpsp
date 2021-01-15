@@ -253,10 +253,10 @@ funimp_fmovecr:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  the user has enabled some exceptions. we figure not to see this too */
-/*  often so that's why it gets lower priority. */
-/*  */
+/*
+ * the user has enabled some exceptions. we figure not to see this too
+ * often so that's why it gets lower priority.
+ */
 funimp_ena:
 
 /*  was an exception set that was also enabled? */
@@ -332,12 +332,12 @@ funimp_gen_exit2:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  TYPE == 1: FDB<cc>, FS<cc>, FTRAP<cc> */
-/*  */
-/*  These instructions were implemented on the '881/2 and '040 in hardware but */
-/*  are emulated in software on the '060. */
-/*  */
+/*
+ * TYPE == 1: FDB<cc>, FS<cc>, FTRAP<cc>
+ *
+ * These instructions were implemented on the '881/2 and '040 in hardware but
+ * are emulated in software on the '060.
+ */
 funimp_misc:
 	bfextu		%d0{&10:&3},%d1		/*  extract mode field */
 	cmpi.b		&0x1,%d1		/*  is it an fdb<cc>? */
@@ -363,21 +363,23 @@ funimp_ftrapcc:
 	cmpi.b		&ftrapcc_flg,SPCOND_FLG(%a6) /*  should a trap occur? */
 	bne.w		funimp_done		/*  no */
 
-/* 	 FP UNIMP FRAME		   TRAP  FRAME */
-/* 	*****************	***************** */
-/* 	**    <EA>     **	**  Current PC ** */
-/* 	*****************	***************** */
-/* 	* 0x2 *  0x02c	*	* 0x2 *  0x01c  * */
-/* 	*****************	***************** */
-/* 	**   Next PC   **	**   Next PC   ** */
-/* 	*****************	***************** */
-/* 	*      SR	*	*      SR	* */
-/* 	*****************	***************** */
-/* 	    (6 words)		    (6 words) */
-/*  */
-/*  the ftrapcc instruction should take a trap. so, here we must create a */
-/*  trap stack frame from an unimplemented fp instruction stack frame and */
-/*  jump to the user supplied entry point for the trap exception */
+/*
+ *       FP UNIMP FRAME            TRAP  FRAME
+ *      *****************       *****************
+ *      **    <EA>     **       **  Current PC **
+ *      *****************       *****************
+ *      * 0x2 *  0x02c  *       * 0x2 *  0x01c  *
+ *      *****************       *****************
+ *      **   Next PC   **       **   Next PC   **
+ *      *****************       *****************
+ *      *      SR       *       *      SR       *
+ *      *****************       *****************
+ *          (6 words)               (6 words)
+ *
+ * the ftrapcc instruction should take a trap. so, here we must create a
+ * trap stack frame from an unimplemented fp instruction stack frame and
+ * jump to the user supplied entry point for the trap exception
+ */
 funimp_ftrapcc_tp:
 	move.l		USER_FPIAR(%a6),EXC_EA(%a6) /*  Address = Current PC */
 	move.w		&0x201c,EXC_VOFF(%a6)	/*  Vector Offset = 0x01c */
@@ -430,13 +432,15 @@ funimp_fscc_u:
 	move.l		%a0,%usp
 	bra.w		funimp_done		/*  branch to finish */
 
-/*  remember, I'm assuming that post-increment is bogus...(it IS!!!) */
-/*  so, the least significant WORD of the stacked effective address got */
-/*  overwritten by the "fs<cc> -(An)". We must shift the stack frame "down" */
-/*  so that the rte will work correctly without destroying the result. */
-/*  even though the operation size is byte, the stack ptr is decr by 2. */
-/*  */
-/*  remember, also, this instruction may be traced. */
+/*
+ * remember, I'm assuming that post-increment is bogus...(it IS!!!)
+ * so, the least significant WORD of the stacked effective address got
+ * overwritten by the "fs<cc> -(An)". We must shift the stack frame "down"
+ * so that the rte will work correctly without destroying the result.
+ * even though the operation size is byte, the stack ptr is decr by 2.
+ *
+ * remember, also, this instruction may be traced.
+ */
 funimp_fscc_s:
 	cmpi.b		&mda7_flg,SPCOND_FLG(%a6) /*  was a7 modified? */
 	bne.w		funimp_done		/*  no */
@@ -464,24 +468,24 @@ funimp_fscc_s_trace:
 
 	bra.l		_real_trace
 
-/*  */
-/*  The ftrap<cc>, fs<cc>, or fdb<cc> is to take an enabled bsun. we must convert */
-/*  the fp unimplemented instruction exception stack frame into a bsun stack frame, */
-/*  restore a bsun exception into the machine, and branch to the user */
-/*  supplied bsun hook. */
-/*  */
-/* 	 FP UNIMP FRAME		   BSUN FRAME */
-/* 	*****************	***************** */
-/* 	**    <EA>     **	* 0x0 * 0x0c0	* */
-/* 	*****************	***************** */
-/* 	* 0x2 *  0x02c  *	** Current PC  ** */
-/* 	*****************	***************** */
-/* 	**   Next PC   **	*      SR	* */
-/* 	*****************	***************** */
-/* 	*      SR	*	*    (4 words) */
-/* 	***************** */
-/* 	    (6 words) */
-/*  */
+/*
+ * The ftrap<cc>, fs<cc>, or fdb<cc> is to take an enabled bsun. we must convert
+ * the fp unimplemented instruction exception stack frame into a bsun stack frame,
+ * restore a bsun exception into the machine, and branch to the user
+ * supplied bsun hook.
+ *
+ *       FP UNIMP FRAME            BSUN FRAME
+ *      *****************       *****************
+ *      **    <EA>     **       * 0x0 * 0x0c0   *
+ *      *****************       *****************
+ *      * 0x2 *  0x02c  *       ** Current PC  **
+ *      *****************       *****************
+ *      **   Next PC   **       *      SR       *
+ *      *****************       *****************
+ *      *      SR       *       *    (4 words)
+ *      *****************
+ *          (6 words)
+ */
 funimp_bsun:
 	move.w		&0x00c0,2+EXC_EA(%a6)	/*  Fmt = 0x0; Vector Offset = 0x0c0 */
 	move.l		USER_FPIAR(%a6),EXC_VOFF(%a6) /*  PC = Current PC */
@@ -501,14 +505,14 @@ funimp_bsun:
 
 	bra.l		_real_bsun		/*  branch to user bsun hook */
 
-/*  */
-/*  all ftrapcc/fscc/fdbcc processing has been completed. unwind the stack frame */
-/*  and return. */
-/*  */
-/*  as usual, we have to check for trace mode being on here. since instructions */
-/*  modifying the supervisor stack frame don't pass through here, this is a */
-/*  relatively easy task. */
-/*  */
+/*
+ * all ftrapcc/fscc/fdbcc processing has been completed. unwind the stack frame
+ * and return.
+ *
+ * as usual, we have to check for trace mode being on here. since instructions
+ * modifying the supervisor stack frame don't pass through here, this is a
+ * relatively easy task.
+ */
 funimp_done:
 	fmovem.x		EXC_FP0(%a6),%fp0-%fp1	/*  restore fp0-fp1 */
 	fmovem.l		USER_FPCR(%a6),%fpcr/%fpsr/%fpiar /*  restore ctrl regs */
@@ -521,21 +525,23 @@ funimp_done:
 
 	bra.l		_fpsp_done
 
-/* 	 FP UNIMP FRAME		  TRACE  FRAME */
-/* 	*****************	***************** */
-/* 	**    <EA>     **	**  Current PC ** */
-/* 	*****************	***************** */
-/* 	* 0x2 *  0x02c	*	* 0x2 *  0x024  * */
-/* 	*****************	***************** */
-/* 	**   Next PC   **	**   Next PC   ** */
-/* 	*****************	***************** */
-/* 	*      SR	*	*      SR	* */
-/* 	*****************	***************** */
-/* 	    (6 words)		    (6 words) */
-/*  */
-/*  the fscc instruction should take a trace trap. so, here we must create a */
-/*  trace stack frame from an unimplemented fp instruction stack frame and */
-/*  jump to the user supplied entry point for the trace exception */
+/*
+ *       FP UNIMP FRAME           TRACE  FRAME
+ *      *****************       *****************
+ *      **    <EA>     **       **  Current PC **
+ *      *****************       *****************
+ *      * 0x2 *  0x02c  *       * 0x2 *  0x024  *
+ *      *****************       *****************
+ *      **   Next PC   **       **   Next PC   **
+ *      *****************       *****************
+ *      *      SR       *       *      SR       *
+ *      *****************       *****************
+ *          (6 words)               (6 words)
+ *
+ * the fscc instruction should take a trace trap. so, here we must create a
+ * trace stack frame from an unimplemented fp instruction stack frame and
+ * jump to the user supplied entry point for the trace exception
+ */
 funimp_trace:
 	fmove.l		%fpiar,0x8(%sp)		/*  current PC is in fpiar */
 	move.b		&0x24,0x7(%sp)		/*  vector offset = 0x024 */

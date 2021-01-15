@@ -95,14 +95,14 @@ fmul_norm:
 	beq.w		fmul_may_unfl		/*  result may rnd to no unfl */
 	bgt.w		fmul_unfl		/*  result will underflow */
 
-/*  */
-/*  NORMAL: */
-/*  - the result of the multiply operation will neither overflow nor underflow. */
-/*  - do the multiply to the proper precision and rounding mode. */
-/*  - scale the result exponent using the scale factor. if both operands were */
-/*  normalized then we really don't need to go through this scaling. but for now, */
-/*  this will do. */
-/*  */
+/*
+ * NORMAL:
+ * - the result of the multiply operation will neither overflow nor underflow.
+ * - do the multiply to the proper precision and rounding mode.
+ * - scale the result exponent using the scale factor. if both operands were
+ * normalized then we really don't need to go through this scaling. but for now,
+ * this will do.
+ */
 fmul_normal:
 	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst operand */
 
@@ -130,19 +130,19 @@ fmul_normal_exit:
 	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  OVERFLOW: */
-/*  - the result of the multiply operation is an overflow. */
-/*  - do the multiply to the proper precision and rounding mode in order to */
-/*  set the inexact bits. */
-/*  - calculate the default result and return it in fp0. */
-/*  - if overflow or inexact is enabled, we need a multiply result rounded to */
-/*  extended precision. if the original operation was extended, then we have this */
-/*  result. if the original operation was single or double, we have to do another */
-/*  multiply using extended precision and the correct rounding mode. the result */
-/*  of this operation then has its exponent scaled by -0x6000 to create the */
-/*  exceptional operand. */
-/*  */
+/*
+ * OVERFLOW:
+ * - the result of the multiply operation is an overflow.
+ * - do the multiply to the proper precision and rounding mode in order to
+ * set the inexact bits.
+ * - calculate the default result and return it in fp0.
+ * - if overflow or inexact is enabled, we need a multiply result rounded to
+ * extended precision. if the original operation was extended, then we have this
+ * result. if the original operation was single or double, we have to do another
+ * multiply using extended precision and the correct rounding mode. the result
+ * of this operation then has its exponent scaled by -0x6000 to create the
+ * exceptional operand.
+ */
 fmul_ovfl:
 	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst operand */
 
@@ -174,12 +174,12 @@ fmul_ovfl_dis:
 	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  OVFL is enabled; Create EXOP: */
-/*  - if precision is extended, then we have the EXOP. simply bias the exponent */
-/*  with an extra -0x6000. if the precision is single or double, we need to */
-/*  calculate a result rounded to extended precision. */
-/*  */
+/*
+ * OVFL is enabled; Create EXOP:
+ * - if precision is extended, then we have the EXOP. simply bias the exponent
+ * with an extra -0x6000. if the precision is single or double, we need to
+ * calculate a result rounded to extended precision.
+ */
 fmul_ovfl_ena:
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0xc0,%d1		/*  test the rnd prec */
@@ -214,13 +214,13 @@ fmul_ovfl_ena_sd:
 	fmove.l		&0x0,%fpcr		/*  clear FPCR */
 	bra.b		fmul_ovfl_ena_cont
 
-/*  */
-/*  may OVERFLOW: */
-/*  - the result of the multiply operation MAY overflow. */
-/*  - do the multiply to the proper precision and rounding mode in order to */
-/*  set the inexact bits. */
-/*  - calculate the default result and return it in fp0. */
-/*  */
+/*
+ * may OVERFLOW:
+ * - the result of the multiply operation MAY overflow.
+ * - do the multiply to the proper precision and rounding mode in order to
+ * set the inexact bits.
+ * - calculate the default result and return it in fp0.
+ */
 fmul_may_ovfl:
 	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
@@ -241,19 +241,19 @@ fmul_may_ovfl:
 /*  no, it didn't overflow; we have correct result */
 	bra.w		fmul_normal_exit
 
-/*  */
-/*  UNDERFLOW: */
-/*  - the result of the multiply operation is an underflow. */
-/*  - do the multiply to the proper precision and rounding mode in order to */
-/*  set the inexact bits. */
-/*  - calculate the default result and return it in fp0. */
-/*  - if overflow or inexact is enabled, we need a multiply result rounded to */
-/*  extended precision. if the original operation was extended, then we have this */
-/*  result. if the original operation was single or double, we have to do another */
-/*  multiply using extended precision and the correct rounding mode. the result */
-/*  of this operation then has its exponent scaled by -0x6000 to create the */
-/*  exceptional operand. */
-/*  */
+/*
+ * UNDERFLOW:
+ * - the result of the multiply operation is an underflow.
+ * - do the multiply to the proper precision and rounding mode in order to
+ * set the inexact bits.
+ * - calculate the default result and return it in fp0.
+ * - if overflow or inexact is enabled, we need a multiply result rounded to
+ * extended precision. if the original operation was extended, then we have this
+ * result. if the original operation was single or double, we have to do another
+ * multiply using extended precision and the correct rounding mode. the result
+ * of this operation then has its exponent scaled by -0x6000 to create the
+ * exceptional operand.
+ */
 fmul_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
 
@@ -286,9 +286,9 @@ fmul_unfl_dis:
 	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  UNFL is enabled. */
-/*  */
+/*
+ * UNFL is enabled.
+ */
 fmul_unfl_ena:
 	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op */
 
@@ -350,13 +350,13 @@ fmul_may_unfl:
 	fbgt		fmul_normal_exit	/*  no; no underflow occurred */
 	fblt		fmul_unfl		/*  yes; underflow occurred */
 
-/*  */
-/*  we still don't know if underflow occurred. result is ~ equal to 2. but, */
-/*  we don't know if the result was an underflow that rounded up to a 2 or */
-/*  a normalized number that rounded down to a 2. so, redo the entire operation */
-/*  using RZ as the rounding mode to see what the pre-rounded result is. */
-/*  this case should be relatively rare. */
-/*  */
+/*
+ * we still don't know if underflow occurred. result is ~ equal to 2. but,
+ * we don't know if the result was an underflow that rounded up to a 2 or
+ * a normalized number that rounded down to a 2. so, redo the entire operation
+ * using RZ as the rounding mode to see what the pre-rounded result is.
+ * this case should be relatively rare.
+ */
 	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst operand */
 
 	move.l		L_SCR3(%a6),%d1
@@ -376,9 +376,9 @@ fmul_may_unfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  Multiply: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * Multiply: inputs are not both normalized; what are they?
+ */
 fmul_not_norm:
 	move.w		(tbl_fmul_op.b,%pc,%d1.w*2),%d1
 	jmp		(tbl_fmul_op.b,%pc,%d1.w)
@@ -446,9 +446,9 @@ fmul_res_snan:
 fmul_res_qnan:
 	bra.l		res_qnan
 
-/*  */
-/*  Multiply: (Zero x Zero) || (Zero x norm) || (Zero x denorm) */
-/*  */
+/*
+ * Multiply: (Zero x Zero) || (Zero x norm) || (Zero x denorm)
+ */
 	.globl		fmul_zero		/*  global for fsglmul */
 fmul_zero:
 	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
@@ -464,14 +464,14 @@ fmul_zero_p:
 	move.b		&z_bmask,FPSR_CC(%a6)	/*  set Z */
 	rts
 
-/*  */
-/*  Multiply: (inf x inf) || (inf x norm) || (inf x denorm) */
-/*  */
-/*  Note: The j-bit for an infinity is a don't-care. However, to be */
-/*  strictly compatible w/ the 68881/882, we make sure to return an */
-/*  INF w/ the j-bit set if the input INF j-bit was set. Destination */
-/*  INFs take priority. */
-/*  */
+/*
+ * Multiply: (inf x inf) || (inf x norm) || (inf x denorm)
+ *
+ * Note: The j-bit for an infinity is a don't-care. However, to be
+ * strictly compatible w/ the 68881/882, we make sure to return an
+ * INF w/ the j-bit set if the input INF j-bit was set. Destination
+ * INFs take priority.
+ */
 	.globl		fmul_inf_dst		/*  global for fsglmul */
 fmul_inf_dst:
 	fmovem.x	DST.w(%a1),%fp0		/*  return INF result in fp0 */

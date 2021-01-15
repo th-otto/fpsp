@@ -402,7 +402,7 @@ nan_not_neg:
 res_operr:
 	or.l		&nan_mask+operr_mask+aiop_mask,USER_FPSR(%a6)
 	/* fmovem.x		(nan_return).l(%pc),%fp0 */
-	.dc.w 0xf23b,0xd080,0x0170 /* XXX: invalid on 060 */
+	.dc.w 0xf23b,0xd080,0x0170 /* rejected by gas */
 	.dc.l nan_return-.+2
 	rts
 

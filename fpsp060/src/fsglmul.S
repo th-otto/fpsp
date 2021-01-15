@@ -71,7 +71,7 @@ fsglmul_norm:
 	bgt.w		fsglmul_unfl		/*  result will underflow */
 
 fsglmul_normal:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -98,7 +98,7 @@ fsglmul_normal_exit:
 	rts
 
 fsglmul_ovfl:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -121,12 +121,12 @@ fsglmul_ovfl_tst:
 
 fsglmul_ovfl_dis:
 	btst		&neg_bit,FPSR_CC(%a6)	/*  is result negative? */
-	sne		%d1			/*  set sign param accordingly */
+	sne			%d1			/*  set sign param accordingly */
 	move.l		L_SCR3(%a6),%d0		/*  pass prec:rnd */
 	andi.b		&0x30,%d0		/*  force prec = ext */
 	bsr.l		ovf_res			/*  calculate default result */
 	or.b		%d0,FPSR_CC(%a6)	/*  set INF,N if applicable */
-	fmovem.x		(%a0),%fp0		/*  return default result in fp0 */
+	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
 	rts
 
 fsglmul_ovfl_ena:
@@ -143,11 +143,11 @@ fsglmul_ovfl_ena:
 	or.w		%d2,%d1			/*  concat old sign,new exp */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
 	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	fmovem.x	FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
 	bra.b		fsglmul_ovfl_dis
 
 fsglmul_may_ovfl:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -169,7 +169,7 @@ fsglmul_may_ovfl:
 fsglmul_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
 
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		&rz_mode*0x10,%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -186,20 +186,20 @@ fsglmul_unfl:
 	bne.b		fsglmul_unfl_ena	/*  yes */
 
 fsglmul_unfl_dis:
-	fmovem.x		%fp0,FP_SCR0(%a6)	/*  store out result */
+	fmovem.x	%fp0,FP_SCR0(%a6)	/*  store out result */
 
-	lea		FP_SCR0(%a6),%a0	/*  pass: result addr */
+	lea			FP_SCR0(%a6),%a0	/*  pass: result addr */
 	move.l		L_SCR3(%a6),%d1		/*  pass: rnd prec,mode */
 	bsr.l		unf_res4		/*  calculate default result */
 	or.b		%d0,FPSR_CC(%a6)	/*  'Z' bit may have been set */
-	fmovem.x		FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
+	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  UNFL is enabled. */
-/*  */
+/*
+ * UNFL is enabled.
+ */
 fsglmul_unfl_ena:
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp1	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -208,7 +208,7 @@ fsglmul_unfl_ena:
 
 	fmove.l		&0x0,%fpcr		/*  clear FPCR */
 
-	fmovem.x		%fp1,FP_SCR0(%a6)	/*  save result to stack */
+	fmovem.x	%fp1,FP_SCR0(%a6)	/*  save result to stack */
 	move.l		%d2,-(%sp)		/*  save d2 */
 	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
 	move.l		%d1,%d2			/*  make a copy */
@@ -220,11 +220,11 @@ fsglmul_unfl_ena:
 	or.w		%d2,%d1			/*  concat old sign,new exp */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
 	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	fmovem.x	FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
 	bra.w		fsglmul_unfl_dis
 
 fsglmul_may_unfl:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -241,14 +241,14 @@ fsglmul_may_unfl:
 	fbgt		fsglmul_normal_exit	/*  no; no underflow occurred */
 	fblt		fsglmul_unfl		/*  yes; underflow occurred */
 
-/*  */
-/*  we still don't know if underflow occurred. result is ~ equal to 2. but, */
-/*  we don't know if the result was an underflow that rounded up to a 2 or */
-/*  a normalized number that rounded down to a 2. so, redo the entire operation */
-/*  using RZ as the rounding mode to see what the pre-rounded result is. */
-/*  this case should be relatively rare. */
-/*  */
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op into fp1 */
+/*
+ * we still don't know if underflow occurred. result is ~ equal to 2. but,
+ * we don't know if the result was an underflow that rounded up to a 2 or
+ * a normalized number that rounded down to a 2. so, redo the entire operation
+ * using RZ as the rounding mode to see what the pre-rounded result is.
+ * this case should be relatively rare.
+ */
+	fmovem.x	FP_SCR1(%a6),%fp1	/*  load dst op into fp1 */
 
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0xc0,%d1		/*  keep rnd prec */
@@ -267,9 +267,9 @@ fsglmul_may_unfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  Single Precision Multiply: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * Single Precision Multiply: inputs are not both normalized; what are they?
+ */
 fsglmul_not_norm:
 	move.w		(tbl_fsglmul_op.b,%pc,%d1.w*2),%d1
 	jmp		(tbl_fsglmul_op.b,%pc,%d1.w*1)

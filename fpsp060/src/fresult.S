@@ -87,11 +87,11 @@ unf_res_chkifzero:
 
 unf_res_cont:
 
-/*  */
-/*  can inex1 also be set along with unfl and inex2??? */
-/*  */
-/*  we know that underflow has occurred. aunfl should be set if INEX2 is also set. */
-/*  */
+/*
+ * can inex1 also be set along with unfl and inex2???
+ *
+ * we know that underflow has occurred. aunfl should be set if INEX2 is also set.
+ */
 	btst		&inex2_bit, FPSR_EXCEPT(%a6) /*  is INEX2 set? */
 	beq.b		unf_res_end		/*  no */
 	bset		&aunfl_bit, FPSR_AEXCEPT(%a6) /*  yes; set aunfl */
@@ -147,11 +147,11 @@ unf_res4_chkifzero:
 
 unf_res4_cont:
 
-/*  */
-/*  can inex1 also be set along with unfl and inex2??? */
-/*  */
-/*  we know that underflow has occurred. aunfl should be set if INEX2 is also set. */
-/*  */
+/*
+ * can inex1 also be set along with unfl and inex2???
+ *
+ * we know that underflow has occurred. aunfl should be set if INEX2 is also set.
+ */
 	btst		&inex2_bit,FPSR_EXCEPT(%a6) /*  is INEX2 set? */
 	beq.b		unf_res4_end		/*  no */
 	bset		&aunfl_bit,FPSR_AEXCEPT(%a6) /*  yes; set aunfl */
@@ -160,38 +160,39 @@ unf_res4_end:
 	addq.l		&0x4,%sp		/*  clear stack */
 	rts
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/*  XDEF ****************************************************************	 */
-/* 	ovf_res(): routine to produce the default overflow result of	 */
-/* 		   an overflowing number.				 */
-/* 	ovf_res2(): same as above but the rnd mode/prec are passed	 */
-/* 		    differently.					 */
-/* 									 */
-/*  XREF ****************************************************************	 */
-/* 	none								 */
-/* 									 */
-/*  INPUT ***************************************************************	 */
-/* 	d1.b	= '-1' => (-); '0' => (+)				 */
-/*    ovf_res():								 */
-/* 	d0	= rnd mode/prec						 */
-/*    ovf_res2():								 */
-/* 	hi(d0)	= rnd prec						 */
-/* 	lo(d0)	= rnd mode						 */
-/* 									 */
-/*  OUTPUT **************************************************************	 */
-/* 	a0	= points to extended precision result			 */
-/* 	d0.b	= condition code bits					 */
-/* 									 */
-/*  ALGORITHM ***********************************************************	 */
-/* 	The default overflow result can be determined by the sign of	 */
-/*  the result and the rounding mode/prec in effect. These bits are	 */
-/*  concatenated together to create an index into the default result	 */
-/*  table. A pointer to the correct result is returned in a0. The		 */
-/*  resulting condition codes are returned in d0 in case the caller	 */
-/*  doesn't want FPSR_cc altered (as is the case for fmove out).		 */
-/* 									 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-
+/*
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ * XDEF ****************************************************************
+ *	ovf_res(): routine to produce the default overflow result of
+ *		   an overflowing number.
+ *	ovf_res2(): same as above but the rnd mode/prec are passed
+ *		    differently.
+ *
+ * XREF ****************************************************************
+ *	none
+ *
+ * INPUT ***************************************************************
+ *	d1.b	= '-1' => (-); '0' => (+)
+ *   ovf_res():
+ *	d0	= rnd mode/prec
+ *   ovf_res2():
+ *	hi(d0)	= rnd prec
+ *	lo(d0)	= rnd mode
+ *
+ * OUTPUT **************************************************************
+ *	a0	= points to extended precision result
+ *	d0.b	= condition code bits
+ *
+ * ALGORITHM ***********************************************************
+ *	The default overflow result can be determined by the sign of
+ * the result and the rounding mode/prec in effect. These bits are
+ * concatenated together to create an index into the default result
+ * table. A pointer to the correct result is returned in a0. The
+ * resulting condition codes are returned in d0 in case the caller
+ * doesn't want FPSR_cc altered (as is the case for fmove out).
+ *
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ */
 	.globl		ovf_res
 ovf_res:
 	andi.w		&0x10,%d1		/*  keep result sign */
@@ -210,10 +211,10 @@ ovf_res2:
 	move.w		%d1, %d0		/*  make a copy */
 	lsl.b		&0x1, %d1		/*  shift left by 1 */
 
-/*  */
-/*  use the rounding mode, precision, and result sign as in index into the */
-/*  two tables below to fetch the default result and the result ccodes. */
-/*  */
+/*
+ * use the rounding mode, precision, and result sign as in index into the
+ * two tables below to fetch the default result and the result ccodes.
+ */
 ovf_res_load:
 	move.b		(tbl_ovfl_cc.b,%pc,%d0.w*1), %d0 /*  fetch result ccodes */
 	lea		(tbl_ovfl_result.b,%pc,%d1.w*8), %a0 /*  return result ptr */
@@ -264,4 +265,3 @@ tbl_ovfl_result:
 	.dc.l		0xc3fe0000,0xffffffff,0xfffff800,0x00000000 /*  -DBL; RZ */
 	.dc.l		0xffff0000,0x00000000,0x00000000,0x00000000 /*  -INF; RM */
 	.dc.l		0xc3fe0000,0xffffffff,0xfffff800,0x00000000 /*  -DBL; RP */
-

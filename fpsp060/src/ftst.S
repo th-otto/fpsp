@@ -26,9 +26,9 @@ ftst:
 	move.b		STAG(%a6),%d1
 	bne.b		ftst_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  Norm: */
-/*  */
+/*
+ * Norm:
+ */
 ftst_norm:
 	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_norm_m		/*  yes */
@@ -37,9 +37,9 @@ ftst_norm_m:
 	move.b		&neg_bmask,FPSR_CC(%a6)	/*  set 'N' ccode bit */
 	rts
 
-/*  */
-/*  input is not normalized; what is it? */
-/*  */
+/*
+ * input is not normalized; what is it?
+ */
 ftst_not_norm:
 	cmpi.b		&ZERO,%d1		/*  weed out ZERO */
 	beq.b		ftst_zero
@@ -50,9 +50,9 @@ ftst_not_norm:
 	cmpi.b		&QNAN,%d1		/*  weed out QNAN */
 	beq.l		res_qnan_1op
 
-/*  */
-/*  Denorm: */
-/*  */
+/*
+ * Denorm:
+ */
 ftst_denorm:
 	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_denorm_m		/*  yes */
@@ -61,9 +61,9 @@ ftst_denorm_m:
 	move.b		&neg_bmask,FPSR_CC(%a6)	/*  set 'N' ccode bit */
 	rts
 
-/*  */
-/*  Infinity: */
-/*  */
+/*
+ * Infinity:
+ */
 ftst_inf:
 	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_inf_m		/*  yes */
@@ -74,9 +74,9 @@ ftst_inf_m:
 	move.b		&inf_bmask+neg_bmask,FPSR_CC(%a6) /*  set 'I','N' ccode bits */
 	rts
 
-/*  */
-/*  Zero: */
-/*  */
+/*
+ * Zero:
+ */
 ftst_zero:
 	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_zero_m		/*  yes */

@@ -38,12 +38,12 @@
 
 	.globl		_round
 _round:
-/*  */
-/*  ext_grs() looks at the rounding precision and sets the appropriate */
-/*  G,R,S bits. */
-/*  If (G,R,S == 0) then result is exact and round is done, else set */
-/*  the inex flag in status reg and continue. */
-/*  */
+/*
+ * ext_grs() looks at the rounding precision and sets the appropriate
+ * G,R,S bits.
+ * If (G,R,S == 0) then result is exact and round is done, else set
+ * the inex flag in status reg and continue.
+ */
 	bsr.l		ext_grs			/*  extract G,R,S */
 
 	tst.l		%d0			/*  are G,R,S zero? */
@@ -51,10 +51,10 @@ _round:
 
 	ori.w		&inx2a_mask, 2+USER_FPSR(%a6) /*  set inex2/ainex */
 
-/*  */
-/*  Use rounding mode as an index into a jump table for these modes. */
-/*  All of the following assumes grs != 0. */
-/*  */
+/*
+ * Use rounding mode as an index into a jump table for these modes.
+ * All of the following assumes grs != 0.
+ */
 	move.w		(tbl_mode.b,%pc,%d1.w*2), %a1 /*  load jump offset */
 	jmp		(tbl_mode.b,%pc,%a1.l)	/*  jmp to rnd mode handler */
 
@@ -192,36 +192,36 @@ truncate:
 	rts					/*  no; it's ext */
 
 
-/*  */
-/*  ext_grs(): extract guard, round and sticky bits according to */
-/* 	     rounding precision. */
-/*  */
-/*  INPUT */
-/* 	d0	   = extended precision g,r,s (in d0{31:29}) */
-/* 	d1	   = {PREC,ROUND} */
-/*  OUTPUT */
-/* 	d0{31:29}  = guard, round, sticky */
-/*  */
-/*  The ext_grs extract the guard/round/sticky bits according to the */
-/*  selected rounding precision. It is called by the round subroutine */
-/*  only.  All registers except d0 are kept intact. d0 becomes an */
-/*  updated guard,round,sticky in d0{31:29} */
-/*  */
-/*  Notes: the ext_grs uses the round PREC, and therefore has to swap d1 */
-/* 	 prior to usage, and needs to restore d1 to original. this */
-/* 	 routine is tightly tied to the round routine and not meant to */
-/* 	 uphold standard subroutine calling practices. */
-/*  */
+/*
+ * ext_grs(): extract guard, round and sticky bits according to
+ *	     rounding precision.
+ *
+ * INPUT
+ *	d0	   = extended precision g,r,s (in d0{31:29})
+ *	d1	   = {PREC,ROUND}
+ * OUTPUT
+ *	d0{31:29}  = guard, round, sticky
+ *
+ * The ext_grs extract the guard/round/sticky bits according to the
+ * selected rounding precision. It is called by the round subroutine
+ * only.  All registers except d0 are kept intact. d0 becomes an
+ * updated guard,round,sticky in d0{31:29}
+ *
+ * Notes: the ext_grs uses the round PREC, and therefore has to swap d1
+ *	 prior to usage, and needs to restore d1 to original. this
+ *	 routine is tightly tied to the round routine and not meant to
+ *	 uphold standard subroutine calling practices.
+ */
 
 ext_grs:
 	swap		%d1			/*  have d1.w point to round precision */
 	tst.b		%d1			/*  is rnd prec = extended? */
 	bne.b		ext_grs_not_ext		/*  no; go handle sgl or dbl */
 
-/*  */
-/*  %d0 actually already hold g,r,s since _round() had it before calling */
-/*  this function. so, as long as we don't disturb it, we are "returning" it. */
-/*  */
+/*
+ * %d0 actually already hold g,r,s since _round() had it before calling
+ * this function. so, as long as we don't disturb it, we are "returning" it.
+ */
 ext_grs_ext:
 	swap		%d1			/*  yes; return to correct positions */
 	rts
@@ -232,18 +232,18 @@ ext_grs_not_ext:
 	cmpi.b		&s_mode,%d1		/*  is rnd prec = sgl? */
 	bne.b		ext_grs_dbl		/*  no; go handle dbl */
 
-/*  */
-/*  sgl: */
-/* 	96		64	  40	32		0 */
-/* 	----------------------------------------------------- */
-/* 	| EXP	|XXXXXXX|	  |xx	|		|grs| */
-/* 	----------------------------------------------------- */
-/* 			<--(24)--->nn\			   / */
-/* 				   ee --------------------- */
-/* 				   ww		| */
-/* 						v */
-/* 				   gr	   new sticky */
-/*  */
+/*
+ * sgl:
+ *      96              64        40    32              0
+ *      -----------------------------------------------------
+ *      | EXP   |XXXXXXX|         |xx   |               |grs|
+ *      -----------------------------------------------------
+ *                      <--(24)--->nn\                     /
+ *                                 ee ---------------------
+ *                                 ww           |
+ *                                              v
+ *                                 gr      new sticky
+ */
 ext_grs_sgl:
 	bfextu		FTEMP_HI(%a0){&24:&2}, %d3 /*  sgl prec. g-r are 2 bits right */
 	moveq.l		&30, %d2		/*  of the sgl prec. limits */
@@ -257,18 +257,18 @@ ext_grs_sgl:
 	bne.b		ext_grs_st_stky		/*  if any are set, set sticky */
 	bra.b		ext_grs_end_sd		/*  if words 3 and 4 are clr, exit */
 
-/*  */
-/*  dbl: */
-/* 	96		64		32	 11	0 */
-/* 	----------------------------------------------------- */
-/* 	| EXP	|XXXXXXX|		|	 |xx	|grs| */
-/* 	----------------------------------------------------- */
-/* 						  nn\	    / */
-/* 						  ee ------- */
-/* 						  ww	| */
-/* 							v */
-/* 						  gr	new sticky */
-/*  */
+/*
+ * dbl:
+ *      96              64              32       11     0
+ *      -----------------------------------------------------
+ *      | EXP   |XXXXXXX|               |        |xx    |grs|
+ *      -----------------------------------------------------
+ *                                                nn\       /
+ *                                                ee -------
+ *                                                ww    |
+ *                                                      v
+ *                                                gr    new sticky
+ */
 ext_grs_dbl:
 	bfextu		FTEMP_LO(%a0){&21:&2}, %d3 /*  dbl-prec. g-r are 2 bits right */
 	moveq.l		&30,%d2				/*  of the dbl prec. limits */
@@ -276,7 +276,7 @@ ext_grs_dbl:
 	move.l		FTEMP_LO(%a0), %d2	/*  get lower mantissa  for s-bit test */
 	andi.l		&0x000001ff, %d2	/*  s bit is the or-ing of all */
 	bne.b		ext_grs_st_stky		/*  other bits to the right of g-r */
-	tst.l		%d0			/*  test word original g,r,s */
+	tst.l		%d0					/*  test word original g,r,s */
 	bne.b		ext_grs_st_stky		/*  if any are set, set sticky */
 	bra.b		ext_grs_end_sd		/*  if clear, exit */
 

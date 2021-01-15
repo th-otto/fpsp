@@ -292,12 +292,12 @@ fout_sgl:
 	ori.b		&s_mode*0x10,%d0	/*  insert sgl prec */
 	move.l		%d0,L_SCR3(%a6)		/*  save rnd prec,mode on stack */
 
-/*  */
-/*  operand is a normalized number. first, we check to see if the move out */
-/*  would cause either an underflow or overflow. these cases are handled */
-/*  separately. otherwise, set the FPCR to the proper rounding mode and */
-/*  execute the move. */
-/*  */
+/*
+ * operand is a normalized number. first, we check to see if the move out
+ * would cause either an underflow or overflow. these cases are handled
+ * separately. otherwise, set the FPCR to the proper rounding mode and
+ * execute the move.
+ */
 	move.w		SRC_EX.w(%a0),%d0		/*  extract exponent */
 	andi.w		&0x7fff,%d0		/*  strip sign */
 
@@ -307,10 +307,10 @@ fout_sgl:
 	cmpi.w		&SGL_LO,%d0		/*  will operand underflow? */
 	blt.w		fout_sgl_unfl		/*  yes; go handle underflow */
 
-/*  */
-/*  NORMs(in range) can be stored out by a simple "fmove.s" */
-/*  Unnormalized inputs can come through this point. */
-/*  */
+/*
+ * NORMs(in range) can be stored out by a simple "fmove.s"
+ * Unnormalized inputs can come through this point.
+ */
 fout_sgl_exg:
 	fmovem.x		SRC.w(%a0),%fp0		/*  fetch fop from stack */
 
@@ -343,11 +343,11 @@ fout_sgl_exg_write_dn:
 	bsr.l		store_dreg_l
 	rts
 
-/*  */
-/*  here, we know that the operand would UNFL if moved out to single prec, */
-/*  so, denorm and round and then use generic store single routine to */
-/*  write the value to memory. */
-/*  */
+/*
+ * here, we know that the operand would UNFL if moved out to single prec,
+ * so, denorm and round and then use generic store single routine to
+ * write the value to memory.
+ */
 fout_sgl_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set UNFL */
 
@@ -396,9 +396,9 @@ fout_sgl_unfl_chkexc:
 	addq.l		&0x4,%sp
 	rts
 
-/*  */
-/*  it's definitely an overflow so call ovf_res to get the correct answer */
-/*  */
+/*
+ * it's definitely an overflow so call ovf_res to get the correct answer
+ */
 fout_sgl_ovfl:
 	tst.b		3+SRC_HI(%a0)		/*  is result inexact? */
 	bne.b		fout_sgl_ovfl_inex2
@@ -446,14 +446,14 @@ fout_sgl_ovfl_chkexc:
 	addq.l		&0x4,%sp
 	rts
 
-/*  */
-/*  move out MAY overflow: */
-/*  (1) force the exp to 0x3fff */
-/*  (2) do a move w/ appropriate rnd mode */
-/*  (3) if exp still equals zero, then insert original exponent */
-/* 	for the correct result. */
-/*      if exp now equals one, then it overflowed so call ovf_res. */
-/*  */
+/*
+ * move out MAY overflow:
+ * (1) force the exp to 0x3fff
+ * (2) do a move w/ appropriate rnd mode
+ * (3) if exp still equals zero, then insert original exponent
+ *	for the correct result.
+ *     if exp now equals one, then it overflowed so call ovf_res.
+ */
 fout_sgl_may_ovfl:
 	move.w		SRC_EX.w(%a0),%d1		/*  fetch current sign */
 	andi.w		&0x8000,%d1		/*  keep it,clear exp */
@@ -530,12 +530,12 @@ fout_dbl:
 	ori.b		&d_mode*0x10,%d0	/*  insert dbl prec */
 	move.l		%d0,L_SCR3(%a6)		/*  save rnd prec,mode on stack */
 
-/*  */
-/*  operand is a normalized number. first, we check to see if the move out */
-/*  would cause either an underflow or overflow. these cases are handled */
-/*  separately. otherwise, set the FPCR to the proper rounding mode and */
-/*  execute the move. */
-/*  */
+/*
+ * operand is a normalized number. first, we check to see if the move out
+ * would cause either an underflow or overflow. these cases are handled
+ * separately. otherwise, set the FPCR to the proper rounding mode and
+ * execute the move.
+ */
 	move.w		SRC_EX.w(%a0),%d0		/*  extract exponent */
 	andi.w		&0x7fff,%d0		/*  strip sign */
 
@@ -545,10 +545,10 @@ fout_dbl:
 	cmpi.w		&DBL_LO,%d0		/*  will operand underflow? */
 	blt.w		fout_dbl_unfl		/*  yes; go handle underflow */
 
-/*  */
-/*  NORMs(in range) can be stored out by a simple "fmove.d" */
-/*  Unnormalized inputs can come through this point. */
-/*  */
+/*
+ * NORMs(in range) can be stored out by a simple "fmove.d"
+ * Unnormalized inputs can come through this point.
+ */
 fout_dbl_exg:
 	fmovem.x		SRC.w(%a0),%fp0		/*  fetch fop from stack */
 
@@ -572,11 +572,11 @@ fout_dbl_exg:
 
 	rts					/*  no; so we're finished */
 
-/*  */
-/*  here, we know that the operand would UNFL if moved out to double prec, */
-/*  so, denorm and round and then use generic store double routine to */
-/*  write the value to memory. */
-/*  */
+/*
+ * here, we know that the operand would UNFL if moved out to double prec,
+ * so, denorm and round and then use generic store double routine to
+ * write the value to memory.
+ */
 fout_dbl_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set UNFL */
 
@@ -617,9 +617,9 @@ fout_dbl_unfl_cont:
 	addq.l		&0x4,%sp
 	rts
 
-/*  */
-/*  it's definitely an overflow so call ovf_res to get the correct answer */
-/*  */
+/*
+ * it's definitely an overflow so call ovf_res to get the correct answer
+ */
 fout_dbl_ovfl:
 	move.w		2+SRC_LO(%a0),%d0
 	andi.w		&0x7ff,%d0
@@ -657,14 +657,14 @@ fout_dbl_ovfl_cont:
 	addq.l		&0x4,%sp
 	rts
 
-/*  */
-/*  move out MAY overflow: */
-/*  (1) force the exp to 0x3fff */
-/*  (2) do a move w/ appropriate rnd mode */
-/*  (3) if exp still equals zero, then insert original exponent */
-/* 	for the correct result. */
-/*      if exp now equals one, then it overflowed so call ovf_res. */
-/*  */
+/*
+ * move out MAY overflow:
+ * (1) force the exp to 0x3fff
+ * (2) do a move w/ appropriate rnd mode
+ * (3) if exp still equals zero, then insert original exponent
+ *	for the correct result.
+ *     if exp now equals one, then it overflowed so call ovf_res.
+ */
 fout_dbl_may_ovfl:
 	move.w		SRC_EX.w(%a0),%d1		/*  fetch current sign */
 	andi.w		&0x8000,%d1		/*  keep it,clear exp */
@@ -683,44 +683,45 @@ fout_dbl_may_ovfl:
 	fblt		fout_dbl_exg		/*  no; go finish NORM */
 	bra.w		fout_dbl_ovfl		/*  yes; go handle overflow */
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/*  XDEF ****************************************************************	 */
-/* 	dst_dbl(): create double precision value from extended prec.	 */
-/* 									 */
-/*  XREF ****************************************************************	 */
-/* 	None								 */
-/* 									 */
-/*  INPUT ***************************************************************	 */
-/* 	a0 = pointer to source operand in extended precision		 */
-/* 									 */
-/*  OUTPUT **************************************************************	 */
-/* 	d0 = hi(double precision result)				 */
-/* 	d1 = lo(double precision result)				 */
-/* 									 */
-/*  ALGORITHM ***********************************************************	 */
-/* 									 */
-/*   Changes extended precision to double precision.			 */
-/*   Note: no attempt is made to round the extended value to double.	 */
-/* 	dbl_sign = ext_sign						 */
-/* 	dbl_exp = ext_exp - $3fff(ext bias) + $7ff(dbl bias)		 */
-/* 	get rid of ext integer bit					 */
-/* 	dbl_mant = ext_mant{62:12}					 */
-/* 									 */
-/* 		---------------   ---------------    ---------------	 */
-/*   extended ->  |s|    exp    |   |1| ms mant   |    | ls mant     |	 */
-/* 		---------------   ---------------    ---------------	 */
-/* 		 95	    64    63 62	      32      31     11	  0	 */
-/* 				     |			     |		 */
-/* 				     |			     |		 */
-/* 				     |			     |		 */
-/* 			             v			     v		 */
-/* 			      ---------------   ---------------		 */
-/*   double   ->		      |s|exp| mant  |   |  mant       |		 */
-/* 			      ---------------   ---------------		 */
-/* 			      63     51   32   31	       0	 */
-/* 									 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-
+/*
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ * XDEF ****************************************************************
+ *      dst_dbl(): create double precision value from extended prec.
+ *
+ * XREF ****************************************************************
+ *      None
+ *
+ * INPUT ***************************************************************
+ *      a0 = pointer to source operand in extended precision
+ *
+ * OUTPUT **************************************************************
+ *      d0 = hi(double precision result)
+ *      d1 = lo(double precision result)
+ *
+ * ALGORITHM ***********************************************************
+ *
+ *  Changes extended precision to double precision.
+ *  Note: no attempt is made to round the extended value to double.
+ *      dbl_sign = ext_sign
+ *      dbl_exp = ext_exp - $3fff(ext bias) + $7ff(dbl bias)
+ *      get rid of ext integer bit
+ *      dbl_mant = ext_mant{62:12}
+ *
+ *              ---------------   ---------------    ---------------
+ *  extended ->  |s|    exp    |   |1| ms mant   |    | ls mant     |
+ *              ---------------   ---------------    ---------------
+ *               95         64    63 62       32      31     11   0
+ *                                   |                       |
+ *                                   |                       |
+ *                                   |                       |
+ *                                   v                       v
+ *                            ---------------   ---------------
+ *  double   ->               |s|exp| mant  |   |  mant       |
+ *                            ---------------   ---------------
+ *                            63     51   32   31              0
+ *
+ *;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ */
 dst_dbl:
 	clr.l		%d0			/*  clear d0 */
 	move.w		FTEMP_EX.w(%a0),%d0	/*  get exponent */

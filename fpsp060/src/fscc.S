@@ -80,27 +80,27 @@ tbl_fscc:
 	.dc.w		fscc_sneq	-	tbl_fscc	/*  30 */
 	.dc.w		fscc_st		-	tbl_fscc	/*  31 */
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/* 									 */
-/*  IEEE Nonaware tests							 */
-/* 									 */
-/*  For the IEEE nonaware tests, we set the result based on the		 */
-/*  floating point condition codes. In addition, we check to see		 */
-/*  if the NAN bit is set, in which case BSUN and AIOP will be set.	 */
-/* 									 */
-/*  The cases EQ and NE are shared by the Aware and Nonaware groups	 */
-/*  and are incapable of setting the BSUN exception bit.			 */
-/* 									 */
-/*  Typically, only one of the two possible branch directions could	 */
-/*  have the NAN bit set.							 */
-/* 									 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/*                                                                       */
+/*  IEEE Nonaware tests                                                  */
+/*                                                                       */
+/*  For the IEEE nonaware tests, we set the result based on the          */
+/*  floating point condition codes. In addition, we check to see         */
+/*  if the NAN bit is set, in which case BSUN and AIOP will be set.      */
+/*                                                                       */
+/*  The cases EQ and NE are shared by the Aware and Nonaware groups      */
+/*  and are incapable of setting the BSUN exception bit.                 */
+/*                                                                       */
+/*  Typically, only one of the two possible branch directions could      */
+/*  have the NAN bit set.                                                */
+/*                                                                       */
+/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  equal: */
-/*  */
-/* 	Z */
-/*  */
+/*
+ * equal:
+ *
+ *	Z
+ */
 fscc_eq:
 	fbeq		fscc_eq_yes		/*  equal? */
 fscc_eq_no:
@@ -110,11 +110,11 @@ fscc_eq_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  not equal: */
-/* 	_ */
-/* 	Z */
-/*  */
+/*
+ * not equal:
+ *	_
+ *	Z
+ */
 fscc_neq:
 	fbne		fscc_neq_yes		/*  not equal? */
 fscc_neq_no:
@@ -124,11 +124,11 @@ fscc_neq_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  greater than: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * greater than:
+ *	_______
+ *	NANvZvN
+ */
 fscc_gt:
 	fbgt		fscc_gt_yes		/*  greater than? */
 fscc_gt_no:
@@ -141,11 +141,11 @@ fscc_gt_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  not greater than: */
-/*  */
-/* 	NANvZvN */
-/*  */
+/*
+ * not greater than:
+ *
+ *	NANvZvN
+ */
 fscc_ngt:
 	fbngt		fscc_ngt_yes		/*  not greater than? */
 fscc_ngt_no:
@@ -158,11 +158,11 @@ fscc_ngt_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  greater than or equal: */
-/* 	   _____ */
-/* 	Zv(NANvN) */
-/*  */
+/*
+ * greater than or equal:
+ *	   _____
+ *	Zv(NANvN)
+ */
 fscc_ge:
 	fbge		fscc_ge_yes		/*  greater than or equal? */
 fscc_ge_no:
@@ -178,11 +178,11 @@ fscc_ge_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  not (greater than or equal): */
-/* 	       _ */
-/* 	NANv(N^Z) */
-/*  */
+/*
+ * not (greater than or equal):
+ *	       _
+ *	NANv(N^Z)
+ */
 fscc_nge:
 	fbnge		fscc_nge_yes		/*  not (greater than or equal)? */
 fscc_nge_no:
@@ -195,11 +195,11 @@ fscc_nge_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  less than: */
-/* 	   _____ */
-/* 	N^(NANvZ) */
-/*  */
+/*
+ * less than:
+ *	   _____
+ *	N^(NANvZ)
+ */
 fscc_lt:
 	fblt		fscc_lt_yes		/*  less than? */
 fscc_lt_no:
@@ -212,11 +212,11 @@ fscc_lt_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  not less than: */
-/* 	       _ */
-/* 	NANv(ZvN) */
-/*  */
+/*
+ * not less than:
+ *	       _
+ *	NANv(ZvN)
+ */
 fscc_nlt:
 	fbnlt		fscc_nlt_yes		/*  not less than? */
 fscc_nlt_no:
@@ -229,11 +229,11 @@ fscc_nlt_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  less than or equal: */
-/* 	     ___ */
-/* 	Zv(N^NAN) */
-/*  */
+/*
+ * less than or equal:
+ *	     ___
+ *	Zv(N^NAN)
+ */
 fscc_le:
 	fble		fscc_le_yes		/*  less than or equal? */
 fscc_le_no:
@@ -249,11 +249,11 @@ fscc_le_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  not (less than or equal): */
-/* 	     ___ */
-/* 	NANv(NvZ) */
-/*  */
+/*
+ * not (less than or equal):
+ *	     ___
+ *	NANv(NvZ)
+ */
 fscc_nle:
 	fbnle		fscc_nle_yes		/*  not (less than or equal)? */
 fscc_nle_no:
@@ -266,11 +266,11 @@ fscc_nle_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  greater or less than: */
-/* 	_____ */
-/* 	NANvZ */
-/*  */
+/*
+ * greater or less than:
+ *	_____
+ *	NANvZ
+ */
 fscc_gl:
 	fbgl		fscc_gl_yes		/*  greater or less than? */
 fscc_gl_no:
@@ -283,11 +283,11 @@ fscc_gl_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  not (greater or less than): */
-/*  */
-/* 	NANvZ */
-/*  */
+/*
+ * not (greater or less than):
+ *
+ *	NANvZ
+ */
 fscc_ngl:
 	fbngl		fscc_ngl_yes		/*  not (greater or less than)? */
 fscc_ngl_no:
@@ -300,11 +300,11 @@ fscc_ngl_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  greater, less, or equal: */
-/* 	___ */
-/* 	NAN */
-/*  */
+/*
+ * greater, less, or equal:
+ *	___
+ *	NAN
+ */
 fscc_gle:
 	fbgle		fscc_gle_yes		/*  greater, less, or equal? */
 fscc_gle_no:
@@ -315,11 +315,11 @@ fscc_gle_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  not (greater, less, or equal): */
-/*  */
-/* 	NAN */
-/*  */
+/*
+ * not (greater, less, or equal):
+ *
+ *	NAN
+ */
 fscc_ngle:
 	fbngle		fscc_ngle_yes	/*  not (greater, less, or equal)? */
 fscc_ngle_no:
@@ -330,39 +330,39 @@ fscc_ngle_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/* 									 */
-/*  Miscellaneous tests							 */
-/* 									 */
-/*  For the IEEE aware tests, we only have to set the result based on the	 */
-/*  floating point condition codes. The BSUN exception will not be	 */
-/*  set for any of these tests.						 */
-/* 									 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/*                                                                       */
+/*  Miscellaneous tests                                                  */
+/*                                                                       */
+/*  For the IEEE aware tests, we only have to set the result based on    */
+/*  the floating point condition codes. The BSUN exception will not be   */
+/*  set for any of these tests.                                          */
+/*                                                                       */
+/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  false: */
-/*  */
-/* 	False */
-/*  */
+/*
+ * false:
+ *
+ *	False
+ */
 fscc_f:
 	clr.b		%d0			/*  set false */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  true: */
-/*  */
-/* 	True */
-/*  */
+/*
+ * true:
+ *
+ *	True
+ */
 fscc_t:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  signalling false: */
-/*  */
-/* 	False */
-/*  */
+/*
+ * signalling false:
+ *
+ *	False
+ */
 fscc_sf:
 	clr.b		%d0			/*  set false */
 	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
@@ -370,11 +370,11 @@ fscc_sf:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  signalling true: */
-/*  */
-/* 	True */
-/*  */
+/*
+ * signalling true:
+ *
+ *	True
+ */
 fscc_st:
 	st		%d0			/*  set false */
 	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
@@ -382,11 +382,11 @@ fscc_st:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  signalling equal: */
-/*  */
-/* 	Z */
-/*  */
+/*
+ * signalling equal:
+ *
+ *	Z
+ */
 fscc_seq:
 	fbseq		fscc_seq_yes		/*  signalling equal? */
 fscc_seq_no:
@@ -402,11 +402,11 @@ fscc_seq_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/*  */
-/*  signalling not equal: */
-/* 	_ */
-/* 	Z */
-/*  */
+/*
+ * signalling not equal:
+ *	_
+ *	Z
+ */
 fscc_sneq:
 	fbsne	fscc_sneq_yes		/*  signalling equal? */
 fscc_sneq_no:
@@ -422,21 +422,21 @@ fscc_sneq_yes:
 	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
 	bra.w		fscc_chk_bsun		/*  go finish */
 
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
-/* 									 */
-/*  IEEE Aware tests							 */
-/* 									 */
-/*  For the IEEE aware tests, we only have to set the result based on the	 */
-/*  floating point condition codes. The BSUN exception will not be	 */
-/*  set for any of these tests.						 */
-/* 									 */
-/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
+/*                                                                       */
+/*  IEEE Aware tests                                                     */
+/*                                                                       */
+/*  For the IEEE aware tests, we only have to set the result based on    */
+/*  the floating point condition codes. The BSUN exception will not be   */
+/*  set for any of these tests.                                          */
+/*                                                                       */
+/* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  ordered greater than: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * ordered greater than:
+ *	_______
+ *	NANvZvN
+ */
 fscc_ogt:
 	fbogt		fscc_ogt_yes		/*  ordered greater than? */
 fscc_ogt_no:
@@ -446,11 +446,11 @@ fscc_ogt_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  unordered or less or equal: */
-/* 	_______ */
-/* 	NANvZvN */
-/*  */
+/*
+ * unordered or less or equal:
+ *	_______
+ *	NANvZvN
+ */
 fscc_ule:
 	fbule		fscc_ule_yes		/*  unordered or less or equal? */
 fscc_ule_no:
@@ -460,11 +460,11 @@ fscc_ule_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  ordered greater than or equal: */
-/* 	   _____ */
-/* 	Zv(NANvN) */
-/*  */
+/*
+ * ordered greater than or equal:
+ *	   _____
+ *	Zv(NANvN)
+ */
 fscc_oge:
 	fboge		fscc_oge_yes		/*  ordered greater than or equal? */
 fscc_oge_no:
@@ -474,11 +474,11 @@ fscc_oge_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  unordered or less than: */
-/* 	       _ */
-/* 	NANv(N^Z) */
-/*  */
+/*
+ * unordered or less than:
+ *	       _
+ *	NANv(N^Z)
+ */
 fscc_ult:
 	fbult		fscc_ult_yes		/*  unordered or less than? */
 fscc_ult_no:
@@ -488,11 +488,11 @@ fscc_ult_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  ordered less than: */
-/* 	   _____ */
-/* 	N^(NANvZ) */
-/*  */
+/*
+ * ordered less than:
+ *	   _____
+ *	N^(NANvZ)
+ */
 fscc_olt:
 	fbolt		fscc_olt_yes		/*  ordered less than? */
 fscc_olt_no:
@@ -502,11 +502,11 @@ fscc_olt_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  unordered or greater or equal: */
-/*  */
-/* 	NANvZvN */
-/*  */
+/*
+ * unordered or greater or equal:
+ *
+ *	NANvZvN
+ */
 fscc_uge:
 	fbuge		fscc_uge_yes		/*  unordered or greater than? */
 fscc_uge_no:
@@ -516,11 +516,11 @@ fscc_uge_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  ordered less than or equal: */
-/* 	     ___ */
-/* 	Zv(N^NAN) */
-/*  */
+/*
+ * ordered less than or equal:
+ *	     ___
+ *	Zv(N^NAN)
+ */
 fscc_ole:
 	fbole		fscc_ole_yes		/*  ordered greater or less than? */
 fscc_ole_no:
@@ -530,11 +530,11 @@ fscc_ole_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  unordered or greater than: */
-/* 	     ___ */
-/* 	NANv(NvZ) */
-/*  */
+/*
+ * unordered or greater than:
+ *	     ___
+ *	NANv(NvZ)
+ */
 fscc_ugt:
 	fbugt		fscc_ugt_yes		/*  unordered or greater than? */
 fscc_ugt_no:
@@ -544,11 +544,11 @@ fscc_ugt_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  ordered greater or less than: */
-/* 	_____ */
-/* 	NANvZ */
-/*  */
+/*
+ * ordered greater or less than:
+ *	_____
+ *	NANvZ
+ */
 fscc_ogl:
 	fbogl		fscc_ogl_yes		/*  ordered greater or less than? */
 fscc_ogl_no:
@@ -558,11 +558,11 @@ fscc_ogl_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  unordered or equal: */
-/*  */
-/* 	NANvZ */
-/*  */
+/*
+ * unordered or equal:
+ *
+ *	NANvZ
+ */
 fscc_ueq:
 	fbueq		fscc_ueq_yes		/*  unordered or equal? */
 fscc_ueq_no:
@@ -572,11 +572,11 @@ fscc_ueq_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  ordered: */
-/* 	___ */
-/* 	NAN */
-/*  */
+/*
+ * ordered:
+ *	___
+ *	NAN
+ */
 fscc_or:
 	fbor		fscc_or_yes		/*  ordered? */
 fscc_or_no:
@@ -586,11 +586,11 @@ fscc_or_yes:
 	st		%d0			/*  set true */
 	bra.w		fscc_done		/*  go finish */
 
-/*  */
-/*  unordered: */
-/*  */
-/* 	NAN */
-/*  */
+/*
+ * unordered:
+ *
+ *	NAN
+ */
 fscc_un:
 	fbun		fscc_un_yes		/*  unordered? */
 fscc_un_no:
@@ -602,21 +602,21 @@ fscc_un_yes:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  the bsun exception bit was set. now, check to see is BSUN */
-/*  is enabled. if so, don't store result and correct stack frame */
-/*  for a bsun exception. */
-/*  */
+/*
+ * the bsun exception bit was set. now, check to see is BSUN
+ * is enabled. if so, don't store result and correct stack frame
+ * for a bsun exception.
+ */
 fscc_chk_bsun:
 	btst		&bsun_bit,FPCR_ENABLE(%a6) /*  was BSUN set? */
 	bne.w		fscc_bsun
 
-/*  */
-/*  the bsun exception bit was not set. */
-/*  the result has been selected. */
-/*  now, check to see if the result is to be stored in the data register */
-/*  file or in memory. */
-/*  */
+/*
+ * the bsun exception bit was not set.
+ * the result has been selected.
+ * now, check to see if the result is to be stored in the data register
+ * file or in memory.
+ */
 fscc_done:
 	move.l		%d0,%a0			/*  save result for a moment */
 
@@ -632,13 +632,13 @@ fscc_done:
 	bsr.l		store_dreg_b		/*  save result in regfile */
 	rts
 
-/*  */
-/*  the stacked <ea> is correct with the exception of: */
-/* 	-> Dn : <ea> is garbage */
-/*  */
-/*  if the addressing mode is post-increment or pre-decrement, */
-/*  then the address registers have not been updated. */
-/*  */
+/*
+ * the stacked <ea> is correct with the exception of:
+ *	-> Dn : <ea> is garbage
+ *
+ * if the addressing mode is post-increment or pre-decrement,
+ * then the address registers have not been updated.
+ */
 fscc_mem_op:
 	cmpi.b		&0x18,%d1		/*  is <ea> (An)+ ? */
 	beq.b		fscc_mem_inc		/*  yes */
@@ -654,9 +654,11 @@ fscc_mem_op:
 
 	rts
 
-/*  addressing mode is post-increment. write the result byte. if the write */
-/*  fails then don't update the address register. if write passes then */
-/*  call inc_areg() to update the address register. */
+/*
+ * addressing mode is post-increment. write the result byte. if the write
+ * fails then don't update the address register. if write passes then
+ * call inc_areg() to update the address register.
+ */
 fscc_mem_inc:
 	move.l		%a0,%d0			/*  pass result in d0 */
 	move.l		EXC_EA(%a6),%a0		/*  fetch <ea> */

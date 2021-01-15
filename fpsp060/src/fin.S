@@ -54,18 +54,18 @@ fin:
 	move.b		STAG(%a6),%d1		/*  fetch src optype tag */
 	bne.w		fin_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  FP MOVE IN: NORMs and DENORMs ONLY! */
-/*  */
+/*
+ * FP MOVE IN: NORMs and DENORMs ONLY!
+ */
 fin_norm:
 	andi.b		&0xc0,%d0		/*  is precision extended? */
 	bne.w		fin_not_ext		/*  no, so go handle dbl or sgl */
 
-/*  */
-/*  precision selected is extended. so...we cannot get an underflow */
-/*  or overflow because of rounding to the correct precision. so... */
-/*  skip the scaling and unscaling... */
-/*  */
+/*
+ * precision selected is extended. so...we cannot get an underflow
+ * or overflow because of rounding to the correct precision. so...
+ * skip the scaling and unscaling...
+ */
 	tst.b		SRC_EX.w(%a0)		/*  is the operand negative? */
 	bpl.b		fin_norm_done		/*  no */
 	bset		&neg_bit,FPSR_CC(%a6)	/*  yes, so set 'N' ccode bit */
@@ -73,10 +73,10 @@ fin_norm_done:
 	fmovem.x	SRC.w(%a0),%fp0		/*  return result in fp0 */
 	rts
 
-/*  */
-/*  for an extended precision DENORM, the UNFL exception bit is set */
-/*  the accrued bit is NOT set in this instance(no inexactness!) */
-/*  */
+/*
+ * for an extended precision DENORM, the UNFL exception bit is set
+ * the accrued bit is NOT set in this instance(no inexactness!)
+ */
 fin_denorm:
 	andi.b		&0xc0,%d0		/*  is precision extended? */
 	bne.w		fin_not_ext		/*  no, so go handle dbl or sgl */
@@ -91,11 +91,11 @@ fin_denorm_done:
 	bne.b		fin_denorm_unfl_ena	/*  yes */
 	rts
 
-/*  */
-/*  the input is an extended DENORM and underflow is enabled in the FPCR. */
-/*  normalize the mantissa and add the bias of 0x6000 to the resulting negative */
-/*  exponent and insert back into the operand. */
-/*  */
+/*
+ * the input is an extended DENORM and underflow is enabled in the FPCR.
+ * normalize the mantissa and add the bias of 0x6000 to the resulting negative
+ * exponent and insert back into the operand.
+ */
 fin_denorm_unfl_ena:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -112,16 +112,16 @@ fin_denorm_unfl_ena:
 	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
 	rts
 
-/*  */
-/*  operand is to be rounded to single or double precision */
-/*  */
+/*
+ * operand is to be rounded to single or double precision
+ */
 fin_not_ext:
 	cmpi.b		&s_mode*0x10,%d0	/*  separate sgl/dbl prec */
 	bne.b		fin_dbl
 
-/*  */
-/*  operand is to be rounded to single precision */
-/*  */
+/*
+ * operand is to be rounded to single precision
+ */
 fin_sgl:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -134,9 +134,9 @@ fin_sgl:
 	beq.w		fin_sd_may_ovfl		/*  maybe; go check */
 	blt.w		fin_sd_ovfl		/*  yes; go handle overflow */
 
-/*  */
-/*  operand will NOT overflow or underflow when moved into the fp reg file */
-/*  */
+/*
+ * operand will NOT overflow or underflow when moved into the fp reg file
+ */
 fin_sd_normal:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
@@ -162,9 +162,9 @@ fin_sd_normal_exit:
 	fmovem.x	FP_SCR0(%a6),%fp0	/*  return result in fp0 */
 	rts
 
-/*  */
-/*  operand is to be rounded to double precision */
-/*  */
+/*
+ * operand is to be rounded to double precision
+ */
 fin_dbl:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -178,9 +178,9 @@ fin_dbl:
 	blt.w		fin_sd_ovfl		/*  yes; go handle overflow */
 	bra.w		fin_sd_normal		/*  no; ho handle normalized op */
 
-/*  */
-/*  operand WILL underflow when moved in to the fp register file */
-/*  */
+/*
+ * operand WILL underflow when moved in to the fp register file
+ */
 fin_sd_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
 
@@ -202,10 +202,10 @@ fin_sd_unfl_dis:
 	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  operand will underflow AND underflow or inexact is enabled. */
-/*  Therefore, we must return the result rounded to extended precision. */
-/*  */
+/*
+ * operand will underflow AND underflow or inexact is enabled.
+ * Therefore, we must return the result rounded to extended precision.
+ */
 fin_sd_unfl_ena:
 	move.l		FP_SCR0_HI(%a6),FP_SCR1_HI(%a6)
 	move.l		FP_SCR0_LO(%a6),FP_SCR1_LO(%a6)
@@ -224,9 +224,9 @@ fin_sd_unfl_ena:
 	move.l		(%sp)+,%d2		/*  restore d2 */
 	bra.b		fin_sd_unfl_dis
 
-/*  */
-/*  operand WILL overflow. */
-/*  */
+/*
+ * operand WILL overflow.
+ */
 fin_sd_ovfl:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
@@ -245,10 +245,10 @@ fin_sd_ovfl_tst:
 	andi.b		&0x13,%d1		/*  is OVFL or INEX enabled? */
 	bne.b		fin_sd_ovfl_ena		/*  yes */
 
-/*  */
-/*  OVFL is not enabled; therefore, we must create the default result by */
-/*  calling ovf_res(). */
-/*  */
+/*
+ * OVFL is not enabled; therefore, we must create the default result by
+ * calling ovf_res().
+ */
 fin_sd_ovfl_dis:
 	btst		&neg_bit,FPSR_CC(%a6)	/*  is result negative? */
 	sne		%d1			/*  set sign param accordingly */
@@ -258,11 +258,11 @@ fin_sd_ovfl_dis:
 	fmovem.x		(%a0),%fp0		/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  OVFL is enabled. */
-/*  the INEX2 bit has already been updated by the round to the correct precision. */
-/*  now, round to extended(and don't alter the FPSR). */
-/*  */
+/*
+ * OVFL is enabled.
+ * the INEX2 bit has already been updated by the round to the correct precision.
+ * now, round to extended(and don't alter the FPSR).
+ */
 fin_sd_ovfl_ena:
 	move.l		%d2,-(%sp)		/*  save d2 */
 	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
@@ -278,9 +278,9 @@ fin_sd_ovfl_ena:
 	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
 	bra.b		fin_sd_ovfl_dis
 
-/*  */
-/*  the move in MAY overflow. so... */
-/*  */
+/*
+ * the move in MAY overflow. so...
+ */
 fin_sd_may_ovfl:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
@@ -301,9 +301,9 @@ fin_sd_may_ovfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  operand is not a NORM: check its optype and branch accordingly */
-/*  */
+/*
+ * operand is not a NORM: check its optype and branch accordingly
+ */
 fin_not_norm:
 	cmpi.b		&DENORM,%d1		/*  weed out DENORM */
 	beq.w		fin_denorm
@@ -312,11 +312,11 @@ fin_not_norm:
 	cmpi.b		&QNAN,%d1		/*  weed out QNANs */
 	beq.l		res_qnan_1op
 
-/*  */
-/*  do the fmove in; at this point, only possible ops are ZERO and INF. */
-/*  use fmov to determine ccodes. */
-/*  prec:mode should be zero at this point but it won't affect answer anyways. */
-/*  */
+/*
+ * do the fmove in; at this point, only possible ops are ZERO and INF.
+ * use fmov to determine ccodes.
+ * prec:mode should be zero at this point but it won't affect answer anyways.
+ */
 	fmove.x		SRC.w(%a0),%fp0		/*  do fmove in */
 	fmove.l		%fpsr,%d0		/*  no exceptions possible */
 	rol.l		&0x8,%d0		/*  put ccodes in lo byte */

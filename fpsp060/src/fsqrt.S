@@ -53,9 +53,9 @@ fsqrt:
 	move.b		STAG(%a6),%d1
 	bne.w		fsqrt_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  SQUARE ROOT: norms and denorms ONLY! */
-/*  */
+/*
+ * SQUARE ROOT: norms and denorms ONLY!
+ */
 fsqrt_norm:
 	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.l		res_operr		/*  yes */
@@ -88,16 +88,16 @@ fsqrt_denorm:
 
 	bra.w		fsqrt_sd_normal
 
-/*  */
-/*  operand is either single or double */
-/*  */
+/*
+ * operand is either single or double
+ */
 fsqrt_not_ext:
 	cmpi.b		&s_mode*0x10,%d0	/*  separate sgl/dbl prec */
 	bne.w		fsqrt_dbl
 
-/*  */
-/*  operand is to be rounded to single precision */
-/*  */
+/*
+ * operand is to be rounded to single precision
+ */
 fsqrt_sgl:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -112,9 +112,9 @@ fsqrt_sgl:
 	beq.w		fsqrt_sd_may_ovfl	/*  maybe; go check */
 	blt.w		fsqrt_sd_ovfl		/*  yes; go handle overflow */
 
-/*  */
-/*  operand will NOT overflow or underflow when moved in to the fp reg file */
-/*  */
+/*
+ * operand will NOT overflow or underflow when moved in to the fp reg file
+ */
 fsqrt_sd_normal:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
@@ -140,9 +140,9 @@ fsqrt_sd_normal_exit:
 	fmovem.x	FP_SCR0(%a6),%fp0	/*  return result in fp0 */
 	rts
 
-/*  */
-/*  operand is to be rounded to double precision */
-/*  */
+/*
+ * operand is to be rounded to double precision
+ */
 fsqrt_dbl:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -165,9 +165,9 @@ fsqrt_sd_may_unfl:
 	btst		&0x0,1+FP_SCR0_EX(%a6)	/*  is exponent 0x3fff? */
 	bne.w		fsqrt_sd_normal		/*  yes, so no underflow */
 
-/*  */
-/*  operand WILL underflow when moved in to the fp register file */
-/*  */
+/*
+ * operand WILL underflow when moved in to the fp register file
+ */
 fsqrt_sd_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
 
@@ -196,10 +196,10 @@ fsqrt_sd_unfl_dis:
 	fmovem.x		FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  operand will underflow AND underflow is enabled. */
-/*  Therefore, we must return the result rounded to extended precision. */
-/*  */
+/*
+ * operand will underflow AND underflow is enabled.
+ * Therefore, we must return the result rounded to extended precision.
+ */
 fsqrt_sd_unfl_ena:
 	move.l		FP_SCR0_HI(%a6),FP_SCR1_HI(%a6)
 	move.l		FP_SCR0_LO(%a6),FP_SCR1_LO(%a6)
@@ -218,9 +218,9 @@ fsqrt_sd_unfl_ena:
 	move.l		(%sp)+,%d2		/*  restore d2 */
 	bra.b		fsqrt_sd_unfl_dis
 
-/*  */
-/*  operand WILL overflow. */
-/*  */
+/*
+ * operand WILL overflow.
+ */
 fsqrt_sd_ovfl:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
@@ -239,10 +239,10 @@ fsqrt_sd_ovfl_tst:
 	andi.b		&0x13,%d1		/*  is OVFL or INEX enabled? */
 	bne.b		fsqrt_sd_ovfl_ena	/*  yes */
 
-/*  */
-/*  OVFL is not enabled; therefore, we must create the default result by */
-/*  calling ovf_res(). */
-/*  */
+/*
+ * OVFL is not enabled; therefore, we must create the default result by
+ * calling ovf_res().
+ */
 fsqrt_sd_ovfl_dis:
 	btst		&neg_bit,FPSR_CC(%a6)	/*  is result negative? */
 	sne		%d1			/*  set sign param accordingly */
@@ -252,11 +252,11 @@ fsqrt_sd_ovfl_dis:
 	fmovem.x		(%a0),%fp0		/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  OVFL is enabled. */
-/*  the INEX2 bit has already been updated by the round to the correct precision. */
-/*  now, round to extended(and don't alter the FPSR). */
-/*  */
+/*
+ * OVFL is enabled.
+ * the INEX2 bit has already been updated by the round to the correct precision.
+ * now, round to extended(and don't alter the FPSR).
+ */
 fsqrt_sd_ovfl_ena:
 	move.l		%d2,-(%sp)		/*  save d2 */
 	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
@@ -272,9 +272,9 @@ fsqrt_sd_ovfl_ena:
 	move.l		(%sp)+,%d2		/*  restore d2 */
 	bra.b		fsqrt_sd_ovfl_dis
 
-/*  */
-/*  the move in MAY underflow. so... */
-/*  */
+/*
+ * the move in MAY underflow. so...
+ */
 fsqrt_sd_may_ovfl:
 	btst		&0x0,1+FP_SCR0_EX(%a6)	/*  is exponent 0x3fff? */
 	bne.w		fsqrt_sd_ovfl		/*  yes, so overflow */
@@ -298,9 +298,9 @@ fsqrt_sd_may_ovfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  input is not normalized; what is it? */
-/*  */
+/*
+ * input is not normalized; what is it?
+ */
 fsqrt_not_norm:
 	cmpi.b		&DENORM,%d1		/*  weed out DENORM */
 	beq.w		fsqrt_denorm
@@ -312,12 +312,12 @@ fsqrt_not_norm:
 	beq.l		res_snan_1op
 	bra.l		res_qnan_1op
 
-/*  */
-/* 	fsqrt(+0) = +0 */
-/* 	fsqrt(-0) = -0 */
-/* 	fsqrt(+INF) = +INF */
-/* 	fsqrt(-INF) = OPERR */
-/*  */
+/*
+ *	fsqrt(+0) = +0
+ *	fsqrt(-0) = -0
+ *	fsqrt(+INF) = +INF
+ *	fsqrt(-INF) = OPERR
+ */
 fsqrt_zero:
 	tst.b		SRC_EX.w(%a0)		/*  is ZERO positive or negative? */
 	bmi.b		fsqrt_zero_m		/*  negative */

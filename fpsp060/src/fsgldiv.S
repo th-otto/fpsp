@@ -46,9 +46,9 @@ fsgldiv:
 
 	bne.w		fsgldiv_not_norm	/*  optimize on non-norm input */
 
-/*  */
-/*  DIVIDE: NORMs and DENORMs ONLY! */
-/*  */
+/*
+ * DIVIDE: NORMs and DENORMs ONLY!
+ */
 fsgldiv_norm:
 	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
@@ -77,7 +77,7 @@ fsgldiv_norm:
 	bgt.w		fsgldiv_unfl		/*  yes; go handle underflow */
 
 fsgldiv_normal:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  save FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -90,7 +90,7 @@ fsgldiv_normal:
 	or.l		%d1,USER_FPSR(%a6)	/*  save INEX2,N */
 
 fsgldiv_normal_exit:
-	fmovem.x		%fp0,FP_SCR0(%a6)	/*  store result on stack */
+	fmovem.x	%fp0,FP_SCR0(%a6)	/*  store result on stack */
 	move.l		%d2,-(%sp)		/*  save d2 */
 	move.w		FP_SCR0_EX(%a6),%d1	/*  load {sgn,exp} */
 	move.l		%d1,%d2			/*  make a copy */
@@ -100,11 +100,11 @@ fsgldiv_normal_exit:
 	or.w		%d2,%d1			/*  concat old sign,new exp */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
 	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp0	/*  return result in fp0 */
+	fmovem.x	FP_SCR0(%a6),%fp0	/*  return result in fp0 */
 	rts
 
 fsgldiv_may_ovfl:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  set FPSR */
@@ -116,7 +116,7 @@ fsgldiv_may_ovfl:
 
 	or.l		%d1,USER_FPSR(%a6)	/*  save INEX,N */
 
-	fmovem.x		%fp0,-(%sp)		/*  save result to stack */
+	fmovem.x	%fp0,-(%sp)		/*  save result to stack */
 	move.w		(%sp),%d1		/*  fetch new exponent */
 	add.l		&0xc,%sp		/*  clear result */
 	andi.l		&0x7fff,%d1		/*  strip sign */
@@ -133,12 +133,12 @@ fsgldiv_ovfl_tst:
 
 fsgldiv_ovfl_dis:
 	btst		&neg_bit,FPSR_CC(%a6)	/*  is result negative */
-	sne		%d1			/*  set sign param accordingly */
+	sne			%d1			/*  set sign param accordingly */
 	move.l		L_SCR3(%a6),%d0		/*  pass prec:rnd */
 	andi.b		&0x30,%d0		/*  kill precision */
 	bsr.l		ovf_res			/*  calculate default result */
 	or.b		%d0,FPSR_CC(%a6)	/*  set INF if applicable */
-	fmovem.x		(%a0),%fp0		/*  return default result in fp0 */
+	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
 	rts
 
 fsgldiv_ovfl_ena:
@@ -155,13 +155,13 @@ fsgldiv_ovfl_ena:
 	or.w		%d2,%d1			/*  concat old sign,new exp */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
 	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	fmovem.x	FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
 	bra.b		fsgldiv_ovfl_dis
 
 fsgldiv_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
 
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		&rz_mode*0x10,%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -178,20 +178,20 @@ fsgldiv_unfl:
 	bne.b		fsgldiv_unfl_ena	/*  yes */
 
 fsgldiv_unfl_dis:
-	fmovem.x		%fp0,FP_SCR0(%a6)	/*  store out result */
+	fmovem.x	%fp0,FP_SCR0(%a6)	/*  store out result */
 
-	lea		FP_SCR0(%a6),%a0	/*  pass: result addr */
+	lea			FP_SCR0(%a6),%a0	/*  pass: result addr */
 	move.l		L_SCR3(%a6),%d1		/*  pass: rnd prec,mode */
 	bsr.l		unf_res4		/*  calculate default result */
 	or.b		%d0,FPSR_CC(%a6)	/*  'Z' bit may have been set */
-	fmovem.x		FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
+	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
 	rts
 
-/*  */
-/*  UNFL is enabled. */
-/*  */
+/*
+ * UNFL is enabled.
+ */
 fsgldiv_unfl_ena:
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp1	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -200,7 +200,7 @@ fsgldiv_unfl_ena:
 
 	fmove.l		&0x0,%fpcr		/*  clear FPCR */
 
-	fmovem.x		%fp1,FP_SCR0(%a6)	/*  save result to stack */
+	fmovem.x	%fp1,FP_SCR0(%a6)	/*  save result to stack */
 	move.l		%d2,-(%sp)		/*  save d2 */
 	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
 	move.l		%d1,%d2			/*  make a copy */
@@ -212,14 +212,14 @@ fsgldiv_unfl_ena:
 	or.w		%d2,%d1			/*  concat old sign, new exp */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
 	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	fmovem.x	FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
 	bra.b		fsgldiv_unfl_dis
 
-/*  */
-/*  the divide operation MAY underflow: */
-/*  */
+/*
+ * the divide operation MAY underflow:
+ */
 fsgldiv_may_unfl:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -236,14 +236,14 @@ fsgldiv_may_unfl:
 	fbgt		fsgldiv_normal_exit	/*  no; no underflow occurred */
 	fblt		fsgldiv_unfl		/*  yes; underflow occurred */
 
-/*  */
-/*  we still don't know if underflow occurred. result is ~ equal to 1. but, */
-/*  we don't know if the result was an underflow that rounded up to a 1 */
-/*  or a normalized number that rounded down to a 1. so, redo the entire */
-/*  operation using RZ as the rounding mode to see what the pre-rounded */
-/*  result is. this case should be relatively rare. */
-/*  */
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op into %fp1 */
+/*
+ * we still don't know if underflow occurred. result is ~ equal to 1. but,
+ * we don't know if the result was an underflow that rounded up to a 1
+ * or a normalized number that rounded down to a 1. so, redo the entire
+ * operation using RZ as the rounding mode to see what the pre-rounded
+ * result is. this case should be relatively rare.
+ */
+	fmovem.x	FP_SCR1(%a6),%fp1	/*  load dst op into %fp1 */
 
 	clr.l		%d1			/*  clear scratch register */
 	ori.b		&rz_mode*0x10,%d1	/*  force RZ rnd mode */
@@ -261,12 +261,12 @@ fsgldiv_may_unfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  Divide: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * Divide: inputs are not both normalized; what are they?
+ */
 fsgldiv_not_norm:
 	move.w		(tbl_fsgldiv_op.b,%pc,%d1.w*2),%d1
-	jmp		(tbl_fsgldiv_op.b,%pc,%d1.w*1)
+	jmp			(tbl_fsgldiv_op.b,%pc,%d1.w*1)
 
 	swbeg		&48
 tbl_fsgldiv_op:
@@ -336,4 +336,3 @@ fsgldiv_zero_load:
 	bra.l		fdiv_zero_load
 fsgldiv_inf_dst:
 	bra.l		fdiv_inf_dst
-

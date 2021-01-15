@@ -58,9 +58,9 @@ fadd:
 
 	bne.w		fadd_not_norm		/*  optimize on non-norm input */
 
-/*  */
-/*  ADD: norms and denorms */
-/*  */
+/*
+ * ADD: norms and denorms
+ */
 fadd_norm:
 	bsr.l		addsub_scaler2		/*  scale exponents */
 
@@ -239,11 +239,11 @@ fadd_unfl_ena_sd:
 
 	bra.b		fadd_unfl_ena_cont
 
-/*  */
-/*  result is equal to the smallest normalized number in the selected precision */
-/*  if the precision is extended, this result could not have come from an */
-/*  underflow that rounded up. */
-/*  */
+/*
+ * result is equal to the smallest normalized number in the selected precision
+ * if the precision is extended, this result could not have come from an
+ * underflow that rounded up.
+ */
 fadd_may_unfl:
 	move.l		L_SCR3(%a6),%d1
 	andi.b		&0xc0,%d1
@@ -259,16 +259,16 @@ fadd_may_unfl:
 	btst		&inex2_bit,FPSR_EXCEPT(%a6) /*  is INEX2 set? */
 	beq.w		fadd_normal		/*  no; no underflow occurred */
 
-/*  */
-/*  ok, so now the result has a exponent equal to the smallest normalized */
-/*  exponent for the selected precision. also, the mantissa is equal to */
-/*  0x8000000000000000 and this mantissa is the result of rounding non-zero */
-/*  g,r,s. */
-/*  now, we must determine whether the pre-rounded result was an underflow */
-/*  rounded "up" or a normalized number rounded "down". */
-/*  so, we do this be re-executing the add using RZ as the rounding mode and */
-/*  seeing if the new result is smaller or equal to the current result. */
-/*  */
+/*
+ * ok, so now the result has a exponent equal to the smallest normalized
+ * exponent for the selected precision. also, the mantissa is equal to
+ * 0x8000000000000000 and this mantissa is the result of rounding non-zero
+ * g,r,s.
+ * now, we must determine whether the pre-rounded result was an underflow
+ * rounded "up" or a normalized number rounded "down".
+ * so, we do this be re-executing the add using RZ as the rounding mode and
+ * seeing if the new result is smaller or equal to the current result.
+ */
 	fmovem.x	FP_SCR1(%a6),%fp1	/*  load dst op into fp1 */
 
 	move.l		L_SCR3(%a6),%d1
@@ -290,9 +290,9 @@ fadd_may_unfl:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-/*  */
-/*  Add: inputs are not both normalized; what are they? */
-/*  */
+/*
+ * Add: inputs are not both normalized; what are they?
+ */
 fadd_not_norm:
 	move.w		(tbl_fadd_op.b,%pc,%d1.w*2),%d1
 	jmp		(tbl_fadd_op.b,%pc,%d1.w*1)
@@ -358,9 +358,9 @@ fadd_res_qnan:
 fadd_res_snan:
 	bra.l		res_snan
 
-/*  */
-/*  both operands are ZEROes */
-/*  */
+/*
+ * both operands are ZEROes
+ */
 fadd_zero_2:
 	move.b		SRC_EX.w(%a0),%d0		/*  are the signs opposite */
 	move.b		DST_EX.w(%a1),%d1
@@ -375,11 +375,11 @@ fadd_zero_2:
 	move.b		&z_bmask,FPSR_CC(%a6)	/*  set Z */
 	rts
 
-/*  */
-/*  the ZEROes have opposite signs: */
-/*  - Therefore, we return +ZERO if the rounding modes are RN,RZ, or RP. */
-/*  - -ZERO is returned in the case of RM. */
-/*  */
+/*
+ * the ZEROes have opposite signs:
+ * - Therefore, we return +ZERO if the rounding modes are RN,RZ, or RP.
+ * - -ZERO is returned in the case of RM.
+ */
 fadd_zero_2_chk_rm:
 	move.b		3+L_SCR3(%a6),%d1
 	andi.b		&0x30,%d1		/*  extract rnd mode */
@@ -394,10 +394,10 @@ fadd_zero_rm:
 	move.b		&neg_bmask+z_bmask,FPSR_CC(%a6) /*  set NEG/Z */
 	rts
 
-/*  */
-/*  one operand is a ZERO and the other is a DENORM or NORM. scale */
-/*  the DENORM or NORM and jump to the regular fadd routine. */
-/*  */
+/*
+ * one operand is a ZERO and the other is a DENORM or NORM. scale
+ * the DENORM or NORM and jump to the regular fadd routine.
+ */
 fadd_zero_dst:
 	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
@@ -418,10 +418,10 @@ fadd_zero_src:
 	clr.l		FP_SCR0_LO(%a6)
 	bra.w		fadd_zero_entry		/*  go execute fadd */
 
-/*  */
-/*  both operands are INFs. an OPERR will result if the INFs have */
-/*  different signs. else, an INF of the same sign is returned */
-/*  */
+/*
+ * both operands are INFs. an OPERR will result if the INFs have
+ * different signs. else, an INF of the same sign is returned
+ */
 fadd_inf_2:
 	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
 	move.b		DST_EX.w(%a1),%d1
@@ -431,9 +431,9 @@ fadd_inf_2:
 /*  ok, so it's not an OPERR. but, we do have to remember to return the */
 /*  src INF since that's where the 881/882 gets the j-bit from... */
 
-/*  */
-/*  operands are INF and one of {ZERO, INF, DENORM, NORM} */
-/*  */
+/*
+ * operands are INF and one of {ZERO, INF, DENORM, NORM}
+ */
 fadd_inf_src:
 	fmovem.x	SRC.w(%a0),%fp0		/*  return src INF */
 	tst.b		SRC_EX.w(%a0)		/*  is INF positive? */
@@ -441,9 +441,9 @@ fadd_inf_src:
 	move.b		&neg_bmask+inf_bmask,FPSR_CC(%a6) /*  set INF/NEG */
 	rts
 
-/*  */
-/*  operands are INF and one of {ZERO, INF, DENORM, NORM} */
-/*  */
+/*
+ * operands are INF and one of {ZERO, INF, DENORM, NORM}
+ */
 fadd_inf_dst:
 	fmovem.x	DST.w(%a1),%fp0		/*  return dst INF */
 	tst.b		DST_EX.w(%a1)		/*  is INF positive? */

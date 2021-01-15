@@ -73,13 +73,17 @@ FPSP060_SRCS = \
 	src/faccess.S \
 	$(empty)
 
+ISP060_SRCS = \
+	src/isp.S \
+	$(empty)
+
 EXTRA = \
 	src/hdr.fpu \
 	$(empty)
 
 FPSP060_OBJS = $(FPSP060_SRCS:.S=.o)
 
-all: fpsp.sa
+all: fpsp.sa isp.sa
 
 fpsp.bin: $(FPSP060_SRCS) Makefile
 	cat $(FPSP060_SRCS) > fpsp.S
@@ -87,7 +91,13 @@ fpsp.bin: $(FPSP060_SRCS) Makefile
 	$(RM) fpsp.S
 
 fpsp.sa: fpsp.bin dfpsp
-	./dfpsp > $@
+	./dfpsp $< > $@
+
+isp.bin: $(ISP060_SRCS) Makefile
+	$(CC) $(ASFLAGS) -s -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib $<
+
+isp.sa: isp.bin dfpsp
+	./dfpsp $< > $@
 
 dfpsp: dfpsp.c
 	$(CC_FOR_BUILD) -o $@ $<

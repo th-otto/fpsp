@@ -2,6 +2,7 @@ CROSS=m68k-atari-mint-
 CC = $(CROSS)gcc
 AS = $(CC)
 ASFLAGS = -m68060
+LDFLAGS = -s
 
 CC_FOR_BUILD = gcc
 
@@ -83,18 +84,21 @@ EXTRA = \
 
 FPSP060_OBJS = $(FPSP060_SRCS:.S=.o)
 
-all: fpsp.sa isp.sa
+all: fpsp.sa isp.sa fpsp060.prg
+
+fpsp060.prg: fpsp060.s fpsp.sa isp.sa
+	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
 
 fpsp.bin: $(FPSP060_SRCS) Makefile
 	cat $(FPSP060_SRCS) > fpsp.S
-	$(CC) $(ASFLAGS) -s -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib fpsp.S
+	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib fpsp.S
 	$(RM) fpsp.S
 
 fpsp.sa: fpsp.bin dfpsp
 	./dfpsp $< > $@
 
 isp.bin: $(ISP060_SRCS) Makefile
-	$(CC) $(ASFLAGS) -s -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib $<
+	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib $<
 
 isp.sa: isp.bin dfpsp
 	./dfpsp $< > $@
@@ -103,4 +107,4 @@ dfpsp: dfpsp.c
 	$(CC_FOR_BUILD) -o $@ $<
 
 clean::
-	$(RM) src/*.o *.sa *.bin
+	$(RM) src/*.o *.sa *.bin *.prg

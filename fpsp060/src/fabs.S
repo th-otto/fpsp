@@ -70,7 +70,7 @@ fabs_norm:
 /*  */
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
-	move.w		SRC_EX(%a0),%d1
+	move.w		SRC_EX.w(%a0),%d1
 	bclr		&15,%d1			/*  force absolute value */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert exponent */
 	fmovem.x		FP_SCR0(%a6),%fp0	/*  return result in fp0 */
@@ -88,7 +88,7 @@ fabs_denorm:
 
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
-	move.w		SRC_EX(%a0),%d0
+	move.w		SRC_EX.w(%a0),%d0
 	bclr		&15,%d0			/*  clear sign */
 	move.w		%d0,FP_SCR0_EX(%a6)	/*  insert exponent */
 
@@ -127,7 +127,7 @@ fabs_not_ext:
 /*  operand is to be rounded to single precision */
 /*  */
 fabs_sgl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  calculate scale factor */
@@ -170,7 +170,7 @@ fabs_sd_normal_exit:
 /*  operand is to be rounded to double precision */
 /*  */
 fabs_dbl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  calculate scale factor */
@@ -313,7 +313,7 @@ fabs_not_norm:
 	cmpi.b		&QNAN,%d1		/*  weed out QNAN */
 	beq.l		res_qnan_1op
 
-	fabs.x		SRC(%a0),%fp0		/*  force absolute value */
+	fabs.x		SRC.w(%a0),%fp0		/*  force absolute value */
 
 	cmpi.b		&INF,%d1		/*  weed out INF */
 	beq.b		fabs_inf

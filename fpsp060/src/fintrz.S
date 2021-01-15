@@ -39,7 +39,7 @@ fintrz:
 fintrz_norm:
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
 
-	fintrz.x	SRC(%a0),%fp0		/*  execute fintrz */
+	fintrz.x	SRC.w(%a0),%fp0		/*  execute fintrz */
 
 	fmove.l		%fpsr,%d0		/*  save FPSR */
 	or.l		%d0,USER_FPSR(%a6)	/*  set exception bits */
@@ -70,7 +70,7 @@ fintrz_not_norm:
 /*  I do the latter. */
 /*  */
 fintrz_denorm:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6) /*  copy sign, zero exp */
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6) /*  copy sign, zero exp */
 	move.b		&0x80,FP_SCR0_HI(%a6)	/*  force DENORM ==> small NORM */
 	lea		FP_SCR0(%a6),%a0
 	bra.b		fintrz_norm
@@ -79,7 +79,7 @@ fintrz_denorm:
 /*  Zero: */
 /*  */
 fintrz_zero:
-	tst.b		SRC_EX(%a0)		/*  is ZERO negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is ZERO negative? */
 	bmi.b		fintrz_zero_m		/*  yes */
 fintrz_zero_p:
 	fmove.s		&0x00000000,%fp0	/*  return +ZERO in fp0 */
@@ -94,8 +94,8 @@ fintrz_zero_m:
 /*  Infinity: */
 /*  */
 fintrz_inf:
-	fmovem.x		SRC(%a0),%fp0		/*  return result in fp0 */
-	tst.b		SRC_EX(%a0)		/*  is INF negative? */
+	fmovem.x	SRC.w(%a0),%fp0		/*  return result in fp0 */
+	tst.b		SRC_EX.w(%a0)		/*  is INF negative? */
 	bmi.b		fintrz_inf_m		/*  yes */
 fintrz_inf_p:
 	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set 'I' ccode bit */

@@ -81,7 +81,7 @@ RTABLE:
 
 	.globl		decbin
 decbin:
-	move.l		0x0(%a0),FP_SCR0_EX(%a6) /*  make a copy of input */
+	move.l		0x0.w(%a0),FP_SCR0_EX(%a6) /*  make a copy of input */
 	move.l		0x4(%a0),FP_SCR0_HI(%a6) /*  so we don't alter it */
 	move.l		0x8(%a0),FP_SCR0_LO(%a6)
 
@@ -116,7 +116,8 @@ calc_e:
 	move.l		(%a0),%d4		/*  get first word of bcd */
 	clr.l		%d1			/*  zero d1 for accumulator */
 e_gd:
-	mulu.l		&0xa,%d1		/*  mul partial product by one digit place */
+	/* mulu.l		&0xa,%d1 */		/*  mul partial product by one digit place */
+	.dc.w 0x4c3c,0x1001,0x0000,0x000a /* XXX: only for binary identical result */
 	bfextu		%d4{%d3:&4},%d0		/*  get the digit and zero extend into d0 */
 	add.l		%d0,%d1			/*  d1 = d1 + d0 */
 	addq.b		&4,%d3			/*  advance d3 to the next digit */

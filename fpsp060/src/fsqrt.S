@@ -57,7 +57,7 @@ fsqrt:
 /*  SQUARE ROOT: norms and denorms ONLY! */
 /*  */
 fsqrt_norm:
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.l		res_operr		/*  yes */
 
 	andi.b		&0xc0,%d0		/*  is precision extended? */
@@ -74,13 +74,13 @@ fsqrt_norm:
 	rts
 
 fsqrt_denorm:
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.l		res_operr		/*  yes */
 
 	andi.b		&0xc0,%d0		/*  is precision extended? */
 	bne.b		fsqrt_not_ext		/*  no; go handle sgl or dbl */
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -99,7 +99,7 @@ fsqrt_not_ext:
 /*  operand is to be rounded to single precision */
 /*  */
 fsqrt_sgl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -144,7 +144,7 @@ fsqrt_sd_normal_exit:
 /*  operand is to be rounded to double precision */
 /*  */
 fsqrt_dbl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -319,7 +319,7 @@ fsqrt_not_norm:
 /* 	fsqrt(-INF) = OPERR */
 /*  */
 fsqrt_zero:
-	tst.b		SRC_EX(%a0)		/*  is ZERO positive or negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is ZERO positive or negative? */
 	bmi.b		fsqrt_zero_m		/*  negative */
 fsqrt_zero_p:
 	fmove.s		&0x00000000,%fp0	/*  return +ZERO */
@@ -331,9 +331,9 @@ fsqrt_zero_m:
 	rts
 
 fsqrt_inf:
-	tst.b		SRC_EX(%a0)		/*  is INF positive or negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is INF positive or negative? */
 	bmi.l		res_operr		/*  negative */
 fsqrt_inf_p:
-	fmovem.x		SRC(%a0),%fp0		/*  return +INF in fp0 */
+	fmovem.x		SRC.w(%a0),%fp0		/*  return +INF in fp0 */
 	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set 'I' ccode bit */
 	rts

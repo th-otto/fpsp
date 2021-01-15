@@ -352,7 +352,7 @@ fix_skewed_ops:
 	rts					/*  no */
 
 fso_sgl:
-	move.w		LOCAL_EX(%a0),%d0	/*  fetch src exponent */
+	move.w		LOCAL_EX.w(%a0),%d0	/*  fetch src exponent */
 	andi.w		&0x7fff,%d0		/*  strip sign */
 	cmpi.w		&0x3f80,%d0		/*  is |exp| == $3f80? */
 	beq.b		fso_sgl_dnrm_zero	/*  yes */
@@ -368,21 +368,21 @@ fso_sgl_dnrm:
 	bsr.l		norm			/*  normalize mantissa */
 	neg.w		%d0			/*  -shft amt */
 	addi.w		&0x3f81,%d0		/*  adjust new exponent */
-	andi.w		&0x8000,LOCAL_EX(%a0)	/*  clear old exponent */
-	or.w		%d0,LOCAL_EX(%a0)	/*  insert new exponent */
+	andi.w		&0x8000,LOCAL_EX.w(%a0)	/*  clear old exponent */
+	or.w		%d0,LOCAL_EX.w(%a0)	/*  insert new exponent */
 	rts
 
 fso_zero:
-	andi.w		&0x8000,LOCAL_EX(%a0)	/*  clear bogus exponent */
+	andi.w		&0x8000,LOCAL_EX.w(%a0)	/*  clear bogus exponent */
 	rts
 
 fso_infnan:
 	andi.b		&0x7f,LOCAL_HI(%a0)	/*  clear j-bit */
-	ori.w		&0x7fff,LOCAL_EX(%a0)	/*  make exponent = $7fff */
+	ori.w		&0x7fff,LOCAL_EX.w(%a0)	/*  make exponent = $7fff */
 	rts
 
 fso_dbl:
-	move.w		LOCAL_EX(%a0),%d0	/*  fetch src exponent */
+	move.w		LOCAL_EX.w(%a0),%d0	/*  fetch src exponent */
 	andi.w		&0x7fff,%d0		/*  strip sign */
 	cmpi.w		&0x3c00,%d0		/*  is |exp| == $3c00? */
 	beq.b		fso_dbl_dnrm_zero	/*  yes */
@@ -400,8 +400,8 @@ fso_dbl_dnrm:
 	bsr.l		norm			/*  normalize mantissa */
 	neg.w		%d0			/*  -shft amt */
 	addi.w		&0x3c01,%d0		/*  adjust new exponent */
-	andi.w		&0x8000,LOCAL_EX(%a0)	/*  clear old exponent */
-	or.w		%d0,LOCAL_EX(%a0)	/*  insert new exponent */
+	andi.w		&0x8000,LOCAL_EX.w(%a0)	/*  clear old exponent */
+	or.w		%d0,LOCAL_EX.w(%a0)	/*  insert new exponent */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -828,7 +828,7 @@ fu_in_exit_s_p:
 
 /*  shift the stack frame "up". we don't really care about the <ea> field. */
 	move.l		0x4(%sp),0x10(%sp)
-	move.l		0x0(%sp),0xc(%sp)
+	move.l		0x0.w(%sp),0xc(%sp)
 	add.l		&0xc,%sp
 
 	btst		&0x7,(%sp)		/*  is trace on? */
@@ -942,7 +942,7 @@ fu_in_exc_exit_s_p:
 
 /*  shift stack frame "up". who cares about <ea> field. */
 	move.l		0x4(%sp),0x10(%sp)
-	move.l		0x0(%sp),0xc(%sp)
+	move.l		0x0.w(%sp),0xc(%sp)
 	add.l		&0xc,%sp
 
 	btst		&0x7,(%sp)		/*  is trace on? */
@@ -1268,7 +1268,7 @@ funimp_skew_dbl_not:
 _mem_write2:
 	btst		&0x5,EXC_SR(%a6)
 	beq.l		_dmem_write
-	move.l		0x0(%a0),FP_DST_EX(%a6)
+	move.l		0x0.w(%a0),FP_DST_EX(%a6)
 	move.l		0x4(%a0),FP_DST_HI(%a6)
 	move.l		0x8(%a0),FP_DST_LO(%a6)
 	clr.l		%d1

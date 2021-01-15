@@ -104,7 +104,7 @@ unnorm_chk_lo:
 /*  */
 unnorm_shift:
 	clr.l		%d1			/*  clear top word */
-	move.w		FTEMP_EX(%a0), %d1	/*  extract exponent */
+	move.w		FTEMP_EX.w(%a0), %d1	/*  extract exponent */
 	andi.w		&0x7fff, %d1		/*  strip off sgn */
 
 	cmp.w		%d1,%d0		/*  will denorm push exp < 0? */
@@ -114,10 +114,10 @@ unnorm_shift:
 /*  exponent would not go < 0. Therefore, number stays normalized */
 /*  */
 	sub.w		%d0, %d1		/*  shift exponent value */
-	move.w		FTEMP_EX(%a0), %d0	/*  load old exponent */
+	move.w		FTEMP_EX.w(%a0), %d0	/*  load old exponent */
 	andi.w		&0x8000, %d0		/*  save old sign */
 	or.w		%d0, %d1		/*  {sgn,new exp} */
-	move.w		%d1, FTEMP_EX(%a0)	/*  insert new exponent */
+	move.w		%d1, FTEMP_EX.w(%a0)	/*  insert new exponent */
 
 	bsr.l		norm			/*  normalize UNNORM */
 
@@ -138,7 +138,7 @@ unnorm_nrm_zero:
 	lsl.l		%d1, %d0		/*  extract new lo(man) */
 	move.l		%d0, FTEMP_LO(%a0)	/*  save new lo(man) */
 
-	and.w		&0x8000, FTEMP_EX(%a0)	/*  set exp = 0 */
+	and.w		&0x8000, FTEMP_EX.w(%a0)	/*  set exp = 0 */
 
 	move.b		&DENORM, %d0		/*  return new optype tag */
 	rts
@@ -155,7 +155,7 @@ unnorm_nrm_zero_lrg:
 	move.l		%d0, FTEMP_HI(%a0)	/*  store new hi(man) */
 	clr.l		FTEMP_LO(%a0)		/*  lo(man) = 0 */
 
-	and.w		&0x8000, FTEMP_EX(%a0)	/*  set exp = 0 */
+	and.w		&0x8000, FTEMP_EX.w(%a0)	/*  set exp = 0 */
 
 	move.b		&DENORM, %d0		/*  return new optype tag */
 	rts
@@ -164,7 +164,7 @@ unnorm_nrm_zero_lrg:
 /*  whole mantissa is zero so this UNNORM is actually a zero */
 /*  */
 unnorm_zero:
-	and.w		&0x8000, FTEMP_EX(%a0)	/*  force exponent to zero */
+	and.w		&0x8000, FTEMP_EX.w(%a0)	/*  force exponent to zero */
 
 	move.b		&ZERO, %d0		/*  fix optype tag */
 	rts

@@ -26,7 +26,7 @@
 
 	.globl		set_tag_x
 set_tag_x:
-	move.w		FTEMP_EX(%a0), %d0	/*  extract exponent */
+	move.w		FTEMP_EX.w(%a0), %d0	/*  extract exponent */
 	andi.w		&0x7fff, %d0		/*  strip off sign */
 	cmpi.w		&0x7fff,%d0		/*  is (EXP == MAX)? */
 	beq.b		inf_or_nan_x
@@ -58,7 +58,7 @@ is_unnorm_x:
 	tst.l		FTEMP_LO(%a0)
 	bne.b		is_unnorm_reg_x
 /*  it's an "unnormalized zero". let's convert it to an actual zero... */
-	andi.w		&0x8000,FTEMP_EX(%a0)	/*  clear exponent */
+	andi.w		&0x8000,FTEMP_EX.w(%a0)	/*  clear exponent */
 	move.b		&ZERO, %d0
 	rts
 is_unnorm_reg_x:
@@ -104,7 +104,7 @@ is_snan_x:
 
 	.globl		set_tag_d
 set_tag_d:
-	move.l		FTEMP(%a0), %d0
+	move.l		FTEMP.w(%a0), %d0
 	move.l		%d0, %d1
 
 	andi.l		&0x7ff00000, %d0
@@ -167,7 +167,7 @@ is_qnan_d:
 
 	.globl		set_tag_s
 set_tag_s:
-	move.l		FTEMP(%a0), %d0
+	move.l		FTEMP.w(%a0), %d0
 	move.l		%d0, %d1
 
 	andi.l		&0x7f800000, %d0

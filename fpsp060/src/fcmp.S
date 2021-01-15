@@ -37,9 +37,9 @@ fcmp:
 /*  COMPARE FP OPs : NORMs, ZEROs, INFs, and "corrected" DENORMs */
 /*  */
 fcmp_norm:
-	fmovem.x		DST(%a1),%fp0		/*  load dst op */
+	fmovem.x		DST.w(%a1),%fp0		/*  load dst op */
 
-	fcmp.x		SRC(%a0),%fp0		/*  do compare */
+	fcmp.x		SRC.w(%a0),%fp0		/*  do compare */
 
 	fmove.l		%fpsr,%d0		/*  save FPSR */
 	rol.l		&0x8,%d0		/*  extract ccode bits */
@@ -134,7 +134,7 @@ fcmp_res_snan:
 /*  */
 
 fcmp_dnrm_s:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),%d0
 	bset		&31,%d0			/*  DENORM src; make into small norm */
 	move.l		%d0,FP_SCR0_HI(%a6)
@@ -143,7 +143,7 @@ fcmp_dnrm_s:
 	bra.w		fcmp_norm
 
 fcmp_dnrm_d:
-	move.l		DST_EX(%a1),FP_SCR0_EX(%a6)
+	move.l		DST_EX.w(%a1),FP_SCR0_EX(%a6)
 	move.l		DST_HI(%a1),%d0
 	bset		&31,%d0			/*  DENORM src; make into small norm */
 	move.l		%d0,FP_SCR0_HI(%a6)
@@ -152,8 +152,8 @@ fcmp_dnrm_d:
 	bra.w		fcmp_norm
 
 fcmp_dnrm_sd:
-	move.w		DST_EX(%a1),FP_SCR1_EX(%a6)
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		DST_HI(%a1),%d0
 	bset		&31,%d0			/*  DENORM dst; make into small norm */
 	move.l		%d0,FP_SCR1_HI(%a6)
@@ -167,8 +167,8 @@ fcmp_dnrm_sd:
 	bra.w		fcmp_norm
 
 fcmp_nrm_dnrm:
-	move.b		SRC_EX(%a0),%d0		/*  determine if like signs */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  determine if like signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bmi.w		fcmp_dnrm_s
 
@@ -181,8 +181,8 @@ fcmp_nrm_dnrm_m:
 	rts
 
 fcmp_dnrm_nrm:
-	move.b		SRC_EX(%a0),%d0		/*  determine if like signs */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  determine if like signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bmi.w		fcmp_dnrm_d
 

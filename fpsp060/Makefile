@@ -81,8 +81,10 @@ FPSP060_OBJS = $(FPSP060_SRCS:.S=.o)
 
 all: fpsp.sa
 
-fpsp.bin: $(FPSP060_OBJS)
-	$(CC) -s -o $@ -nostartfiles -nostdlib -Wl,--oformat,binary $(FPSP060_OBJS)
+fpsp.bin: $(FPSP060_SRCS) Makefile
+	cat $(FPSP060_SRCS) > fpsp.S
+	$(CC) $(ASFLAGS) -s -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib fpsp.S
+	$(RM) fpsp.S
 
 fpsp.sa: fpsp.bin dfpsp
 	./dfpsp > $@

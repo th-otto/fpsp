@@ -230,7 +230,7 @@ _060_real_lock_page:
 	rts
 
 .section __ex_table,"a"
-	.balign	4
+	.balignw	4,0x51fc
 	.dc.l	1b,11f
 	.dc.l	2b,21f
 .previous

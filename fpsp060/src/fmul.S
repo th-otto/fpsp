@@ -37,7 +37,7 @@
 
 	.text
 
-	.balign		16
+	.balignw		16,0x51fc
 tbl_fmul_ovfl:
 	.dc.l		0x3fff - 0x7ffe		/*  ext_max */
 	.dc.l		0x3fff - 0x407e		/*  sgl_max */
@@ -69,11 +69,11 @@ fmul:
 	bne.w		fmul_not_norm		/*  optimize on non-norm input */
 
 fmul_norm:
-	move.w		DST_EX(%a1),FP_SCR1_EX(%a6)
+	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
 	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -451,8 +451,8 @@ fmul_res_qnan:
 /*  */
 	.globl		fmul_zero		/*  global for fsglmul */
 fmul_zero:
-	move.b		SRC_EX(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bpl.b		fmul_zero_p		/*  result ZERO is pos. */
 fmul_zero_n:
@@ -474,9 +474,9 @@ fmul_zero_p:
 /*  */
 	.globl		fmul_inf_dst		/*  global for fsglmul */
 fmul_inf_dst:
-	fmovem.x	DST(%a1),%fp0		/*  return INF result in fp0 */
-	move.b		SRC_EX(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX(%a1),%d1
+	fmovem.x	DST.w(%a1),%fp0		/*  return INF result in fp0 */
+	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bpl.b		fmul_inf_dst_p		/*  result INF is pos. */
 fmul_inf_dst_n:
@@ -491,9 +491,9 @@ fmul_inf_dst_p:
 
 	.globl		fmul_inf_src		/*  global for fsglmul */
 fmul_inf_src:
-	fmovem.x	SRC(%a0),%fp0		/*  return INF result in fp0 */
-	move.b		SRC_EX(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX(%a1),%d1
+	fmovem.x	SRC.w(%a0),%fp0		/*  return INF result in fp0 */
+	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bpl.b		fmul_inf_dst_p		/*  result INF is pos. */
 	bra.b		fmul_inf_dst_n

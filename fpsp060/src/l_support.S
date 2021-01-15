@@ -4359,7 +4359,7 @@ _L23_6x:
 
 	.globl		tag
 tag:
-	move.w		FTEMP_EX(%a0), %d0	; extract exponent
+	move.w		FTEMP_EX.w(%a0), %d0	; extract exponent
 	andi.w		&0x7fff, %d0		; strip off sign
 	cmpi.w		&0x7fff,%d0		; is (EXP == MAX)?
 	beq.b		inf_or_nan_x
@@ -4434,7 +4434,7 @@ qnan:	.dc.l		0x7fff0000, 0xffffffff, 0xffffffff
 
 	.globl		t_dz
 t_dz:
-	tst.b		SRC_EX(%a0)		; check sign for neg or pos
+	tst.b		SRC_EX.w(%a0)		; check sign for neg or pos
 	bpl.b		dz_pinf			; branch if pos sign
 
 	.globl		t_dz2
@@ -4559,7 +4559,7 @@ mns_tiny:
 
 	.globl		t_unfl
 t_unfl:
-	tst.b		SRC_EX(%a0)
+	tst.b		SRC_EX.w(%a0)
 	bpl.b		unf_pos
 
 	.globl		t_unfl2
@@ -4626,7 +4626,7 @@ t_ovfl_sc:
 ; dst op is a DENORM. we have to normalize the mantissa to see if the
 ; result would be inexact for the given precision. make a copy of the
 ; dst so we don't screw up the version passed to us.
-	move.w		LOCAL_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		LOCAL_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		LOCAL_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		LOCAL_LO(%a0),FP_SCR0_LO(%a6)
 	lea		FP_SCR0(%a6),%a0	; pass ptr to FP_SCR0
@@ -4654,7 +4654,7 @@ ovfl_sc_inx:
 t_ovfl:
 	ori.w		&ovfinx_mask,FPSR_EXCEPT(%a6) ; set OVFL/INEX2/AOVFL/AINEX
 ovfl_work:
-	tst.b		SRC_EX(%a0)
+	tst.b		SRC_EX.w(%a0)
 	bpl.b		ovfl_p
 ovfl_m:
 	fmove.l		USER_FPCR(%a6),%fpcr
@@ -4806,7 +4806,7 @@ inx2_zero:
 	.globl		t_extdnrm
 t_extdnrm:
 	fmove.l		USER_FPCR(%a6),%fpcr
-	fmove.x		SRC_EX(%a0),%fp0
+	fmove.x		SRC_EX.w(%a0),%fp0
 	fmove.l		%fpsr,%d0
 	ori.l		&unfinx_mask,%d0
 	or.l		%d0,USER_FPSR(%a6)
@@ -4815,7 +4815,7 @@ t_extdnrm:
 	.globl		t_resdnrm
 t_resdnrm:
 	fmove.l		USER_FPCR(%a6),%fpcr
-	fmove.x		SRC_EX(%a0),%fp0
+	fmove.x		SRC_EX.w(%a0),%fp0
 	fmove.l		%fpsr,%d0
 	or.l		%d0,USER_FPSR(%a6)
 	rts
@@ -4838,8 +4838,8 @@ sto_cos:
 ;
 	.globl		dst_qnan
 dst_qnan:
-	fmove.x		DST(%a1),%fp0
-	tst.b		DST_EX(%a1)
+	fmove.x		DST.w(%a1),%fp0
+	tst.b		DST_EX.w(%a1)
 	bmi.b		dst_qnan_m
 dst_qnan_p:
 	move.b		&nan_bmask,FPSR_CC(%a6)
@@ -4853,8 +4853,8 @@ dst_qnan_m:
 ;
 	.globl		src_qnan
 src_qnan:
-	fmove.x		SRC(%a0),%fp0
-	tst.b		SRC_EX(%a0)
+	fmove.x		SRC.w(%a0),%fp0
+	tst.b		SRC_EX.w(%a0)
 	bmi.b		src_qnan_m
 src_qnan_p:
 	move.b		&nan_bmask,FPSR_CC(%a6)
@@ -5050,7 +5050,7 @@ _fintrzx_:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		src_zero
 src_zero:
-	tst.b		SRC_EX(%a0)		; get sign of src operand
+	tst.b		SRC_EX.w(%a0)		; get sign of src operand
 	bmi.b		ld_mzero		; if neg, load neg zero
 
 ;
@@ -5074,7 +5074,7 @@ ld_mzero:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		dst_zero
 dst_zero:
-	tst.b		DST_EX(%a1)		; get sign of dst operand
+	tst.b		DST_EX.w(%a1)		; get sign of dst operand
 	bmi.b		ld_mzero		; if neg, load neg zero
 	bra.b		ld_pzero		; load positive zero
 
@@ -5083,7 +5083,7 @@ dst_zero:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		src_inf
 src_inf:
-	tst.b		SRC_EX(%a0)		; get sign of src operand
+	tst.b		SRC_EX.w(%a0)		; get sign of src operand
 	bmi.b		ld_minf			; if negative branch
 
 ;
@@ -5109,7 +5109,7 @@ ld_minf:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		dst_inf
 dst_inf:
-	tst.b		DST_EX(%a1)		; get sign of dst operand
+	tst.b		DST_EX.w(%a1)		; get sign of dst operand
 	bmi.b		ld_minf			; if negative branch
 	bra.b		ld_pinf
 
@@ -5120,7 +5120,7 @@ dst_inf:
 ;	     Routine used for fetox, ftwotox, and ftentox.	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 szr_inf:
-	tst.b		SRC_EX(%a0)		; check sign of source
+	tst.b		SRC_EX.w(%a0)		; check sign of source
 	bmi.b		ld_pzero
 	bra.b		ld_pinf
 
@@ -5131,7 +5131,7 @@ szr_inf:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		sopr_inf
 sopr_inf:
-	tst.b		SRC_EX(%a0)		; check sign of source
+	tst.b		SRC_EX.w(%a0)		; check sign of source
 	bmi.w		t_operr
 	bra.b		ld_pinf
 
@@ -5142,7 +5142,7 @@ sopr_inf:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		setoxm1i
 setoxm1i:
-	tst.b		SRC_EX(%a0)		; check sign of source
+	tst.b		SRC_EX.w(%a0)		; check sign of source
 	bmi.b		ld_mone
 	bra.b		ld_pinf
 
@@ -5151,7 +5151,7 @@ setoxm1i:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		src_one
 src_one:
-	tst.b		SRC_EX(%a0)		; check sign of source
+	tst.b		SRC_EX.w(%a0)		; check sign of source
 	bmi.b		ld_mone
 
 ;
@@ -5180,7 +5180,7 @@ mpiby2:	.dc.l		0xbfff0000, 0xc90fdaa2, 0x2168c235
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	.globl		spi_2
 spi_2:
-	tst.b		SRC_EX(%a0)		; check sign of source
+	tst.b		SRC_EX.w(%a0)		; check sign of source
 	bmi.b		ld_mpi2
 
 ;
@@ -5213,7 +5213,7 @@ ld_mpi2:
 	.globl		ssincosz
 ssincosz:
 	fmove.s		&0x3f800000,%fp1
-	tst.b		SRC_EX(%a0)		; test sign
+	tst.b		SRC_EX.w(%a0)		; test sign
 	bpl.b		sincoszp
 	fmove.s		&0x80000000,%fp0	; return sin result in fp0
 	move.b		&z_bmask+neg_bmask,FPSR_CC(%a6)
@@ -5239,7 +5239,7 @@ ssincosi:
 ;
 	.globl		ssincosqnan
 ssincosqnan:
-	fmove.x		LOCAL_EX(%a0),%fp1
+	fmove.x		LOCAL_EX.w(%a0),%fp1
 	bra.w		src_qnan
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -5284,8 +5284,8 @@ smod_sinf:
 
 smod_zro:
 srem_zro:
-	move.b		SRC_EX(%a0),%d1		; get src sign
-	move.b		DST_EX(%a1),%d0		; get dst sign
+	move.b		SRC_EX.w(%a0),%d1		; get src sign
+	move.b		DST_EX.w(%a1),%d0		; get dst sign
 	eor.b		%d0,%d1			; get qbyte sign
 	andi.b		&0x80,%d1
 	move.b		%d1,FPSR_QBYTE(%a6)
@@ -5297,20 +5297,20 @@ smod_fpn:
 srem_fpn:
 	clr.b		FPSR_QBYTE(%a6)
 	move.l		%d0,-(%sp)
-	move.b		SRC_EX(%a0),%d1		; get src sign
-	move.b		DST_EX(%a1),%d0		; get dst sign
+	move.b		SRC_EX.w(%a0),%d1		; get src sign
+	move.b		DST_EX.w(%a1),%d0		; get dst sign
 	eor.b		%d0,%d1			; get qbyte sign
 	andi.b		&0x80,%d1
 	move.b		%d1,FPSR_QBYTE(%a6)
 	cmpi.b		&DENORM,DTAG(%a6)
 	bne.b		smod_nrm
-	lea		DST(%a1),%a0
+	lea			DST.w(%a1),%a0
 	move.l		(%sp)+,%d0
 	bra.l		t_resdnrm
 smod_nrm:
 	fmove.l		(%sp)+,%fpcr
-	fmove.x		DST(%a1),%fp0
-	tst.b		DST_EX(%a1)
+	fmove.x		DST.w(%a1),%fp0
+	tst.b		DST_EX.w(%a1)
 	bmi.b		smod_nrm_neg
 	rts
 

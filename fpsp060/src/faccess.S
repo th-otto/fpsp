@@ -219,6 +219,4 @@ rest_dec:
 	neg.l		%d0
 	bra.b		rest_inc
 
-    .dc.l 0
-    .dc.l 0
-    .dc.l 0
+    .balignw 16,0

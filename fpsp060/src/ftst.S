@@ -30,7 +30,7 @@ ftst:
 /*  Norm: */
 /*  */
 ftst_norm:
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_norm_m		/*  yes */
 	rts
 ftst_norm_m:
@@ -54,7 +54,7 @@ ftst_not_norm:
 /*  Denorm: */
 /*  */
 ftst_denorm:
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_denorm_m		/*  yes */
 	rts
 ftst_denorm_m:
@@ -65,7 +65,7 @@ ftst_denorm_m:
 /*  Infinity: */
 /*  */
 ftst_inf:
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_inf_m		/*  yes */
 ftst_inf_p:
 	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set 'I' ccode bit */
@@ -78,7 +78,7 @@ ftst_inf_m:
 /*  Zero: */
 /*  */
 ftst_zero:
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	bmi.b		ftst_zero_m		/*  yes */
 ftst_zero_p:
 	move.b		&z_bmask,FPSR_CC(%a6)	/*  set 'N' ccode bit */

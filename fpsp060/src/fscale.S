@@ -22,11 +22,11 @@
 sscale:
 	move.l		%d0,-(%sp)		/*  store off ctrl bits for now */
 
-	move.w		DST_EX(%a1),%d1		/*  get dst exponent */
+	move.w		DST_EX.w(%a1),%d1		/*  get dst exponent */
 	smi.b		SIGN(%a6)		/*  use SIGN to hold dst sign */
 	andi.l		&0x00007fff,%d1		/*  strip sign from dst exp */
 
-	move.w		SRC_EX(%a0),%d0		/*  check src bounds */
+	move.w		SRC_EX.w(%a0),%d0		/*  check src bounds */
 	andi.w		&0x7fff,%d0		/*  clr src sign bit */
 	cmpi.w		&0x3fff,%d0		/*  is src ~ ZERO? */
 	blt.w		src_small		/*  yes */
@@ -37,7 +37,7 @@ sscale:
 /*  Source is within 2^14 range. */
 /*  */
 src_ok:
-	fintrz.x	SRC(%a0),%fp0		/*  calc int of src */
+	fintrz.x	SRC.w(%a0),%fp0		/*  calc int of src */
 	fmove.l		%fp0,%d0		/*  int src to d0 */
 /*  don't want any accrued bits from the fintrz showing up later since */
 /*  we may need to read the fpsr for the last fp op in t_catch2(). */
@@ -51,7 +51,7 @@ src_ok:
 sok_dnrm:
 	move.l		%d0,-(%sp)		/*  save src for now */
 
-	move.w		DST_EX(%a1),FP_SCR0_EX(%a6) /*  make a copy */
+	move.w		DST_EX.w(%a1),FP_SCR0_EX(%a6) /*  make a copy */
 	move.l		DST_HI(%a1),FP_SCR0_HI(%a6)
 	move.l		DST_LO(%a1),FP_SCR0_LO(%a6)
 
@@ -93,7 +93,7 @@ sok_dnrm_32:
 /*  the src will force the dst to a DENORM value or worse. so, let's */
 /*  create an fp multiply that will create the result. */
 sok_norm:
-	fmovem.x	DST(%a1),%fp0		/*  load fp0 with normalized src */
+	fmovem.x	DST.w(%a1),%fp0		/*  load fp0 with normalized src */
 sok_norm2:
 	fmove.l		(%sp)+,%fpcr		/*  restore user fpcr */
 
@@ -116,7 +116,7 @@ sok_norm_cont:
 src_out:
 	move.l		(%sp)+,%d0		/*  restore ctrl bits */
 	exg		%a0,%a1			/*  swap src,dst ptrs */
-	tst.b		SRC_EX(%a1)		/*  is src negative? */
+	tst.b		SRC_EX.w(%a1)		/*  is src negative? */
 	bmi.l		t_unfl			/*  yes; underflow */
 	bra.l		t_ovfl_sc		/*  no; overflow */
 
@@ -131,7 +131,7 @@ src_small:
 	move.l		(%sp)+,%d0
 	fmove.l		%d0,%fpcr		/*  no; load control bits */
 	move.b		&FMOV_OP,%d1		/*  last inst is MOVE */
-	fmove.x		DST(%a1),%fp0		/*  simply return dest */
+	fmove.x		DST.w(%a1),%fp0		/*  simply return dest */
 	bra.l		t_catch2
 ssmall_done:
 	move.l		(%sp)+,%d0		/*  load control bits into d1 */

@@ -127,7 +127,7 @@ add_sgl:
 	bcc.b		scc_clr			/*  no mantissa overflow */
 	roxr.w		FTEMP_HI(%a0)		/*  shift v-bit back in */
 	roxr.w		FTEMP_HI+2(%a0)		/*  shift v-bit back in */
-	addq.w		&0x1,FTEMP_EX(%a0)	/*  and incr exponent */
+	addq.w		&0x1,FTEMP_EX.w(%a0)	/*  and incr exponent */
 scc_clr:
 	tst.l		%d0			/*  test for rs = 0 */
 	bne.b		sgl_done
@@ -149,7 +149,7 @@ add_ext:
 	roxr.w		FTEMP_HI+2(%a0)		/*  mant is 0 so restore v-bit */
 	roxr.w		FTEMP_LO(%a0)
 	roxr.w		FTEMP_LO+2(%a0)
-	addq.w		&0x1,FTEMP_EX(%a0)	/*  and inc exp */
+	addq.w		&0x1,FTEMP_EX.w(%a0)	/*  and inc exp */
 xcc_clr:
 	tst.l		%d0			/*  test rs = 0 */
 	bne.b		add_ext_done
@@ -170,7 +170,7 @@ add_dbl:
 	roxr.w		FTEMP_HI+2(%a0)		/*  mant is 0 so restore v-bit */
 	roxr.w		FTEMP_LO(%a0)
 	roxr.w		FTEMP_LO+2(%a0)
-	addq.w		&0x1, FTEMP_EX(%a0)	/*  incr exponent */
+	addq.w		&0x1,FTEMP_EX.w(%a0)	/*  incr exponent */
 dcc_clr:
 	tst.l		%d0			/*  test for rs = 0 */
 	bne.b		dbl_done

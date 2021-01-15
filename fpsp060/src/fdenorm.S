@@ -52,7 +52,7 @@ _denorm:
 	lsr.b		&0x2,%d0		/*  shift prec to lo bits */
 	move.w		(tbl_thresh.b,%pc,%d0.w*2), %d1 /*  load prec threshold */
 	move.w		%d1, %d0		/*  copy d1 into d0 */
-	sub.w		FTEMP_EX(%a0), %d0	/*  diff = threshold - exp */
+	sub.w		FTEMP_EX.w(%a0), %d0	/*  diff = threshold - exp */
 	cmpi.w		&66,%d0		/*  is diff > 65? (mant + g,r bits) */
 	bpl.b		denorm_set_stky		/*  yes; just calc sticky */
 
@@ -71,7 +71,7 @@ denorm_call:
 /*  */
 denorm_set_stky:
 	move.l		&0x20000000, %d0	/*  set sticky bit in return value */
-	move.w		%d1, FTEMP_EX(%a0)	/*  load exp with threshold */
+	move.w		%d1, FTEMP_EX.w(%a0)	/*  load exp with threshold */
 	clr.l		FTEMP_HI(%a0)		/*  set d1 = 0 (ms mantissa) */
 	clr.l		FTEMP_LO(%a0)		/*  set d2 = 0 (ms mantissa) */
 	rts
@@ -107,7 +107,7 @@ dnrm_lp:
 /*  exponent is. */
 /*  */
 	move.l		%d1, %d0		/*  copy the denorm threshold */
-	sub.w		FTEMP_EX(%a0), %d1	/*  d1 = threshold - uns exponent */
+	sub.w		FTEMP_EX.w(%a0), %d1	/*  d1 = threshold - uns exponent */
 	ble.b		dnrm_no_lp		/*  d1 <= 0 */
 	cmpi.w		&0x20,%d1		/*  is ( 0 <= d1 < 32) ? */
 	blt.b		case_1			/*  yes */
@@ -148,7 +148,7 @@ dnrm_no_lp:
 case_1:
 	move.l		%d2, -(%sp)		/*  create temp storage */
 
-	move.w		%d0, FTEMP_EX(%a0)	/*  exponent = denorm threshold */
+	move.w		%d0, FTEMP_EX.w(%a0)	/*  exponent = denorm threshold */
 	moveq.l		&32, %d0
 	sub.w		%d1, %d0		/*  %d0 = 32 - %d1 */
 
@@ -200,7 +200,7 @@ case1_sticky_clear:
 case_2:
 	move.l		%d2, -(%sp)		/*  create temp storage */
 
-	move.w		%d0, FTEMP_EX(%a0)	/*  exponent = denorm threshold */
+	move.w		%d0, FTEMP_EX.w(%a0)	/*  exponent = denorm threshold */
 	subi.w		&0x20, %d1		/*  %d1 now between 0 and 32 */
 	moveq.l		&0x20, %d0
 	sub.w		%d1, %d0		/*  %d0 = 32 - %d1 */
@@ -241,7 +241,7 @@ case2_end:
 /*  %d1 = amt to shift */
 /*  */
 case_3:
-	move.w		%d0, FTEMP_EX(%a0)	/*  insert denorm threshold */
+	move.w		%d0, FTEMP_EX.w(%a0)	/*  insert denorm threshold */
 
 	cmpi.w		&65,%d1		/*  is shift amt > 65? */
 	blt.b		case3_64		/*  no; it's == 64 */

@@ -384,7 +384,7 @@ _060_real_access:
 1:	moveq		#-1,%d1
 	rts
 .section __ex_table,#alloc
-	.balign 4
+	.balignw 4,0x51fc
 	.dc.l	dmrbuae,1b
 	.dc.l	dmrwuae,1b
 	.dc.l	dmrluae,1b

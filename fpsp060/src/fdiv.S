@@ -37,7 +37,7 @@
 
 	.text
 
-	.balign		16
+	.balignw		16,0x51fc
 tbl_fdiv_unfl:
 	.dc.l		0x3fff - 0x0000		/*  ext_unfl */
 	.dc.l		0x3fff - 0x3f81		/*  sgl_unfl */
@@ -74,11 +74,11 @@ fdiv:
 /*  DIVIDE: NORMs and DENORMs ONLY! */
 /*  */
 fdiv_norm:
-	move.w		DST_EX(%a1),FP_SCR1_EX(%a6)
+	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
 	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -399,8 +399,8 @@ fdiv_res_operr:
 
 	.globl		fdiv_zero_load		/*  global for fsgldiv */
 fdiv_zero_load:
-	move.b		SRC_EX(%a0),%d0		/*  result sign is exclusive */
-	move.b		DST_EX(%a1),%d1		/*  or of input signs. */
+	move.b		SRC_EX.w(%a0),%d0		/*  result sign is exclusive */
+	move.b		DST_EX.w(%a1),%d1		/*  or of input signs. */
 	eor.b		%d0,%d1
 	bpl.b		fdiv_zero_load_p	/*  result is positive */
 	fmove.s		&0x80000000,%fp0	/*  load a -ZERO */
@@ -419,8 +419,8 @@ fdiv_zero_load_p:
 	.globl		fdiv_inf_load		/*  global for fsgldiv */
 fdiv_inf_load:
 	ori.w		&dz_mask+adz_mask,2+USER_FPSR(%a6) /*  no; set DZ/ADZ */
-	move.b		SRC_EX(%a0),%d0		/*  load both signs */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  load both signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bpl.b		fdiv_inf_load_p		/*  result is positive */
 	fmove.s		&0xff800000,%fp0	/*  make result -INF */
@@ -439,19 +439,19 @@ fdiv_inf_load_p:
 /*  */
 	.globl		fdiv_inf_dst		/*  global for fsgldiv */
 fdiv_inf_dst:
-	move.b		DST_EX(%a1),%d0		/*  load both signs */
-	move.b		SRC_EX(%a0),%d1
+	move.b		DST_EX.w(%a1),%d0		/*  load both signs */
+	move.b		SRC_EX.w(%a0),%d1
 	eor.b		%d0,%d1
 	bpl.b		fdiv_inf_dst_p		/*  result is positive */
 
-	fmovem.x		DST(%a1),%fp0		/*  return result in fp0 */
+	fmovem.x		DST.w(%a1),%fp0		/*  return result in fp0 */
 	fabs.x		%fp0			/*  clear sign bit */
 	fneg.x		%fp0			/*  set sign bit */
 	move.b		&inf_bmask+neg_bmask,FPSR_CC(%a6) /*  set INF/NEG */
 	rts
 
 fdiv_inf_dst_p:
-	fmovem.x		DST(%a1),%fp0		/*  return result in fp0 */
+	fmovem.x		DST.w(%a1),%fp0		/*  return result in fp0 */
 	fabs.x		%fp0			/*  return positive INF */
 	move.b		&inf_bmask,FPSR_CC(%a6) /*  set INF */
 	rts

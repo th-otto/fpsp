@@ -174,7 +174,7 @@ not_ext:
 	fmovem.x	(%a0),%fp0		/*  return rounded result in fp0 */
 	rts
 
-	.balign		4
+	.balignw		4,0x51fc
 
 PIRN:	.dc.l		0x40000000,0xc90fdaa2,0x2168c235	/*  pi */
 PIRZRM:	.dc.l		0x40000000,0xc90fdaa2,0x2168c234	/*  pi */

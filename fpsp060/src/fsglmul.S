@@ -47,11 +47,11 @@ fsglmul:
 	bne.w		fsglmul_not_norm	/*  optimize on non-norm input */
 
 fsglmul_norm:
-	move.w		DST_EX(%a1),FP_SCR1_EX(%a6)
+	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
 	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 

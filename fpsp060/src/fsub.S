@@ -362,8 +362,8 @@ fsub_res_snan:
 /*  both operands are ZEROes */
 /*  */
 fsub_zero_2:
-	move.b		SRC_EX(%a0),%d0
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d1,%d0
 	bpl.b		fsub_zero_2_chk_rm
 
@@ -398,7 +398,7 @@ fsub_zero_2_rm:
 /*  scale the DENORM or NORM and jump to the regular fsub routine. */
 /*  */
 fsub_zero_dst:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  scale the operand */
@@ -408,7 +408,7 @@ fsub_zero_dst:
 	bra.w		fsub_zero_entry		/*  go execute fsub */
 
 fsub_zero_src:
-	move.w		DST_EX(%a1),FP_SCR1_EX(%a6)
+	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
 	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
 	bsr.l		scale_to_zero_dst	/*  scale the operand */
@@ -422,8 +422,8 @@ fsub_zero_src:
 /*  same signs. else, */
 /*  */
 fsub_inf_2:
-	move.b		SRC_EX(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d1,%d0
 	bpl.l		res_operr		/*  weed out (-INF)+(+INF) */
 
@@ -431,15 +431,15 @@ fsub_inf_2:
 /*  the src INF since that's where the 881/882 gets the j-bit. */
 
 fsub_inf_src:
-	fmovem.x		SRC(%a0),%fp0		/*  return src INF */
+	fmovem.x	SRC.w(%a0),%fp0		/*  return src INF */
 	fneg.x		%fp0			/*  invert sign */
 	fbge		fsub_inf_done		/*  sign is now positive */
 	move.b		&neg_bmask+inf_bmask,FPSR_CC(%a6) /*  set INF/NEG */
 	rts
 
 fsub_inf_dst:
-	fmovem.x		DST(%a1),%fp0		/*  return dst INF */
-	tst.b		DST_EX(%a1)		/*  is INF negative? */
+	fmovem.x		DST.w(%a1),%fp0		/*  return dst INF */
+	tst.b		DST_EX.w(%a1)		/*  is INF negative? */
 	bpl.b		fsub_inf_done		/*  no */
 	move.b		&neg_bmask+inf_bmask,FPSR_CC(%a6) /*  set INF/NEG */
 	rts

@@ -41,13 +41,13 @@
 unf_res:
 	move.l		%d1, -(%sp)		/*  save rnd prec,mode on stack */
 
-	btst		&0x7, FTEMP_EX(%a0)	/*  make "internal" format */
+	btst		&0x7, FTEMP_EX.w(%a0)	/*  make "internal" format */
 	sne		FTEMP_SGN(%a0)
 
-	move.w		FTEMP_EX(%a0), %d1	/*  extract exponent */
+	move.w		FTEMP_EX.w(%a0), %d1	/*  extract exponent */
 	andi.w		&0x7fff, %d1
 	sub.w		%d0, %d1
-	move.w		%d1, FTEMP_EX(%a0)	/*  insert 16 bit exponent */
+	move.w		%d1, FTEMP_EX.w(%a0)	/*  insert 16 bit exponent */
 
 	move.l		%a0, -(%sp)		/*  save operand ptr during calls */
 
@@ -69,10 +69,10 @@ unf_res:
 	move.l		(%sp)+, %a0
 
 /*  result is now rounded properly. convert back to normal format */
-	bclr		&0x7, FTEMP_EX(%a0)	/*  clear sgn first; may have residue */
+	bclr		&0x7, FTEMP_EX.w(%a0)	/*  clear sgn first; may have residue */
 	tst.b		FTEMP_SGN(%a0)		/*  is "internal result" sign set? */
 	beq.b		unf_res_chkifzero	/*  no; result is positive */
-	bset		&0x7, FTEMP_EX(%a0)	/*  set result sgn */
+	bset		&0x7, FTEMP_EX.w(%a0)	/*  set result sgn */
 	clr.b		FTEMP_SGN(%a0)		/*  clear temp sign */
 
 /*  the number may have become zero after rounding. set ccodes accordingly. */
@@ -105,13 +105,13 @@ unf_res_end:
 unf_res4:
 	move.l		%d1,-(%sp)		/*  save rnd prec,mode on stack */
 
-	btst		&0x7,FTEMP_EX(%a0)	/*  make "internal" format */
+	btst		&0x7,FTEMP_EX.w(%a0)	/*  make "internal" format */
 	sne		FTEMP_SGN(%a0)
 
-	move.w		FTEMP_EX(%a0),%d1	/*  extract exponent */
+	move.w		FTEMP_EX.w(%a0),%d1	/*  extract exponent */
 	andi.w		&0x7fff,%d1
 	sub.w		%d0,%d1
-	move.w		%d1,FTEMP_EX(%a0)	/*  insert 16 bit exponent */
+	move.w		%d1,FTEMP_EX.w(%a0)	/*  insert 16 bit exponent */
 
 	move.l		%a0,-(%sp)		/*  save operand ptr during calls */
 
@@ -129,10 +129,10 @@ unf_res4:
 	move.l		(%sp)+,%a0
 
 /*  result is now rounded properly. convert back to normal format */
-	bclr		&0x7,FTEMP_EX(%a0)	/*  clear sgn first; may have residue */
+	bclr		&0x7,FTEMP_EX.w(%a0)	/*  clear sgn first; may have residue */
 	tst.b		FTEMP_SGN(%a0)		/*  is "internal result" sign set? */
 	beq.b		unf_res4_chkifzero	/*  no; result is positive */
-	bset		&0x7,FTEMP_EX(%a0)	/*  set result sgn */
+	bset		&0x7,FTEMP_EX.w(%a0)	/*  set result sgn */
 	clr.b		FTEMP_SGN(%a0)		/*  clear temp sign */
 
 /*  the number may have become zero after rounding. set ccodes accordingly. */

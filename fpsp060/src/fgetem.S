@@ -24,7 +24,7 @@
 
 	.globl		sgetexp
 sgetexp:
-	move.w		SRC_EX(%a0),%d0		/*  get the exponent */
+	move.w		SRC_EX.w(%a0),%d0		/*  get the exponent */
 	bclr		&0xf,%d0		/*  clear the sign bit */
 	subi.w		&0x3fff,%d0		/*  subtract off the bias */
 	fmove.w		%d0,%fp0		/*  return exp in fp0 */
@@ -46,7 +46,7 @@ sgetexpd:
 
 	.globl		sgetman
 sgetman:
-	move.w		SRC_EX(%a0),%d0		/*  get the exp */
+	move.w		SRC_EX.w(%a0),%d0		/*  get the exp */
 	ori.w		&0x7fff,%d0		/*  clear old exp */
 	bclr		&0xe,%d0		/*  make it the new exp +-3fff */
 

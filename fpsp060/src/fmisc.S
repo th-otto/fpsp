@@ -36,8 +36,8 @@ addsub_scaler2:
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
-	move.w		SRC_EX(%a0),%d0
-	move.w		DST_EX(%a1),%d1
+	move.w		SRC_EX.w(%a0),%d0
+	move.w		DST_EX.w(%a1),%d1
 	move.w		%d0,FP_SCR0_EX(%a6)
 	move.w		%d1,FP_SCR1_EX(%a6)
 
@@ -369,7 +369,7 @@ dst_qnan2:
 nan_done:
 	ori.l		&nan_mask, USER_FPSR(%a6)
 nan_comp:
-	btst		&0x7, FTEMP_EX(%a0)	/*  is NAN neg? */
+	btst		&0x7, FTEMP_EX.w(%a0)	/*  is NAN neg? */
 	beq.b		nan_not_neg
 	ori.l		&neg_mask, USER_FPSR(%a6)
 nan_not_neg:
@@ -401,7 +401,9 @@ nan_not_neg:
 	.globl		res_operr
 res_operr:
 	or.l		&nan_mask+operr_mask+aiop_mask,USER_FPSR(%a6)
-	fmove.x		(nan_return).l(%pc),%fp0
+	/* fmovem.x		(nan_return).l(%pc),%fp0 */
+	.dc.w 0xf23b,0xd080,0x0170 /* XXX: invalid on 060 */
+	.dc.l nan_return-.+2
 	rts
 
 nan_return:

@@ -80,7 +80,7 @@ fout_byte:
 	tst.b		STAG(%a6)		/*  is operand normalized? */
 	bne.b		fout_byte_denorm	/*  no */
 
-	fmovem.x		SRC(%a0),%fp0		/*  load value */
+	fmovem.x		SRC.w(%a0),%fp0		/*  load value */
 
 fout_byte_norm:
 	fmove.l		%d0,%fpcr		/*  insert rnd prec,mode */
@@ -110,7 +110,7 @@ fout_byte_dn:
 	rts
 
 fout_byte_denorm:
-	move.l		SRC_EX(%a0),%d1
+	move.l		SRC_EX.w(%a0),%d1
 	andi.l		&0x80000000,%d1		/*  keep DENORM sign */
 	ori.l		&0x00800000,%d1		/*  make smallest sgl */
 	fmove.s		%d1,%fp0
@@ -126,7 +126,7 @@ fout_word:
 	tst.b		STAG(%a6)		/*  is operand normalized? */
 	bne.b		fout_word_denorm	/*  no */
 
-	fmovem.x		SRC(%a0),%fp0		/*  load value */
+	fmovem.x		SRC.w(%a0),%fp0		/*  load value */
 
 fout_word_norm:
 	fmove.l		%d0,%fpcr		/*  insert rnd prec:mode */
@@ -156,7 +156,7 @@ fout_word_dn:
 	rts
 
 fout_word_denorm:
-	move.l		SRC_EX(%a0),%d1
+	move.l		SRC_EX.w(%a0),%d1
 	andi.l		&0x80000000,%d1		/*  keep DENORM sign */
 	ori.l		&0x00800000,%d1		/*  make smallest sgl */
 	fmove.s		%d1,%fp0
@@ -172,7 +172,7 @@ fout_long:
 	tst.b		STAG(%a6)		/*  is operand normalized? */
 	bne.b		fout_long_denorm	/*  no */
 
-	fmovem.x		SRC(%a0),%fp0		/*  load value */
+	fmovem.x		SRC.w(%a0),%fp0		/*  load value */
 
 fout_long_norm:
 	fmove.l		%d0,%fpcr		/*  insert rnd prec:mode */
@@ -203,7 +203,7 @@ fout_long_dn:
 	rts
 
 fout_long_denorm:
-	move.l		SRC_EX(%a0),%d1
+	move.l		SRC_EX.w(%a0),%d1
 	andi.l		&0x80000000,%d1		/*  keep DENORM sign */
 	ori.l		&0x00800000,%d1		/*  make smallest sgl */
 	fmove.s		%d1,%fp0
@@ -221,12 +221,12 @@ fout_ext:
 /*  we copy the extended precision result to FP_SCR0 so that the reserved */
 /*  16-bit field gets zeroed. we do this since we promise not to disturb */
 /*  what's at SRC(a0). */
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	clr.w		2+FP_SCR0_EX(%a6)	/*  clear reserved field */
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
-	fmovem.x		SRC(%a0),%fp0		/*  return result */
+	fmovem.x		SRC.w(%a0),%fp0		/*  return result */
 
 	bsr.l		_calc_ea_fout		/*  fix stacked <ea> */
 
@@ -298,7 +298,7 @@ fout_sgl:
 /*  separately. otherwise, set the FPCR to the proper rounding mode and */
 /*  execute the move. */
 /*  */
-	move.w		SRC_EX(%a0),%d0		/*  extract exponent */
+	move.w		SRC_EX.w(%a0),%d0		/*  extract exponent */
 	andi.w		&0x7fff,%d0		/*  strip sign */
 
 	cmpi.w		&SGL_HI,%d0		/*  will operand overflow? */
@@ -312,7 +312,7 @@ fout_sgl:
 /*  Unnormalized inputs can come through this point. */
 /*  */
 fout_sgl_exg:
-	fmovem.x		SRC(%a0),%fp0		/*  fetch fop from stack */
+	fmovem.x		SRC.w(%a0),%fp0		/*  fetch fop from stack */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -351,7 +351,7 @@ fout_sgl_exg_write_dn:
 fout_sgl_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set UNFL */
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	move.l		%a0,-(%sp)
@@ -415,7 +415,7 @@ fout_sgl_ovfl_cont:
 /*  call ovf_res() w/ sgl prec and the correct rnd mode to create the default */
 /*  overflow result. DON'T save the returned ccodes from ovf_res() since */
 /*  fmove out doesn't alter them. */
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	smi		%d1			/*  set if so */
 	move.l		L_SCR3(%a6),%d0		/*  pass: sgl prec,rnd mode */
 	bsr.l		ovf_res			/*  calc OVFL result */
@@ -455,7 +455,7 @@ fout_sgl_ovfl_chkexc:
 /*      if exp now equals one, then it overflowed so call ovf_res. */
 /*  */
 fout_sgl_may_ovfl:
-	move.w		SRC_EX(%a0),%d1		/*  fetch current sign */
+	move.w		SRC_EX.w(%a0),%d1		/*  fetch current sign */
 	andi.w		&0x8000,%d1		/*  keep it,clear exp */
 	ori.w		&0x3fff,%d1		/*  insert exp = 0 */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert scaled exp */
@@ -477,7 +477,7 @@ fout_sgl_may_ovfl:
 fout_sd_exc_unfl:
 	move.l		(%sp)+,%a0
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -495,7 +495,7 @@ fout_sd_exc:
 fout_sd_exc_ovfl:
 	move.l		(%sp)+,%a0		/*  restore a0 */
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 
@@ -536,7 +536,7 @@ fout_dbl:
 /*  separately. otherwise, set the FPCR to the proper rounding mode and */
 /*  execute the move. */
 /*  */
-	move.w		SRC_EX(%a0),%d0		/*  extract exponent */
+	move.w		SRC_EX.w(%a0),%d0		/*  extract exponent */
 	andi.w		&0x7fff,%d0		/*  strip sign */
 
 	cmpi.w		&DBL_HI,%d0		/*  will operand overflow? */
@@ -550,7 +550,7 @@ fout_dbl:
 /*  Unnormalized inputs can come through this point. */
 /*  */
 fout_dbl_exg:
-	fmovem.x		SRC(%a0),%fp0		/*  fetch fop from stack */
+	fmovem.x		SRC.w(%a0),%fp0		/*  fetch fop from stack */
 
 	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
 	fmove.l		&0x0,%fpsr		/*  clear FPSR */
@@ -580,7 +580,7 @@ fout_dbl_exg:
 fout_dbl_unfl:
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set UNFL */
 
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	move.l		%a0,-(%sp)
@@ -636,7 +636,7 @@ fout_dbl_ovfl_cont:
 /*  call ovf_res() w/ dbl prec and the correct rnd mode to create the default */
 /*  overflow result. DON'T save the returned ccodes from ovf_res() since */
 /*  fmove out doesn't alter them. */
-	tst.b		SRC_EX(%a0)		/*  is operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is operand negative? */
 	smi		%d1			/*  set if so */
 	move.l		L_SCR3(%a6),%d0		/*  pass: dbl prec,rnd mode */
 	bsr.l		ovf_res			/*  calc OVFL result */
@@ -666,7 +666,7 @@ fout_dbl_ovfl_cont:
 /*      if exp now equals one, then it overflowed so call ovf_res. */
 /*  */
 fout_dbl_may_ovfl:
-	move.w		SRC_EX(%a0),%d1		/*  fetch current sign */
+	move.w		SRC_EX.w(%a0),%d1		/*  fetch current sign */
 	andi.w		&0x8000,%d1		/*  keep it,clear exp */
 	ori.w		&0x3fff,%d1		/*  insert exp = 0 */
 	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert scaled exp */
@@ -723,7 +723,7 @@ fout_dbl_may_ovfl:
 
 dst_dbl:
 	clr.l		%d0			/*  clear d0 */
-	move.w		FTEMP_EX(%a0),%d0	/*  get exponent */
+	move.w		FTEMP_EX.w(%a0),%d0	/*  get exponent */
 	subi.w		&EXT_BIAS,%d0		/*  subtract extended precision bias */
 	addi.w		&DBL_BIAS,%d0		/*  add double precision bias */
 	tst.b		FTEMP_HI(%a0)		/*  is number a denorm? */
@@ -732,7 +732,7 @@ dst_dbl:
 dst_get_dupper:
 	swap		%d0			/*  d0 now in upper word */
 	lsl.l		&0x4,%d0		/*  d0 in proper place for dbl prec exp */
-	tst.b		FTEMP_EX(%a0)		/*  test sign */
+	tst.b		FTEMP_EX.w(%a0)		/*  test sign */
 	bpl.b		dst_get_dman		/*  if positive, go process mantissa */
 	bset		&0x1f,%d0		/*  if negative, set sign */
 dst_get_dman:
@@ -788,7 +788,7 @@ dst_get_dman:
 
 dst_sgl:
 	clr.l		%d0
-	move.w		FTEMP_EX(%a0),%d0	/*  get exponent */
+	move.w		FTEMP_EX.w(%a0),%d0	/*  get exponent */
 	subi.w		&EXT_BIAS,%d0		/*  subtract extended precision bias */
 	addi.w		&SGL_BIAS,%d0		/*  add single precision bias */
 	tst.b		FTEMP_HI(%a0)		/*  is number a denorm? */
@@ -797,7 +797,7 @@ dst_sgl:
 dst_get_supper:
 	swap		%d0			/*  put exp in upper word of d0 */
 	lsl.l		&0x7,%d0		/*  shift it into single exp bits */
-	tst.b		FTEMP_EX(%a0)		/*  test sign */
+	tst.b		FTEMP_EX.w(%a0)		/*  test sign */
 	bpl.b		dst_get_sman		/*  if positive, continue */
 	bset		&0x1f,%d0		/*  if negative, put in sign first */
 dst_get_sman:

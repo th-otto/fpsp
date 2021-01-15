@@ -66,7 +66,7 @@ fneg_norm:
 /*  */
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
-	move.w		SRC_EX(%a0),%d0
+	move.w		SRC_EX.w(%a0),%d0
 	eori.w		&0x8000,%d0		/*  negate sign */
 	bpl.b		fneg_norm_load		/*  sign is positive */
 	move.b		&neg_bmask,FPSR_CC(%a6)	/*  set 'N' ccode bit */
@@ -87,7 +87,7 @@ fneg_denorm:
 
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
-	move.w		SRC_EX(%a0),%d0
+	move.w		SRC_EX.w(%a0),%d0
 	eori.w		&0x8000,%d0		/*  negate sign */
 	bpl.b		fneg_denorm_done	/*  no */
 	move.b		&neg_bmask,FPSR_CC(%a6)	/*  yes, set 'N' ccode bit */
@@ -128,7 +128,7 @@ fneg_not_ext:
 /*  operand is to be rounded to single precision */
 /*  */
 fneg_sgl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  calculate scale factor */
@@ -171,7 +171,7 @@ fneg_sd_normal_exit:
 /*  operand is to be rounded to double precision */
 /*  */
 fneg_dbl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  calculate scale factor */
@@ -322,7 +322,7 @@ fneg_not_norm:
 /*  use fneg to determine ccodes. */
 /*  prec:mode should be zero at this point but it won't affect answer anyways. */
 /*  */
-	fneg.x		SRC_EX(%a0),%fp0	/*  do fneg */
+	fneg.x		SRC_EX.w(%a0),%fp0	/*  do fneg */
 	fmove.l		%fpsr,%d0
 	rol.l		&0x8,%d0		/*  put ccodes in lo byte */
 	move.b		%d0,FPSR_CC(%a6)	/*  insert correct ccodes */

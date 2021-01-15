@@ -66,11 +66,11 @@ fin_norm:
 /*  or overflow because of rounding to the correct precision. so... */
 /*  skip the scaling and unscaling... */
 /*  */
-	tst.b		SRC_EX(%a0)		/*  is the operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is the operand negative? */
 	bpl.b		fin_norm_done		/*  no */
 	bset		&neg_bit,FPSR_CC(%a6)	/*  yes, so set 'N' ccode bit */
 fin_norm_done:
-	fmovem.x	SRC(%a0),%fp0		/*  return result in fp0 */
+	fmovem.x	SRC.w(%a0),%fp0		/*  return result in fp0 */
 	rts
 
 /*  */
@@ -82,11 +82,11 @@ fin_denorm:
 	bne.w		fin_not_ext		/*  no, so go handle dbl or sgl */
 
 	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
-	tst.b		SRC_EX(%a0)		/*  is the operand negative? */
+	tst.b		SRC_EX.w(%a0)		/*  is the operand negative? */
 	bpl.b		fin_denorm_done		/*  no */
 	bset		&neg_bit,FPSR_CC(%a6)	/*  yes, so set 'N' ccode bit */
 fin_denorm_done:
-	fmovem.x	SRC(%a0),%fp0		/*  return result in fp0 */
+	fmovem.x	SRC.w(%a0),%fp0		/*  return result in fp0 */
 	btst		&unfl_bit,FPCR_ENABLE(%a6) /*  is UNFL enabled? */
 	bne.b		fin_denorm_unfl_ena	/*  yes */
 	rts
@@ -97,7 +97,7 @@ fin_denorm_done:
 /*  exponent and insert back into the operand. */
 /*  */
 fin_denorm_unfl_ena:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	lea		FP_SCR0(%a6),%a0	/*  pass: ptr to operand */
@@ -123,7 +123,7 @@ fin_not_ext:
 /*  operand is to be rounded to single precision */
 /*  */
 fin_sgl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  calculate scale factor */
@@ -166,7 +166,7 @@ fin_sd_normal_exit:
 /*  operand is to be rounded to double precision */
 /*  */
 fin_dbl:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  calculate scale factor */
@@ -317,7 +317,7 @@ fin_not_norm:
 /*  use fmov to determine ccodes. */
 /*  prec:mode should be zero at this point but it won't affect answer anyways. */
 /*  */
-	fmove.x		SRC(%a0),%fp0		/*  do fmove in */
+	fmove.x		SRC.w(%a0),%fp0		/*  do fmove in */
 	fmove.l		%fpsr,%d0		/*  no exceptions possible */
 	rol.l		&0x8,%d0		/*  put ccodes in lo byte */
 	move.b		%d0,FPSR_CC(%a6)	/*  insert correct ccodes */

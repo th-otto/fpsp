@@ -362,8 +362,8 @@ fadd_res_snan:
 /*  both operands are ZEROes */
 /*  */
 fadd_zero_2:
-	move.b		SRC_EX(%a0),%d0		/*  are the signs opposite */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  are the signs opposite */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d0,%d1
 	bmi.w		fadd_zero_2_chk_rm	/*  weed out (-ZERO)+(+ZERO) */
 
@@ -399,7 +399,7 @@ fadd_zero_rm:
 /*  the DENORM or NORM and jump to the regular fadd routine. */
 /*  */
 fadd_zero_dst:
-	move.w		SRC_EX(%a0),FP_SCR0_EX(%a6)
+	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
 	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
 	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
 	bsr.l		scale_to_zero_src	/*  scale the operand */
@@ -409,7 +409,7 @@ fadd_zero_dst:
 	bra.w		fadd_zero_entry		/*  go execute fadd */
 
 fadd_zero_src:
-	move.w		DST_EX(%a1),FP_SCR1_EX(%a6)
+	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
 	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
 	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
 	bsr.l		scale_to_zero_dst	/*  scale the operand */
@@ -423,8 +423,8 @@ fadd_zero_src:
 /*  different signs. else, an INF of the same sign is returned */
 /*  */
 fadd_inf_2:
-	move.b		SRC_EX(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX(%a1),%d1
+	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(%a1),%d1
 	eor.b		%d1,%d0
 	bmi.l		res_operr		/*  weed out (-INF)+(+INF) */
 
@@ -435,8 +435,8 @@ fadd_inf_2:
 /*  operands are INF and one of {ZERO, INF, DENORM, NORM} */
 /*  */
 fadd_inf_src:
-	fmovem.x	SRC(%a0),%fp0		/*  return src INF */
-	tst.b		SRC_EX(%a0)		/*  is INF positive? */
+	fmovem.x	SRC.w(%a0),%fp0		/*  return src INF */
+	tst.b		SRC_EX.w(%a0)		/*  is INF positive? */
 	bpl.b		fadd_inf_done		/*  yes; we're done */
 	move.b		&neg_bmask+inf_bmask,FPSR_CC(%a6) /*  set INF/NEG */
 	rts
@@ -445,8 +445,8 @@ fadd_inf_src:
 /*  operands are INF and one of {ZERO, INF, DENORM, NORM} */
 /*  */
 fadd_inf_dst:
-	fmovem.x	DST(%a1),%fp0		/*  return dst INF */
-	tst.b		DST_EX(%a1)		/*  is INF positive? */
+	fmovem.x	DST.w(%a1),%fp0		/*  return dst INF */
+	tst.b		DST_EX.w(%a1)		/*  is INF positive? */
 	bpl.b		fadd_inf_done		/*  yes; we're done */
 	move.b		&neg_bmask+inf_bmask,FPSR_CC(%a6) /*  set INF/NEG */
 	rts

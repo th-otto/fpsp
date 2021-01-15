@@ -96,7 +96,7 @@ srem:
 Mod_Rem:
 /* ..Save sign of X and Y */
 	movem.l		%d2-%d7,-(%sp)		/*  save data registers */
-	move.w		SRC_EX(%a0),%d3
+	move.w		SRC_EX.w(%a0),%d3
 	move.w		%d3,SignY(%a6)
 	andi.l		&0x00007FFF,%d3		/*  Y := |Y| */
 
@@ -141,7 +141,7 @@ Y_Normal:
 /*                                        ...with bias $7FFD */
 
 Chk_X:
-	move.w		DST_EX(%a1),%d0
+	move.w		DST_EX.w(%a1),%d0
 	move.w		%d0,SignX(%a6)
 	move.w		SignY(%a6),%d1
 	eor.l		%d0,%d1

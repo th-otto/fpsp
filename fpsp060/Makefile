@@ -84,9 +84,12 @@ EXTRA = \
 
 FPSP060_OBJS = $(FPSP060_SRCS:.S=.o)
 
-all: fpsp.sa isp.sa fpsp060.prg ftest.sa itest.sa
+all: fpsp.sa isp.sa fpsp060.prg ftest.sa itest.sa fpsptst.tos
 
 fpsp060.prg: fpsp060.s fpsp.sa isp.sa
+	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
+
+fpsptst.tos: fpsptst.s fpsp.sa isp.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
 
 fpsp.bin: $(FPSP060_SRCS) Makefile
@@ -119,4 +122,4 @@ dfpsp: dfpsp.c
 	$(CC_FOR_BUILD) -o $@ $<
 
 clean::
-	$(RM) src/*.o *.sa *.bin *.prg
+	$(RM) src/*.o *.sa *.bin *.prg *.tos

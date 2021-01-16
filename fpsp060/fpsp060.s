@@ -18,7 +18,7 @@ _pcr    = 0x0808
         move.l  12(a3),d7
         add.l   20(a3),d7
         add.l   28(a3),d7
-        add.w   #256,d7
+        add.l   #256,d7
 /* Setup a (very small) stack in the commandline */
         lea     256(a3),a7
 /* Free not required memory */
@@ -35,6 +35,15 @@ _pcr    = 0x0808
         trap    #14
         addq.w  #6,a7
 
+		tst.w   d0
+		beq.s   done
+        lea no_060_msg(pc),a0
+        subq.w  #1,d0
+        beq.s   exit
+        lea already_installed_msg(pc),a0
+        bra.s   exit
+
+done:
 /* terminate and stay resident */
         move.l  d7,-(a7)
         clr.w   -(a7)
@@ -42,6 +51,42 @@ _pcr    = 0x0808
         trap    #1
 term:
         bra.s   term                       /* just in case */
+
+exit:
+	 bsr.s print_string
+exitloop:
+     bsr.s  waitkey
+     clr.w -(a7)
+     trap #1
+     bra.s exitloop                    /* just in case */
+
+waitkey:
+     lea waitkey_msg(pc),a0
+     bsr.s print_string
+     move.w #8,-(a7)
+     trap #1
+     addq.l #2,a7
+     rts
+
+print_string:
+     move.l a0,-(a7)
+     move.w #9,-(a7)
+     trap   #1
+     addq.w #6,a7
+     rts
+
+already_installed_msg:
+     .ascii "FPSP already installed!"
+     .dc.b  13,10,0
+no_060_msg:
+     .ascii "No 040/060 CPU detected, FPSP not installed!"
+     .dc.b  13,10,0
+waitkey_msg:
+     .ascii "Press any key to continue!"
+crnl:
+     .dc.b  13,10,0
+
+     .even
 
 /*
  * actual installation code, executed in supervisor mode
@@ -52,8 +97,11 @@ doinstall:
  bcs.b    no_060
  lea      unim_int_instr(pc),a0
  move.l   0xf4.w,a1
- cmpa.l   a1,a0
+ cmp.l    #0x58425241,-12(a1)
+ bne.s    doinstall1
+ cmp.l    #0x42505350,-8(a1)
  beq.s    already_installed
+doinstall1:
  move.l   a1,-4(a0)
  move.l   0xc4.w,-16(a0)                   /* save old div-by-zero vector */
  move.l   a0,0xf4.w                        /* set new unimplemented integer vector */
@@ -77,37 +125,17 @@ doinstall:
  addq.l   #8,a0
  move.l   a0,0xf0.w                        /* xFP_CALL_TOP+0x80+0x40: effadd */
  .dc.l    0xf23c,0x9000,0,0                /* fmove.l #0,fpcr */
+ moveq #0,d0                               /* no error */
+ rts
 
 
 no_060:
-     lea no_060_msg(pc),a0
-     bsr print_string
-     bra.s exit
+ moveq #1,d0                               /* flag error */
+ rts
 
 already_installed:
-     lea already_installed_msg(pc),a0
-     bsr print_string
-
-exit:
-     clr.w -(a7)
-     trap #1
-     bra.s exit                    /* just in case */
-
-already_installed_msg:
-     .ascii "FPSP already installed!"
-     .dc.b  13,10,0
-no_060_msg:
-     .ascii "No 040/060 CPU detected, FPSP not installed!"
-     .dc.b  13,10,0
-
-     .even
-
-print_string:
-     move.l a0,-(a7)
-     move.w #9,-(a7)
-     trap   #1
-     addq.w #6,a7
-     rts
+ moveq #2,d0                               /* flag error */
+ rts
 
 /*
  **********************************************************************

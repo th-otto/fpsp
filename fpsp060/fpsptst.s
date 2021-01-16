@@ -8,7 +8,7 @@
         move.l  12(a3),d7
         add.l   20(a3),d7
         add.l   28(a3),d7
-        add.w   #256,d7
+        add.l   #256,d7
 /* Setup a stack */
         lea     stackend(pc),a7
 /* Free not required memory */
@@ -22,7 +22,7 @@
 /* run integer tests */
 	bsr	_060ISP_TEST+128+0
 
-/* run floatoing-point tests */
+/* run floating-point tests */
 	bsr	_060FPSP_TEST+128+0
 	bsr	_060FPSP_TEST+128+8
 	bsr	_060FPSP_TEST+128+16

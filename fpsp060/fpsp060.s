@@ -8,30 +8,30 @@ _dtt1   = 0x0007
 _pcr    = 0x0808
 
 
-	.text
+        .text
 
 /*
  * GEMDOS startup code:
  * get basepage, calculate program size, and shrink memory
  */
         move.l  4(a7),a3
-        move.l  12(a3),d7
-        add.l   20(a3),d7
-        add.l   28(a3),d7
-        add.l   #256,d7
+        move.l  12(a3),a5
+        add.l   20(a3),a5
+        add.l   28(a3),a5
+        lea     256(a5),a5
 /* Setup a (very small) stack in the commandline */
         lea     256(a3),a7
 /* Free not required memory */
-        move.l  d7,-(a7)
+        move.l  a5,-(a7)
         move.l  a3,-(a7)
         clr.w   -(a7)
-        move.w  #0x4a,-(a7)
+        move.w  #0x4a,-(a7)             /* Mshrink */
         trap    #1
         lea.l   12(a7),a7
 
 /* do the installation */
         pea     doinstall(pc)
-        move.w  #38,-(a7)
+        move.w  #38,-(a7)               /* Supexec */
         trap    #14
         addq.w  #6,a7
 
@@ -45,61 +45,61 @@ _pcr    = 0x0808
 
 done:
 /* terminate and stay resident */
-        move.l  d7,-(a7)
         clr.w   -(a7)
-        move.w  #49,-(a7)
+        move.l  a5,-(a7)
+        move.w  #49,-(a7)               /* Ptermres */
         trap    #1
 term:
-        bra.s   term                       /* just in case */
+        bra.s   term                    /* just in case */
 
 exit:
-	 bsr.s print_string
+	    bsr.s print_string
 exitloop:
-     bsr.s  waitkey
-     clr.w -(a7)
-     trap #1
-     bra.s exitloop                    /* just in case */
+        bsr.s  waitkey
+        clr.w -(a7)                     /* Pterm0 */
+        trap #1
+        bra.s exitloop                  /* just in case */
 
 waitkey:
-     lea waitkey_msg(pc),a0
-     bsr.s print_string
-     move.w #8,-(a7)
-     trap #1
-     addq.l #2,a7
-     rts
+        lea waitkey_msg(pc),a0
+        bsr.s print_string
+        move.w #8,-(a7)                 /* Cnecin */
+        trap #1
+        addq.l #2,a7
+        rts
 
 print_string:
-     move.l a0,-(a7)
-     move.w #9,-(a7)
-     trap   #1
-     addq.w #6,a7
-     rts
+        move.l a0,-(a7)
+        move.w #9,-(a7)                 /* Cconws */
+        trap   #1
+        addq.w #6,a7
+        rts
 
 already_installed_msg:
-     .ascii "FPSP already installed!"
-     .dc.b  13,10,0
+        .ascii "FPSP already installed!"
+        .dc.b  13,10,0
 no_060_msg:
-     .ascii "No 040/060 CPU detected, FPSP not installed!"
-     .dc.b  13,10,0
+        .ascii "No 040/060 CPU detected, FPSP not installed!"
+        .dc.b  13,10,0
 waitkey_msg:
-     .ascii "Press any key to continue!"
+        .ascii "Press any key to continue!"
 crnl:
-     .dc.b  13,10,0
+        .dc.b  13,10,0
 
-     .even
+        .even
 
 /*
  * actual installation code, executed in supervisor mode
  */
 doinstall:
  bsr get_cpu_typ
- cmp.w    #40,d0
+ cmpi.w   #40,d0
  bcs.b    no_060
  lea      unim_int_instr(pc),a0
  move.l   0xf4.w,a1
- cmp.l    #0x58425241,-12(a1)
+ cmp.l    #0x58425241,-12(a1)              /* "XBRA" */
  bne.s    doinstall1
- cmp.l    #0x42505350,-8(a1)
+ cmp.l    #0x46505350,-8(a1)               /* "FPSP" */
  beq.s    already_installed
 doinstall1:
  move.l   a1,-4(a0)
@@ -171,7 +171,7 @@ get_cpu_typ:
  moveq    #20,d0                   /* assume 68020 */
  btst     #8,d1                    /* check if 68030 data cache was enabled */
  beq.b    set_cpu_typ              /* no data cache, we are done */
- .dc.w 0xf039,0x4200,0,12          /* pmove    tc,12.l; try to access the TC register */
+ .dc.w 0xf039,0x4200,0,64          /* pmove    tc,12.l; try to access the TC register */
  moveq    #30,d0                   /* no fault -> this is a 030 */
  bra.s    set_cpu_typ
 
@@ -204,17 +204,17 @@ set_cpu_typ:
 /* unimplemented integer instruction handler (fuer movep,mulx.l,divx.l) */
 
 x060_real_chk:
-     move.l 0x18.w,-(a7)
-     rts
+        move.l 0x18.w,-(a7)
+        rts
 
 x060_real_divbyzero:
-     move.l unim_int_instr-16(pc),-(a7)
-     rts
+        move.l unim_int_instr-16(pc),-(a7)
+        rts
 
 x060_real_lock_page:
 x060_real_unlock_page:
-     clr.l d0
-     rts
+        clr.l d0
+        rts
 
 /*
  * =========================================================
@@ -227,13 +227,13 @@ x060_real_trap:
 x060_real_trace:
 x060_real_access:
 x060_isp_done:
-     rte
+        rte
 
 x060_real_cas:
-     bra.l          xI_CALL_TOP+0x80+0x08
+        bra.l          xI_CALL_TOP+0x80+0x08
 
 x060_real_cas2:
-     bra.l          xI_CALL_TOP+0x80+0x10
+        bra.l          xI_CALL_TOP+0x80+0x10
 
 /*
  *  INPUTS:
@@ -247,56 +247,56 @@ x060_real_cas2:
 x060_dmem_write:
 x060_imem_read:
 x060_dmem_read:
-     dc.w      0x4efb,0x0522,0x6,0         /* jmp ([mov_tab,pc,d0.w*4],0) */
+        dc.w      0x4efb,0x0522,0x6,0         /* jmp ([mov_tab,pc,d0.w*4],0) */
 mov_tab:
-     dc.l      mov0,mov1,mov2,mov3,mov4,mov5
-     dc.l      mov6,mov7,mov8,mov9,mov10,mov11,mov12
+        dc.l      mov0,mov1,mov2,mov3,mov4,mov5
+        dc.l      mov6,mov7,mov8,mov9,mov10,mov11,mov12
 mov1:
-     move.b         (a0)+,(a1)+
+        move.b         (a0)+,(a1)+
 mov0:
-     clr.l          d1
-     rts
+        clr.l          d1
+        rts
 mov3:
-     move.b         (a0)+,(a1)+
+        move.b         (a0)+,(a1)+
 mov2:
-     move.w         (a0)+,(a1)+
-     clr.l          d1
-     rts
+        move.w         (a0)+,(a1)+
+        clr.l          d1
+        rts
 mov5:
-     move.b         (a0)+,(a1)+
+        move.b         (a0)+,(a1)+
 mov4:
-     move.l         (a0)+,(a1)+
-     clr.l          d1
-     rts
+        move.l         (a0)+,(a1)+
+        clr.l          d1
+        rts
 mov7:
-     move.b         (a0)+,(a1)+
+        move.b         (a0)+,(a1)+
 mov6:
-     move.w         (a0)+,(a1)+
-     move.l         (a0)+,(a1)+
-     clr.l          d1
-     rts
+        move.w         (a0)+,(a1)+
+        move.l         (a0)+,(a1)+
+        clr.l          d1
+        rts
 mov9:
-     move.b         (a0)+,(a1)+
+        move.b         (a0)+,(a1)+
 mov8:
-     move.l         (a0)+,(a1)+
-     move.l         (a0)+,(a1)+
-     clr.l          d1
-     rts  
+        move.l         (a0)+,(a1)+
+        move.l         (a0)+,(a1)+
+        clr.l          d1
+        rts  
 mov11:
-     move.b         (a0)+,(a1)+
+        move.b         (a0)+,(a1)+
 mov10:
-     move.w         (a0)+,(a1)+
-     move.l         (a0)+,(a1)+
-     move.l         (a0)+,(a1)+
-     clr.l          d1
-     rts  
+        move.w         (a0)+,(a1)+
+        move.l         (a0)+,(a1)+
+        move.l         (a0)+,(a1)+
+        clr.l          d1
+        rts  
 mov12:
-     move.l         (a0)+,(a1)+
-     move.l         (a0)+,(a1)+
-     move.l         (a0)+,(a1)+
-     clr.l          d1
-     rts  
-     
+        move.l         (a0)+,(a1)+
+        move.l         (a0)+,(a1)+
+        move.l         (a0)+,(a1)+
+        clr.l          d1
+        rts  
+
 
 
 /*
@@ -308,10 +308,10 @@ mov12:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_read_byte:
-     clr.l          d0             /* clear whole longword */
-     move.b         (a0),d0        /* fetch super byte */
-     clr.l          d1             /* return success */
-     rts
+        clr.l          d0             /* clear whole longword */
+        move.b         (a0),d0        /* fetch super byte */
+        clr.l          d1             /* return success */
+        rts
 /*
  * INPUTS:
  *     a0 - user source address
@@ -321,10 +321,10 @@ x060_dmem_read_byte:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_read_word:
-     clr.l          d0             /* clear whole longword */
-     move.w         (a0),d0        /* fetch super word */
-     clr.l          d1             /* return success */
-     rts
+        clr.l          d0             /* clear whole longword */
+        move.w         (a0),d0        /* fetch super word */
+        clr.l          d1             /* return success */
+        rts
 
 /*
  * INPUTS:
@@ -336,9 +336,9 @@ x060_dmem_read_word:
  */
 x060_imem_read_long:
 x060_dmem_read_long:
-     move.l         (a0),d0        /* fetch super longword */
-     clr.l          d1             /* return success */
-     rts
+        move.l         (a0),d0        /* fetch super longword */
+        clr.l          d1             /* return success */
+        rts
 /*
  * INPUTS:
  *     a0 - user destination address
@@ -348,9 +348,9 @@ x060_dmem_read_long:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write_byte:
-     move.b         d0,(a0)        /* store super byte */
-     clr.l          d1             /* return success */
-     rts
+        move.b         d0,(a0)        /* store super byte */
+        clr.l          d1             /* return success */
+        rts
 
 /*
  * INPUTS:
@@ -361,9 +361,9 @@ x060_dmem_write_byte:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write_word:
-     move.w         d0,(a0)        /* store super word */
-     clr.l          d1             /* return success */
-     rts
+        move.w         d0,(a0)        /* store super word */
+        clr.l          d1             /* return success */
+        rts
 
 /*
  * INPUTS:
@@ -374,9 +374,9 @@ x060_dmem_write_word:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write_long:
-     move.l         d0,(a0)        /* store super longword */
-     clr.l          d1             /* return success */
-     rts
+        move.l         d0,(a0)        /* store super longword */
+        clr.l          d1             /* return success */
+        rts
 
 /*
  * INPUTS:
@@ -387,9 +387,9 @@ x060_dmem_write_long:
  *     d1 - 0 = success, !0 = failure
  */
 x060_imem_read_word:
-     move.w         (a0),d0        /* fetch super word */
-     clr.l          d1             /* return success */
-     rts
+        move.w         (a0),d0        /* fetch super word */
+        clr.l          d1             /* return success */
+        rts
 
 
 /*
@@ -401,34 +401,40 @@ x060_imem_read_word:
 /* The size of this section MUST be 128 bytes!!! */
 
 xI_CALL_TOP:
-     dc.l x060_real_chk-xI_CALL_TOP       
-     dc.l x060_real_divbyzero-xI_CALL_TOP       
-     dc.l x060_real_trace-xI_CALL_TOP
-     dc.l x060_real_access-xI_CALL_TOP
-     dc.l x060_isp_done-xI_CALL_TOP
-     dc.l x060_real_cas-xI_CALL_TOP
-     dc.l x060_real_cas2-xI_CALL_TOP
-     dc.l x060_real_lock_page-xI_CALL_TOP
-     dc.l x060_real_unlock_page-xI_CALL_TOP
-     dc.l 0,0,0,0,0,0,0
-     dc.l x060_imem_read-xI_CALL_TOP
-     dc.l x060_dmem_read-xI_CALL_TOP
-     dc.l x060_dmem_write-xI_CALL_TOP
-     dc.l x060_imem_read_word-xI_CALL_TOP
-     dc.l x060_imem_read_long-xI_CALL_TOP
-     dc.l x060_dmem_read_byte-xI_CALL_TOP
-     dc.l x060_dmem_read_word-xI_CALL_TOP
-     dc.l x060_dmem_read_long-xI_CALL_TOP
-     dc.l x060_dmem_write_byte-xI_CALL_TOP
-     dc.l x060_dmem_write_word-xI_CALL_TOP
-     dc.l x060_dmem_write_long-xI_CALL_TOP
-     dc.l 0
-     dc.l 0              /* used to chain old div-by-zero */
-     dc.l 0x58425241     /* "XBRA" */
-     dc.l 0x42505350     /* "FPSP" */
-     dc.l 0
+        dc.l x060_real_chk-xI_CALL_TOP       
+        dc.l x060_real_divbyzero-xI_CALL_TOP       
+        dc.l x060_real_trace-xI_CALL_TOP
+        dc.l x060_real_access-xI_CALL_TOP
+        dc.l x060_isp_done-xI_CALL_TOP
+        dc.l x060_real_cas-xI_CALL_TOP
+        dc.l x060_real_cas2-xI_CALL_TOP
+        dc.l x060_real_lock_page-xI_CALL_TOP
+        dc.l x060_real_unlock_page-xI_CALL_TOP
+        dc.l 0
+        dc.l 0
+        dc.l 0
+        dc.l 0
+        dc.l 0
+        dc.l 0
+        dc.l 0
+        dc.l x060_imem_read-xI_CALL_TOP
+        dc.l x060_dmem_read-xI_CALL_TOP
+        dc.l x060_dmem_write-xI_CALL_TOP
+        dc.l x060_imem_read_word-xI_CALL_TOP
+        dc.l x060_imem_read_long-xI_CALL_TOP
+        dc.l x060_dmem_read_byte-xI_CALL_TOP
+        dc.l x060_dmem_read_word-xI_CALL_TOP
+        dc.l x060_dmem_read_long-xI_CALL_TOP
+        dc.l x060_dmem_write_byte-xI_CALL_TOP
+        dc.l x060_dmem_write_word-xI_CALL_TOP
+        dc.l x060_dmem_write_long-xI_CALL_TOP
+        dc.l 0
+        dc.l 0              /* used to chain old div-by-zero */
+        dc.l 0x58425241     /* "XBRA" */
+        dc.l 0x46505350     /* "FPSP" */
+        dc.l 0
 unim_int_instr:
-	.include "isp.sa"
+	    .include "isp.sa"
 
 /*
  * =======================================================
@@ -443,15 +449,15 @@ x060_real_operr:
 x060_real_snan:
 x060_real_dz:
 x060_real_inex:
-     dc.w      0xf327                    /* fsave         -(sp) */
-     move.w    #0x6000,2(sp)
-     dc.w      0xf35f                    /* frestore (sp)+ */
-     dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
-     rte
+        dc.w      0xf327                    /* fsave         -(sp) */
+        move.w    #0x6000,2(sp)
+        dc.w      0xf35f                    /* frestore (sp)+ */
+        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        rte
 
 x060_real_fline:
-     move.l    xFP_CALL_TOP+0x80-4(pc),-(a7)
-     rts
+        move.l    xFP_CALL_TOP+0x80-4(pc),-(a7)
+        rts
 
 /*
  * _060_real_bsun():
@@ -466,13 +472,13 @@ x060_real_fline:
  * bsun will now be re-executed but with the NaN FPSR bit cleared.
  */
 x060_real_bsun:
-     dc.w      0xf327                    /* fsave         -(sp) */
-     dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
-     and.b     #0xfe,(sp)
-     dc.l      0xf21f,0x8800             /* fmove.l (sp)+,fpsr */
-     add.w     #0xc,sp
-     dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
-     rte
+        dc.w      0xf327                    /* fsave         -(sp) */
+        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        and.b     #0xfe,(sp)
+        dc.l      0xf21f,0x8800             /* fmove.l (sp)+,fpsr */
+        add.w     #0xc,sp
+        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        rte
 
 /*
  * _060_real_fpu_disabled():
@@ -490,52 +496,54 @@ x060_real_bsun:
  * unit.
 */
 x060_real_fpu_disabled:
-     move.l    d0,-(sp)                  /* # enable the fpu */
-     dc.w      _movec,_pcr
-     bclr      #1,d0
-     dc.w      _movecd,_pcr
-     move.l    (sp)+,d0
-     move.l    0xc(sp),2(sp)             /* # set "Current PC" */
-     dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
-     rte
+        move.l    d0,-(sp)                  /* # enable the fpu */
+        dc.w      _movec,_pcr
+        bclr      #1,d0
+        dc.w      _movecd,_pcr
+        move.l    (sp)+,d0
+        move.l    0xc(sp),2(sp)             /* # set "Current PC" */
+        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        rte
 
 /* # The size of this section MUST be 128 bytes!!! */
 
 xFP_CALL_TOP:
-     dc.l x060_real_bsun-xFP_CALL_TOP
-     dc.l x060_real_snan-xFP_CALL_TOP
-     dc.l x060_real_operr-xFP_CALL_TOP
-     dc.l x060_real_ovfl-xFP_CALL_TOP
-     dc.l x060_real_unfl-xFP_CALL_TOP
-     dc.l x060_real_dz-xFP_CALL_TOP
-     dc.l x060_real_inex-xFP_CALL_TOP
-     dc.l x060_real_fline-xFP_CALL_TOP
-     dc.l x060_real_fpu_disabled-xFP_CALL_TOP
-     dc.l x060_real_trap-xFP_CALL_TOP
-     dc.l x060_real_trace-xFP_CALL_TOP
-     dc.l x060_real_access-xFP_CALL_TOP
-     dc.l x060_fpsp_done-xFP_CALL_TOP
-     dc.l 0,0,0
-     dc.l x060_imem_read-xFP_CALL_TOP
-     dc.l x060_dmem_read-xFP_CALL_TOP
-     dc.l x060_dmem_write-xFP_CALL_TOP
-     dc.l x060_imem_read_word-xFP_CALL_TOP
-     dc.l x060_imem_read_long-xFP_CALL_TOP
-     dc.l x060_dmem_read_byte-xFP_CALL_TOP
-     dc.l x060_dmem_read_word-xFP_CALL_TOP
-     dc.l x060_dmem_read_long-xFP_CALL_TOP
-     dc.l x060_dmem_write_byte-xFP_CALL_TOP
-     dc.l x060_dmem_write_word-xFP_CALL_TOP
-     dc.l x060_dmem_write_long-xFP_CALL_TOP
-     dc.l 0
-     dc.l 0
-     dc.l 0x58425241     /* "XBRA" */
-     dc.l 0x42505350     /* "FPSP" */
-     dc.l 0
+        dc.l x060_real_bsun-xFP_CALL_TOP
+        dc.l x060_real_snan-xFP_CALL_TOP
+        dc.l x060_real_operr-xFP_CALL_TOP
+        dc.l x060_real_ovfl-xFP_CALL_TOP
+        dc.l x060_real_unfl-xFP_CALL_TOP
+        dc.l x060_real_dz-xFP_CALL_TOP
+        dc.l x060_real_inex-xFP_CALL_TOP
+        dc.l x060_real_fline-xFP_CALL_TOP
+        dc.l x060_real_fpu_disabled-xFP_CALL_TOP
+        dc.l x060_real_trap-xFP_CALL_TOP
+        dc.l x060_real_trace-xFP_CALL_TOP
+        dc.l x060_real_access-xFP_CALL_TOP
+        dc.l x060_fpsp_done-xFP_CALL_TOP
+        dc.l 0
+        dc.l 0
+        dc.l 0
+        dc.l x060_imem_read-xFP_CALL_TOP
+        dc.l x060_dmem_read-xFP_CALL_TOP
+        dc.l x060_dmem_write-xFP_CALL_TOP
+        dc.l x060_imem_read_word-xFP_CALL_TOP
+        dc.l x060_imem_read_long-xFP_CALL_TOP
+        dc.l x060_dmem_read_byte-xFP_CALL_TOP
+        dc.l x060_dmem_read_word-xFP_CALL_TOP
+        dc.l x060_dmem_read_long-xFP_CALL_TOP
+        dc.l x060_dmem_write_byte-xFP_CALL_TOP
+        dc.l x060_dmem_write_word-xFP_CALL_TOP
+        dc.l x060_dmem_write_long-xFP_CALL_TOP
+        dc.l 0
+        dc.l 0
+        dc.l 0x58425241     /* "XBRA" */
+        dc.l 0x46505350     /* "FPSP" */
+        dc.l 0
 
 /*
  * #############################################################################
  * # 060 FPSP KERNEL PACKAGE NEEDS TO GO HERE!!!
  * #############################################################################
  */
-	.include "fpsp.sa"
+	    .include "fpsp.sa"

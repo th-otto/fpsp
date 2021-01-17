@@ -91,8 +91,8 @@ test_fail:
 _060TESTS_:
 	link		%a6,#-384
 
-	movem.l		#0x3f3c,-(%sp)
-	fmovem.x	#0xff,-(%sp)
+	movem.l		%d2-%d7/%a2-%a5,-(%sp)
+	fmovem.x	%fp0-%fp7,-(%sp)
 
 	pea			start_str(%pc)
 	bsr.l		_print_str
@@ -134,8 +134,8 @@ _060TESTS_:
 
 	bsr.l		chk_test
 
-	movem.l		(%sp)+,#0x3cfc
-	fmovem.x	(%sp)+,#0xff
+	movem.l		(%sp)+,%d2-%d7/%a2-%a5
+	fmovem.x	(%sp)+,%fp0-%fp7
 
 	unlk		%a6
 	rts
@@ -143,8 +143,8 @@ _060TESTS_:
 _060TESTS_unimp:
 	link		%a6,#-384
 
-	movem.l		#0x3f3c,-(%sp)
-	fmovem.x	#0xff,-(%sp)
+	movem.l		%d2-%d7/%a2-%a5,-(%sp)
+	fmovem.x	%fp0-%fp7,-(%sp)
 
 	pea			start_str_unimp(%pc)
 	bsr.l		_print_str
@@ -160,8 +160,8 @@ _060TESTS_unimp:
 
 	bsr.l		chk_test
 
-	movem.l		(%sp)+,#0x3cfc
-	fmovem.x	(%sp)+,#0xff
+	movem.l		(%sp)+,%d2-%d7/%a2-%a5
+	fmovem.x	(%sp)+,%fp0-%fp7
 
 	unlk		%a6
 	rts
@@ -169,8 +169,8 @@ _060TESTS_unimp:
 _060TESTS_enable:
 	link		%a6,#-384
 
-	movem.l		#0x3f3c,-(%sp)
-	fmovem.x	#0xff,-(%sp)
+	movem.l		%d2-%d7/%a2-%a5,-(%sp)
+	fmovem.x	%fp0-%fp7,-(%sp)
 
 	pea			start_str_enable(%pc)
 	bsr.l		_print_str
@@ -224,8 +224,8 @@ _060TESTS_enable:
 
 	bsr.l		chk_test
 
-	movem.l		(%sp)+,#0x3cfc
-	fmovem.x	(%sp)+,#0xff
+	movem.l		(%sp)+,%d2-%d7/%a2-%a5
+	fmovem.x	(%sp)+,%fp0-%fp7
 
 	unlk		%a6
 	rts
@@ -241,15 +241,15 @@ unimp_str:
 unimp_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x40000000,DATA+0x0(%a6)
@@ -261,8 +261,8 @@ unimp_0_pc:
 	fsin.x		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0xbfbf0000,IFPREGS+0x0(%a6)
@@ -283,15 +283,15 @@ unimp_0_pc:
 unimp_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x3ffe0000,DATA+0x0(%a6)
@@ -303,8 +303,8 @@ unimp_1_pc:
 	ftan.x		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x3fff0000,IFPREGS+0x0(%a6)
@@ -326,15 +326,15 @@ unimp_1_pc:
 unimp_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.w		#0x0000,%ccr
@@ -342,8 +342,8 @@ unimp_2_pc:
 	fmovecr.x	#0x31,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x40000000,IFPREGS+0x0(%a6)
@@ -365,8 +365,8 @@ unimp_2_pc:
 unimp_3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
@@ -375,8 +375,8 @@ unimp_3:
 	moveq.l		#0x00,%d7
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.w		#0x0000,%ccr
@@ -384,8 +384,8 @@ unimp_3_pc:
 	fsgt		%d7
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.l		#0x0f008080,IFPCREGS+0x4(%a6)
 	lea			unimp_3_pc(%pc),%a0
@@ -403,8 +403,8 @@ unimp_3_pc:
 unimp_4:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
@@ -413,8 +413,8 @@ unimp_4:
 	moveq.l		#0x2,%d7
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.w		#0x0000,%ccr
@@ -422,8 +422,8 @@ unimp_4_pc:
 	fdbgt		%d7,unimp_4_pc
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.w		#0xffff,IREGS+28+2(%a6)
 	move.l		#0x0f008080,IFPCREGS+0x4(%a6)
@@ -442,8 +442,8 @@ unimp_4_pc:
 unimp_5:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
@@ -451,8 +451,8 @@ unimp_5:
 	fmove.l		#0x0f000000,%fpsr
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.w		#0x0000,%ccr
@@ -460,8 +460,8 @@ unimp_5_pc:
 	ftrapgt.l	#0xabcdef01
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.l		#0x0f008080,IFPCREGS+0x4(%a6)
 	lea			unimp_5_pc(%pc),%a0
@@ -488,15 +488,15 @@ effadd_str:
 effadd_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	fmove.b		#0x2,%fp0
@@ -506,8 +506,8 @@ effadd_0_pc:
 	fmul.x		#0xc00000008000000000000000,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0xc0010000,IFPREGS+0x0(%a6)
@@ -528,15 +528,15 @@ effadd_0_pc:
 effadd_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.w		#0x0000,%ccr
@@ -544,8 +544,8 @@ effadd_1_pc:
 	fabs.p		#0xc12300012345678912345678,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x3e660000,IFPREGS+0x0(%a6)
@@ -566,24 +566,24 @@ effadd_1_pc:
 fmovml_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	fmovem.l	#0xffffffffffffffff,%fpcr/%fpsr
     .dc.l 0xffffffff /* ZZZ ^^^ */
     
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.l		#0x0000fff0,IFPCREGS+0x0(%a6)
 	move.l		#0x0ffffff8,IFPCREGS+0x4(%a6)
@@ -599,24 +599,24 @@ fmovml_0:
 fmovml_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	fmovem.l	#0xffffffffffffffff,%fpcr/%fpiar
     .dc.l 0xffffffff /* ZZZ ^^^ */
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.l		#0x0000fff0,IFPCREGS+0x0(%a6)
 	move.l		#0xffffffff,IFPCREGS+0x8(%a6)
@@ -632,24 +632,24 @@ fmovml_1:
 fmovml_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	fmovem.l	#0xffffffffffffffff,%fpsr/%fpiar
     .dc.l 0xffffffff /* ZZZ ^^^ */
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.l		#0x0ffffff8,IFPCREGS+0x4(%a6)
 	move.l		#0xffffffff,IFPCREGS+0x8(%a6)
@@ -665,16 +665,16 @@ fmovml_2:
 fmovml_3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	/* fmovem.l	#0xffffffffffffffffffffffff,%fpcr/%fpsr/%fpiar */
@@ -683,8 +683,8 @@ fmovml_3:
     .dc.l 0xffffffff /* ZZZ ^^^ */
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 	move.l		#0x0000fff0,IFPCREGS+0x0(%a6)
 	move.l		#0x0ffffff8,IFPCREGS+0x4(%a6)
@@ -702,8 +702,8 @@ fmovml_3:
 fmovmx_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
@@ -721,10 +721,10 @@ fmovmx_0:
 	moveq.l		#0xffffffaa,%d0
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 
 	move.w		#0x0000,%ccr
 
@@ -744,8 +744,8 @@ fmovmx_0:
 	fmove.x		(%sp)+,%fp5
 	fmove.x		(%sp)+,%fp7
 
-	movem.l		#0xffff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -758,8 +758,8 @@ fmovmx_0:
 fmovmx_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
@@ -778,7 +778,7 @@ fmovmx_1:
 	fmove.x		%fp2,-(%sp)
 	fmove.x		%fp0,-(%sp)
 
-	fmovem.x	#0xff,IFPREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 
 	fmove.s		#0x7f800000,%fp6
 	fmove.s		#0x7f800000,%fp4
@@ -790,7 +790,7 @@ fmovmx_1:
 	moveq.l		#0xffffffaa,%d0
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
@@ -802,8 +802,8 @@ fmovmx_1:
 
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
-	movem.l		#0xffff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -816,8 +816,8 @@ fmovmx_1:
 fmovmx_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
@@ -835,10 +835,10 @@ fmovmx_2:
 	move.l		#0xffffff00,%d0
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 
 	move.w		#0x0000,%ccr
 
@@ -848,8 +848,8 @@ fmovmx_2:
 
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
-	movem.l		#0xffff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -873,15 +873,15 @@ ovfl_nm_str:
 ovfl_nm_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	fmove.b		#0x2,%fp0
@@ -894,8 +894,8 @@ ovfl_nm_0_pc:
 	fmul.x		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x7fff0000,IFPREGS+0x0(%a6)
@@ -927,15 +927,15 @@ ovfl_str:
 ovfl_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmove.l		#0x00001000,%fpcr
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
@@ -949,8 +949,8 @@ ovfl_0_pc:
 	fmul.x		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x7fff0000,IFPREGS+0x0(%a6)
@@ -982,30 +982,30 @@ unfl_str:
 unfl_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmove.l		#0x00000800,%fpcr
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x00000000,DATA+0x0(%a6)
 	move.l		#0x80000000,DATA+0x4(%a6)
 	move.l		#0x00000000,DATA+0x8(%a6)
-	fmovem.x	DATA(%a6),#0x80
+	fmovem.x	DATA(%a6),%fp0
 
 	move.w		#0x0000,%ccr
 unfl_0_pc:
 	fdiv.b		#0x2,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x00000000,IFPREGS+0x0(%a6)
@@ -1037,29 +1037,29 @@ unfl_nm_str:
 unfl_nm_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x00000000,DATA+0x0(%a6)
 	move.l		#0x80000000,DATA+0x4(%a6)
 	move.l		#0x00000000,DATA+0x8(%a6)
-	fmovem.x	DATA(%a6),#0x80
+	fmovem.x	DATA(%a6),%fp0
 
 	move.w		#0x0000,%ccr
 unfl_nm_0_pc:
 	fdiv.b		#0x2,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x00000000,IFPREGS+0x0(%a6)
@@ -1090,30 +1090,30 @@ inex_str:
 inex_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmove.l		#0x00000200,%fpcr		/* enable inexact */
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x50000000,DATA+0x0(%a6)
 	move.l		#0x80000000,DATA+0x4(%a6)
 	move.l		#0x00000000,DATA+0x8(%a6)
-	fmovem.x	DATA(%a6),#0x80
+	fmovem.x	DATA(%a6),%fp0
 
 	move.w		#0x0000,%ccr
 inex_0_pc:
 	fadd.b		#0x2,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x50000000,IFPREGS+0x0(%a6)
@@ -1144,30 +1144,30 @@ snan_str:
 snan_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmove.l		#0x00004000,%fpcr		/* enable SNAN */
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0xffff0000,DATA+0x0(%a6)
 	move.l		#0x00000000,DATA+0x4(%a6)
 	move.l		#0x00000001,DATA+0x8(%a6)
-	fmovem.x	DATA(%a6),#0x80
+	fmovem.x	DATA(%a6),%fp0
 
 	move.w		#0x0000,%ccr
 snan_0_pc:
 	fadd.b		#0x2,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0xffff0000,IFPREGS+0x0(%a6)
@@ -1198,30 +1198,30 @@ operr_str:
 operr_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmove.l		#0x00002000,%fpcr		/* enable OPERR */
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0xffff0000,DATA+0x0(%a6)
 	move.l		#0x00000000,DATA+0x4(%a6)
 	move.l		#0x00000000,DATA+0x8(%a6)
-	fmovem.x	DATA(%a6),#0x80
+	fmovem.x	DATA(%a6),%fp0
 
 	move.w		#0x0000,%ccr
 operr_0_pc:
 	fadd.s		#0x7f800000,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0xffff0000,IFPREGS+0x0(%a6)
@@ -1252,30 +1252,30 @@ dz_str:
 dz_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmove.l		#0x00000400,%fpcr		/* enable DZ */
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x40000000,DATA+0x0(%a6)
 	move.l		#0x80000000,DATA+0x4(%a6)
 	move.l		#0x00000000,DATA+0x8(%a6)
-	fmovem.x	DATA(%a6),#0x80
+	fmovem.x	DATA(%a6),%fp0
 
 	move.w		#0x0000,%ccr
 dz_0_pc:
 	fdiv.b		#0x0,%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x40000000,IFPREGS+0x0(%a6)
@@ -1307,15 +1307,15 @@ unsupp_str:
 unsupp_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0xc03f0000,DATA+0x0(%a6)
@@ -1327,8 +1327,8 @@ unsupp_0_pc:
 	fmul.x		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0xc0010000,IFPREGS+0x0(%a6)
@@ -1350,15 +1350,15 @@ unsupp_0_pc:
 unsupp_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0x80000000,DATA+0x0(%a6)
@@ -1371,8 +1371,8 @@ unsupp_1_pc:
 	fmul.x		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x80170000,IFPREGS+0x0(%a6)
@@ -1394,15 +1394,15 @@ unsupp_1_pc:
 unsupp_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
-	/* fmovem.x	(DEF_FPREGS).l(%pc),#0xff */ /* not assembled by gas */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+	/* fmovem.x	(DEF_FPREGS).l(%pc),%fp0-%fp7 */ /* not assembled by gas */
 	.dc.w		0xf23b,0xd0ff,0x0170
 	.dc.l		DEF_FPREGS-.+2
 	fmovem.l	(DEF_FPCREGS).l(%pc),%fpcr/%fpsr/%fpiar
 
 	move.w		#0x0000,ICCR(%a6)
-	movem.l		#0x7fff,IREGS(%a6)
-	fmovem.x	#0xff,IFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
+	fmovem.x	%fp0-%fp7,IFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,IFPCREGS(%a6)
 
 	move.l		#0xc1230001,DATA+0x0(%a6)
@@ -1414,8 +1414,8 @@ unsupp_2_pc:
 	fabs.p		DATA(%a6),%fp0
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
-	fmovem.x	#0xff,SFPREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
+	fmovem.x	%fp0-%fp7,SFPREGS(%a6)
 	fmovem.l	%fpcr/%fpsr/%fpiar,SFPCREGS(%a6)
 
 	move.l		#0x3e660000,IFPREGS+0x0(%a6)

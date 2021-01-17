@@ -59,7 +59,7 @@ chk_test:
 test_pass:
 	pea			pass_str(%pc)
 	bsr.l		_print_str
-	addq.l		&0x4,%sp
+	addq.l		#0x4,%sp
 	rts
 test_fail:
 	move.l		%d1,-(%sp)
@@ -75,7 +75,7 @@ test_fail:
 _060TESTS_:
 	link		%a6,#-160
 
-	movem.l		#0x3f3c,-(%sp)
+	movem.l		%d2-%d7/%a2-%a5,-(%sp)
 
 	pea			start_str(%pc)
 	bsr.l		_print_str
@@ -153,7 +153,7 @@ _060TESTS_:
 	bsr.l		chk_test
 
 /* */
-	movem.l		(%sp)+,#0x3cfc
+	movem.l		(%sp)+,%d2-%d7/%a2-%a5
 
 	unlk		%a6
 	rts
@@ -169,7 +169,7 @@ mulul_str:
 mulul_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d1
 	move.l		#0x99999999,%d2
@@ -177,12 +177,12 @@ mulul_0:
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	mulu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	clr.l		IREGS+0x8(%a6)
 	clr.l		IREGS+0xc(%a6)
 
@@ -193,7 +193,7 @@ mulul_0:
 mulul_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x77777777,%d1
 	move.l		#0x99999999,%d2
@@ -201,12 +201,12 @@ mulul_1:
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	mulu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	clr.l		IREGS+0x8(%a6)
 	clr.l		IREGS+0xc(%a6)
 
@@ -217,19 +217,19 @@ mulul_1:
 mulul_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0x00000010,%d1
 	move.l		#0x66666666,%d2
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	mulu.l		%d1,%d2:%d2
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000006,IREGS+0x8(%a6)
 
 	bsr.l		chkregs
@@ -239,7 +239,7 @@ mulul_2:
 mulul_3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x55555555,%d1
 	moveq.l		#0x00000000,%d2
@@ -247,12 +247,12 @@ mulul_3:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	mulu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000000,IREGS+0x8(%a6)
 	move.l		#0xffffffff,IREGS+0xc(%a6)
 
@@ -263,7 +263,7 @@ mulul_3:
 mulul_4:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x40000000,%d1
 	moveq.l		#0x00000000,%d2
@@ -271,12 +271,12 @@ mulul_4:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	mulu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000001,IREGS+0x8(%a6)
 	move.l		#0x00000000,IREGS+0xc(%a6)
 
@@ -287,7 +287,7 @@ mulul_4:
 mulul_5:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0xffffffff,%d1
 	moveq.l		#0x00000000,%d2
@@ -295,12 +295,12 @@ mulul_5:
 
 	move.w		#0x0008,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	mulu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0xfffffffe,IREGS+0x8(%a6)
 	move.l		#0x00000001,IREGS+0xc(%a6)
 
@@ -311,7 +311,7 @@ mulul_5:
 mulul_6:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x80000000,%d1
 	moveq.l		#0x00000000,%d2
@@ -319,12 +319,12 @@ mulul_6:
 
 	move.w		#0x00000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	muls.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000000,IREGS+0x8(%a6)
 	move.l		#0x80000000,IREGS+0xc(%a6)
 
@@ -335,7 +335,7 @@ mulul_6:
 mulul_7:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x80000000,%d1
 	moveq.l		#0x00000000,%d2
@@ -343,12 +343,12 @@ mulul_7:
 
 	move.w		#0x0008,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	muls.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0xffffffff,IREGS+0x8(%a6)
 	move.l		#0x80000000,IREGS+0xc(%a6)
 
@@ -359,7 +359,7 @@ mulul_7:
 mulul_8:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0x00000001,%d1
 	moveq.l		#0x00000000,%d2
@@ -367,12 +367,12 @@ mulul_8:
 
 	move.w		#0x0008,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	muls.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0xffffffff,IREGS+0x8(%a6)
 	move.l		#0x80000000,IREGS+0xc(%a6)
 
@@ -393,13 +393,13 @@ movep_str:
 	.balignw    4,0x51fc
 /*
  * ******************************
- *  movep.w	%d0,(0x0,%a0)
+ * movep.w	%d0,(0x0,%a0)
  * ******************************
  */
 movep_0:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.w	#0xaaaa,%d0
@@ -408,12 +408,12 @@ movep_0:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d0,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x2(%a0),%d1
 	lsl.w	#0x8,%d1
@@ -428,13 +428,13 @@ movep_0:
 
 /*
  * ******************************
- *  movep.w	%d0,(0x0,%a0)
+ * movep.w	%d0,(0x0,%a0)
  * ******************************
  */
 movep_1:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA+0x4(%a6),%a0
 	move.w	#0xaaaa,%d0
@@ -444,12 +444,12 @@ movep_1:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d0,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	tst.l	-0x4(%a0)
 	bne.l	error
@@ -464,14 +464,14 @@ movep_1:
 
 /*
  * ****************************************************
- *  movep.w	%d0,(0x0,%a0)		TESTCTR(%a6),
- * 	- this test has %ccr initially equal to zero
+ * movep.w	%d0,(0x0,%a0)		TESTCTR(%a6),
+ * - this test has %ccr initially equal to zero
  * ****************************************************
  */
 movep_2:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.w	#0xaaaa,%d0
@@ -480,12 +480,12 @@ movep_2:
 
 	move.w	#0x0000,ICCR(%a6)
 	move.w	#0x0000,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d0,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x2(%a0),%d1
 	lsl.w	#0x8,%d1
@@ -500,13 +500,13 @@ movep_2:
 
 /*
  * ******************************
- *  movep.w	(0x0,%a0),%d0
+ * movep.w	(0x0,%a0),%d0
  * ******************************
  */
 movep_3:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.b	#0xaa,0x0.w(%a0)
@@ -514,12 +514,12 @@ movep_3:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	(0x0,%a0),%d0
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.w	#0xaaaa,IREGS+0x2(%a6)
 
 	move.w	#0xaaaa,%d1
@@ -533,13 +533,13 @@ movep_3:
 
 /*
  * ******************************
- *  movep.l	%d0,(0x0,%a0)
+ * movep.l	%d0,(0x0,%a0)
  * ******************************
  */
 movep_4:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.l	#0xaaaaaaaa,%d0
@@ -550,12 +550,12 @@ movep_4:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	%d0,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x6(%a0),%d1
 	lsl.l	#0x8,%d1
@@ -574,13 +574,13 @@ movep_4:
 
 /*
  * ******************************
- *  movep.l	%d0,(0x0,%a0)
+ * movep.l	%d0,(0x0,%a0)
  * ******************************
  */
 movep_5:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA+0x4(%a6),%a0
 	move.l	#0xaaaaaaaa,%d0
@@ -591,12 +591,12 @@ movep_5:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	%d0,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	tst.l	-0x4(%a0)
 	bne.l	error
@@ -613,13 +613,13 @@ movep_5:
 
 /*
  * ******************************
- *  movep.l	(0x0,%a0),%d0
+ * movep.l	(0x0,%a0),%d0
  * ******************************
  */
 movep_6:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.b	#0xaa,0x0.w(%a0)
@@ -629,12 +629,12 @@ movep_6:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	(0x0,%a0),%d0
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l	#0xaaaaaaaa,IREGS(%a6)
 
 	move.l	#0xaaaaaaaa,%d1
@@ -648,13 +648,13 @@ movep_6:
 
 /*
  * ******************************
- *  movep.w	%d7,(0x0,%a0)
+ * movep.w	%d7,(0x0,%a0)
  * ******************************
  */
 movep_7:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.w	#0xaaaa,%d7
@@ -663,12 +663,12 @@ movep_7:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d7,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x2(%a0),%d1
 	lsl.w	#0x8,%d1
@@ -683,13 +683,13 @@ movep_7:
 
 /*
  * ******************************
- *  movep.w	(0x0,%a0),%d7
+ * movep.w	(0x0,%a0),%d7
  * ******************************
  */
 movep_8:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.b	#0xaa,0x0.w(%a0)
@@ -697,12 +697,12 @@ movep_8:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	(0x0,%a0),%d7
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.w	#0xaaaa,IREGS+30(%a6)
 
 	move.w	#0xaaaa,%d1
@@ -716,13 +716,13 @@ movep_8:
 
 /*
  * ******************************
- *  movep.w	%d0,(0x0,%a0)
+ * movep.w	%d0,(0x0,%a0)
  * ******************************
  */
 movep_9:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.w	#0xaaaa,%d0
@@ -731,12 +731,12 @@ movep_9:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x001f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d0,(0x0,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x2(%a0),%d1
 	lsl.w	#0x8,%d1
@@ -751,13 +751,13 @@ movep_9:
 
 /*
  * ******************************
- *  movep.w	%d0,(0x8,%a0)
+ * movep.w	%d0,(0x8,%a0)
  * ******************************
  */
 movep_10:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.w	#0xaaaa,%d0
@@ -766,12 +766,12 @@ movep_10:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d0,(0x8,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x2+0x8(%a0),%d1
 	lsl.w	#0x8,%d1
@@ -786,13 +786,13 @@ movep_10:
 
 /*
  * ******************************
- *  movep.w	(0x8,%a0),%d0
+ * movep.w	(0x8,%a0),%d0
  * ******************************
  */
 movep_11:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.b	#0xaa,0x0+0x8(%a0)
@@ -800,12 +800,12 @@ movep_11:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	(0x8,%a0),%d0
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.w	#0xaaaa,IREGS+0x2(%a6)
 
 	move.w	#0xaaaa,%d1
@@ -819,13 +819,13 @@ movep_11:
 
 /*
  * ******************************
- *  movep.l	%d0,(0x8,%a0)
+ * movep.l	%d0,(0x8,%a0)
  * ******************************
  */
 movep_12:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.l	#0xaaaaaaaa,%d0
@@ -836,12 +836,12 @@ movep_12:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	%d0,(0x8,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x6+0x8(%a0),%d1
 	lsl.l	#0x8,%d1
@@ -860,13 +860,13 @@ movep_12:
 
 /*
  * ******************************
- *  movep.l	(0x8,%a0),%d0
+ * movep.l	(0x8,%a0),%d0
  * ******************************
  */
 movep_13:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA(%a6),%a0
 	move.b	#0xaa,0x0+0x8(%a0)
@@ -876,12 +876,12 @@ movep_13:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	(0x8,%a0),%d0
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l	#0xaaaaaaaa,IREGS(%a6)
 
 	move.l	#0xaaaaaaaa,%d1
@@ -895,13 +895,13 @@ movep_13:
 
 /*
  * ******************************
- *  movep.w	%d0,(-0x8,%a0)
+ * movep.w	%d0,(-0x8,%a0)
  * ******************************
  */
 movep_14:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA+0x8(%a6),%a0
 	move.w	#0xaaaa,%d0
@@ -910,12 +910,12 @@ movep_14:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	%d0,(-0x8,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x2-0x8(%a0),%d1
 	lsl.w	#0x8,%d1
@@ -930,13 +930,13 @@ movep_14:
 
 /*
  * ******************************
- *  movep.w	(-0x8,%a0),%d0
+ * movep.w	(-0x8,%a0),%d0
  * ******************************
  */
 movep_15:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA+0x8(%a6),%a0
 	move.b	#0xaa,0x0-0x8(%a0)
@@ -944,12 +944,12 @@ movep_15:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.w	(-0x8,%a0),%d0
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.w	#0xaaaa,IREGS+0x2(%a6)
 
 	move.w	#0xaaaa,%d1
@@ -963,13 +963,13 @@ movep_15:
 
 /*
  * ******************************
- *  movep.l	%d0,(-0x8,%a0)
+ * movep.l	%d0,(-0x8,%a0)
  * ******************************
  */
 movep_16:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA+0x8(%a6),%a0
 	move.l	#0xaaaaaaaa,%d0
@@ -980,12 +980,12 @@ movep_16:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	%d0,(-0x8,%a0)
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	move.b	0x6-0x8(%a0),%d1
 	lsl.l	#0x8,%d1
@@ -1004,13 +1004,13 @@ movep_16:
 
 /*
  * ******************************
- *  movep.l	(-0x8,%a0),%d0
+ * movep.l	(-0x8,%a0),%d0
  * ******************************
  */
 movep_17:
 	addq.l	#0x1,TESTCTR(%a6)
 
-	movem.l	(DEF_REGS).l(%pc),#0x3fff
+	movem.l	(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea	DATA+0x8(%a6),%a0
 	move.b	#0xaa,0x0-0x8(%a0)
@@ -1020,12 +1020,12 @@ movep_17:
 
 	move.w	#0x001f,ICCR(%a6)
 	move.w	#0x1f,%ccr
-	movem.l	#0x7fff,IREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	movep.l	(-0x8,%a0),%d0
 
 	move.w	%ccr,SCCR(%a6)
-	movem.l	#0x7fff,SREGS(%a6)
+	movem.l	%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l	#0xaaaaaaaa,IREGS(%a6)
 
 	move.l	#0xaaaaaaaa,%d1
@@ -1051,31 +1051,31 @@ divul_str:
 divul_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-/*
- * 	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	.IFNE 0 /* would generate division by zero */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
- * 	clr.l		%d1
- * 	move.l		#0x99999999,%d2
- * 	move.l		#0x88888888,%d3
+	clr.l		%d1
+	move.l		#0x99999999,%d2
+	move.l		#0x88888888,%d3
 
- * 	move.w		#0x001e,ICCR(%a6)
- * 	move.w		#0x001f,%ccr
- * 	movem.l		#0x7fff,IREGS(%a6)
+	move.w		#0x001e,ICCR(%a6)
+ 	move.w		#0x001f,%ccr
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
- * 	divu.l		%d1,%d2:%d3
+	divu.l		%d1,%d2:%d3
 
- * 	move.w		%ccr,SCCR(%a6)
- * 	movem.l		#0x7fff,SREGS(%a6)
+	move.w		%ccr,SCCR(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
- * 	bsr.l		chkregs
- * 	tst.b		%d0
- * 	bne.l		error
- */
+	bsr.l		chkregs
+	tst.b		%d0
+	bne.l		error
+	.ENDC
 
 divul_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0x00000001,%d1
 	moveq.l		#0x00000000,%d2
@@ -1083,12 +1083,12 @@ divul_1:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x001f,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1097,7 +1097,7 @@ divul_1:
 divul_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x44444444,%d1
 	moveq.l		#0x00000000,%d2
@@ -1105,12 +1105,12 @@ divul_2:
 
 	move.w		#0x0010,ICCR(%a6)
 	move.w		#0x001f,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x11111111,IREGS+0x8(%a6)
 	move.l		#0x00000001,IREGS+0xc(%a6)
 
@@ -1121,7 +1121,7 @@ divul_2:
 divul_3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x55555555,%d1
 	moveq.l		#0x00000000,%d2
@@ -1129,12 +1129,12 @@ divul_3:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x001f,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x44444444,IREGS+0x8(%a6)
 	move.l		#0x00000000,IREGS+0xc(%a6)
 
@@ -1145,7 +1145,7 @@ divul_3:
 divul_4:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x11111111,%d1
 	move.l		#0x44444444,%d2
@@ -1153,12 +1153,12 @@ divul_4:
 
 	move.w		#0x001e,ICCR(%a6)
 	move.w		#0x001d,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1167,7 +1167,7 @@ divul_4:
 divul_5:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0xfffffffe,%d1
 	moveq.l		#0x00000001,%d2
@@ -1175,12 +1175,12 @@ divul_5:
 
 	move.w		#0x001e,ICCR(%a6)
 	move.w		#0x001d,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divs.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1189,7 +1189,7 @@ divul_5:
 divul_6:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0xfffffffe,%d1
 	moveq.l		#0x00000001,%d2
@@ -1197,12 +1197,12 @@ divul_6:
 
 	move.w		#0x0018,ICCR(%a6)
 	move.w		#0x001d,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divs.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000000,IREGS+0x8(%a6)
 	move.l		#0x80000000,IREGS+0xc(%a6)
 
@@ -1213,7 +1213,7 @@ divul_6:
 divul_7:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0x00000002,%d1
 	moveq.l		#0x00000001,%d2
@@ -1221,12 +1221,12 @@ divul_7:
 
 	move.w		#0x001e,ICCR(%a6)
 	move.w		#0x001d,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divs.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1235,7 +1235,7 @@ divul_7:
 divul_8:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0xffffffff,%d1
 	moveq.l		#0xfffffffe,%d2
@@ -1243,12 +1243,12 @@ divul_8:
 
 	move.w		#0x0008,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1257,7 +1257,7 @@ divul_8:
 divul_9:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	moveq.l		#0xffffffff,%d1
 	moveq.l		#0xfffffffe,%d2
@@ -1265,12 +1265,12 @@ divul_9:
 
 	move.w		#0x0008,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		#0xffffffff,%d2:%d2
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0xffffffff,IREGS+0x8(%a6)
 
 	bsr.l		chkregs
@@ -1280,7 +1280,7 @@ divul_9:
 divul_10:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x0000ffff,%d1
 	moveq.l		#0x00000001,%d2
@@ -1288,12 +1288,12 @@ divul_10:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	divu.l		%d1,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x0000aaab,IREGS+0x8(%a6)
 	move.l		#0x00015556,IREGS+0xc(%a6)
 
@@ -1315,7 +1315,7 @@ cas_str:
 cas0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea		DATA+0x1(%a6),%a0
 
@@ -1326,14 +1326,14 @@ cas0:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas.w		%d1,%d2,(%a0)			/* Dc,Du,<ea> */
 
 	move.w		%ccr,SCCR(%a6)
 	move.w		(%a0),%d3
 	move.w		#0xbbbb,IREGS+0xc+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1342,7 +1342,7 @@ cas0:
 cas1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea		DATA+0x1(%a6),%a0
 
@@ -1353,7 +1353,7 @@ cas1:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas.w		%d1,%d2,(%a0)			/* Dc,Du,<ea> */
 
@@ -1361,7 +1361,7 @@ cas1:
 	move.w		(%a0),%d3
 	move.w		#0xeeee,IREGS+0x4+0x2(%a6)
 	move.w		#0xeeee,IREGS+0xc+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1370,7 +1370,7 @@ cas1:
 cas2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea		DATA+0x2(%a6),%a0
 
@@ -1381,14 +1381,14 @@ cas2:
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas.l		%d1,%d2,(%a0)			/* Dc,Du,<ea> */
 
 	move.w		%ccr,SCCR(%a6)
 	move.l		(%a0),%d3
 	move.l		#0xbbbbbbbb,IREGS+0xc(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1397,7 +1397,7 @@ cas2:
 cas3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x2(%a6),%a0
 
@@ -1408,7 +1408,7 @@ cas3:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas.l		%d1,%d2,(%a0)			/* Dc,Du,<ea> */
 
@@ -1416,7 +1416,7 @@ cas3:
 	move.l		(%a0),%d3
 	move.l		#0xeeeeeeee,IREGS+0x4(%a6)
 	move.l		#0xeeeeeeee,IREGS+0xc(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1425,7 +1425,7 @@ cas3:
 cas4:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 
@@ -1436,14 +1436,14 @@ cas4:
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas.l		%d1,%d2,(%a0)			/* Dc,Du,<ea> */
 
 	move.w		%ccr,SCCR(%a6)
 	move.l		(%a0),%d3
 	move.l		#0xbbbbbbbb,IREGS+0xc(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1452,7 +1452,7 @@ cas4:
 cas5:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 
@@ -1463,7 +1463,7 @@ cas5:
 
 	move.w		#0x001b,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas.l		%d1,%d2,(%a0)			/* Dc,Du,<ea> */
 
@@ -1471,7 +1471,7 @@ cas5:
 	move.l		(%a0),%d3
 	move.l		#0x7fffffff,IREGS+0x4(%a6)
 	move.l		#0x7fffffff,IREGS+0xc(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1491,7 +1491,7 @@ cas2_str:
 cas20:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x0(%a6),%a0
 	lea			DATA+0x4(%a6),%a1
@@ -1506,7 +1506,7 @@ cas20:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1515,7 +1515,7 @@ cas20:
 	move.l		(%a1),%d6
 	move.l		#0xcccccccc,IREGS+0x14(%a6)
 	move.l		#0xdddddddd,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1524,7 +1524,7 @@ cas20:
 cas21:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 	lea			DATA+0x5(%a6),%a1
@@ -1539,7 +1539,7 @@ cas21:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1548,7 +1548,7 @@ cas21:
 	move.l		(%a1),%d6
 	move.l		#0xcccccccc,IREGS+0x14(%a6)
 	move.l		#0xdddddddd,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1557,7 +1557,7 @@ cas21:
 cas22:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x2(%a6),%a0
 	lea			DATA+0x6(%a6),%a1
@@ -1572,7 +1572,7 @@ cas22:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1581,7 +1581,7 @@ cas22:
 	move.l		(%a1),%d6
 	move.l		#0xcccccccc,IREGS+0x14(%a6)
 	move.l		#0xdddddddd,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1590,7 +1590,7 @@ cas22:
 cas23:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x0(%a6),%a0
 	lea			DATA+0x4(%a6),%a1
@@ -1605,7 +1605,7 @@ cas23:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1616,7 +1616,7 @@ cas23:
 	move.l		#0xbbbbbbbb,IREGS+0x8(%a6)
 	move.l		#0xeeeeeeee,IREGS+0x14(%a6)
 	move.l		#0xbbbbbbbb,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1625,7 +1625,7 @@ cas23:
 cas24:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 	lea			DATA+0x5(%a6),%a1
@@ -1640,7 +1640,7 @@ cas24:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1651,7 +1651,7 @@ cas24:
 	move.l		#0xbbbbbbbb,IREGS+0x8(%a6)
 	move.l		#0xeeeeeeee,IREGS+0x14(%a6)
 	move.l		#0xbbbbbbbb,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1660,7 +1660,7 @@ cas24:
 cas25:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x2(%a6),%a0
 	lea			DATA+0x6(%a6),%a1
@@ -1675,7 +1675,7 @@ cas25:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1686,7 +1686,7 @@ cas25:
 	move.l		#0xbbbbbbbb,IREGS+0x8(%a6)
 	move.l		#0xeeeeeeee,IREGS+0x14(%a6)
 	move.l		#0xbbbbbbbb,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1695,7 +1695,7 @@ cas25:
 cas26:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x0(%a6),%a0
 	lea			DATA+0x4(%a6),%a1
@@ -1710,7 +1710,7 @@ cas26:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1721,7 +1721,7 @@ cas26:
 	move.l		#0xeeeeeeee,IREGS+0x8(%a6)
 	move.l		#0xaaaaaaaa,IREGS+0x14(%a6)
 	move.l		#0xeeeeeeee,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1730,7 +1730,7 @@ cas26:
 cas27:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 	lea			DATA+0x5(%a6),%a1
@@ -1745,7 +1745,7 @@ cas27:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1756,7 +1756,7 @@ cas27:
 	move.l		#0xeeeeeeee,IREGS+0x8(%a6)
 	move.l		#0xaaaaaaaa,IREGS+0x14(%a6)
 	move.l		#0xeeeeeeee,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1765,7 +1765,7 @@ cas27:
 cas28:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x2(%a6),%a0
 	lea			DATA+0x6(%a6),%a1
@@ -1780,7 +1780,7 @@ cas28:
 
 	move.w		#0x000b,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.l		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1791,7 +1791,7 @@ cas28:
 	move.l		#0x7fffffff,IREGS+0x8(%a6)
 	move.l		#0xaaaaaaaa,IREGS+0x14(%a6)
 	move.l		#0x7fffffff,IREGS+0x18(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1801,7 +1801,7 @@ cas28:
 cas29:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x0(%a6),%a0
 	lea			DATA+0x4(%a6),%a1
@@ -1816,7 +1816,7 @@ cas29:
 
 	move.w		#0x0014,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.w		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1825,7 +1825,7 @@ cas29:
 	move.w		(%a1),%d6
 	move.w		#0xcccc,IREGS+0x14+0x2(%a6)
 	move.w		#0xdddd,IREGS+0x18+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1834,7 +1834,7 @@ cas29:
 cas210:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 	lea			DATA+0x5(%a6),%a1
@@ -1849,7 +1849,7 @@ cas210:
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.w		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1858,7 +1858,7 @@ cas210:
 	move.w		(%a1),%d6
 	move.w		#0xcccc,IREGS+0x14+0x2(%a6)
 	move.w		#0xdddd,IREGS+0x18+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1867,7 +1867,7 @@ cas210:
 cas211:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x0(%a6),%a0
 	lea			DATA+0x4(%a6),%a1
@@ -1882,7 +1882,7 @@ cas211:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.w		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1893,7 +1893,7 @@ cas211:
 	move.w		#0xbbbb,IREGS+0x8+0x2(%a6)
 	move.w		#0xeeee,IREGS+0x14+0x2(%a6)
 	move.w		#0xbbbb,IREGS+0x18+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1902,7 +1902,7 @@ cas211:
 cas212:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 	lea			DATA+0x5(%a6),%a1
@@ -1917,7 +1917,7 @@ cas212:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.w		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1928,7 +1928,7 @@ cas212:
 	move.w		#0xbbbb,IREGS+0x8+0x2(%a6)
 	move.w		#0xeeee,IREGS+0x14+0x2(%a6)
 	move.w		#0xbbbb,IREGS+0x18+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1937,7 +1937,7 @@ cas212:
 cas213:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x0(%a6),%a0
 	lea			DATA+0x4(%a6),%a1
@@ -1952,7 +1952,7 @@ cas213:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.w		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1963,7 +1963,7 @@ cas213:
 	move.w		#0xeeee,IREGS+0x8+0x2(%a6)
 	move.w		#0xaaaa,IREGS+0x14+0x2(%a6)
 	move.w		#0xeeee,IREGS+0x18+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -1972,7 +1972,7 @@ cas213:
 cas214:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	lea			DATA+0x1(%a6),%a0
 	lea			DATA+0x5(%a6),%a1
@@ -1987,7 +1987,7 @@ cas214:
 
 	move.w		#0x001b,ICCR(%a6)
 	move.w		#0x0010,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cas2.w		%d1:%d2,%d3:%d4,(%a0):(%a1)	/* Dc1:Dc2,Du1:Du2,(Rn1):(Rn2) */
 
@@ -1998,7 +1998,7 @@ cas214:
 	move.w		#0x7fff,IREGS+0x8+0x2(%a6)
 	move.w		#0xaaaa,IREGS+0x14+0x2(%a6)
 	move.w		#0x7fff,IREGS+0x18+0x2(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2019,19 +2019,19 @@ cmp2_str:
 cmp2_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0x2040,DATA(%a6)
 	move.l		#0x11111120,%d1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2040,19 +2040,19 @@ cmp2_1:
 cmp2_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0x2040,DATA(%a6)
 	move.l		#0x00000040,%a1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2061,19 +2061,19 @@ cmp2_2:
 cmp2_3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0x2040,DATA(%a6)
 	move.l		#0x11111130,%d1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	chk2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2082,19 +2082,19 @@ cmp2_3:
 cmp2_4:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0x2040,DATA(%a6)
 	move.l		#0x00000010,%a1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2103,19 +2103,19 @@ cmp2_4:
 cmp2_5:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0x2040,DATA(%a6)
 	move.l		#0x11111150,%d1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2124,19 +2124,19 @@ cmp2_5:
 cmp2_6:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0x2040,DATA(%a6)
 	move.l		#0x00000090,%a1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2146,19 +2146,19 @@ cmp2_6:
 cmp2_7:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x2000a000,DATA(%a6)
 	move.l		#0x11112000,%d1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.w		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2167,19 +2167,19 @@ cmp2_7:
 cmp2_8:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x2000a000,DATA(%a6)
 	move.l		#0xffffa000,%a1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.w		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2188,19 +2188,19 @@ cmp2_8:
 cmp2_9:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x2000a000,DATA(%a6)
 	move.l		#0x11113000,%d1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	chk2.w		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2209,19 +2209,19 @@ cmp2_9:
 cmp2_10:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x2000a000,DATA(%a6)
 	move.l		#0xffff9000,%a1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.w		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2230,19 +2230,19 @@ cmp2_10:
 cmp2_11:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x2000a000,DATA(%a6)
 	move.l		#0x11111000,%d1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.w		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2251,19 +2251,19 @@ cmp2_11:
 cmp2_12:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0x2000a000,DATA(%a6)
 	move.l		#0xffffb000,%a1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.w		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2273,7 +2273,7 @@ cmp2_12:
 cmp2_13:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0xa0000000,DATA(%a6)
 	move.l		#0xc0000000,DATA+0x4(%a6)
@@ -2281,12 +2281,12 @@ cmp2_13:
 
 	move.w		#0x000c,ICCR(%a6)
 	move.w		#0x0008,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.l		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2295,7 +2295,7 @@ cmp2_13:
 cmp2_14:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0xa0000000,DATA(%a6)
 	move.l		#0xc0000000,DATA+0x4(%a6)
@@ -2303,12 +2303,12 @@ cmp2_14:
 
 	move.w		#0x000c,ICCR(%a6)
 	move.w		#0x0008,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.l		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2317,7 +2317,7 @@ cmp2_14:
 cmp2_15:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0xa0000000,DATA(%a6)
 	move.l		#0xc0000000,DATA+0x4(%a6)
@@ -2325,12 +2325,12 @@ cmp2_15:
 
 	move.w		#0x0008,ICCR(%a6)
 	move.w		#0x0008,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	chk2.l		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2339,7 +2339,7 @@ cmp2_15:
 cmp2_16:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0xa0000000,DATA(%a6)
 	move.l		#0xc0000000,DATA+0x4(%a6)
@@ -2347,12 +2347,12 @@ cmp2_16:
 
 	move.w		#0x0009,ICCR(%a6)
 	move.w		#0x0008,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.l		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2361,7 +2361,7 @@ cmp2_16:
 cmp2_17:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0xa0000000,DATA(%a6)
 	move.l		#0xc0000000,DATA+0x4(%a6)
@@ -2369,12 +2369,12 @@ cmp2_17:
 
 	move.w		#0x0009,ICCR(%a6)
 	move.w		#0x0008,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.l		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2383,7 +2383,7 @@ cmp2_17:
 cmp2_18:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		#0xa0000000,DATA(%a6)
 	move.l		#0xc0000000,DATA+0x4(%a6)
@@ -2391,12 +2391,12 @@ cmp2_18:
 
 	move.w		#0x0009,ICCR(%a6)
 	move.w		#0x0008,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.l		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2406,19 +2406,19 @@ cmp2_18:
 cmp2_19:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa040,DATA(%a6)
 	move.l		#0x111111a0,%d1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2427,19 +2427,19 @@ cmp2_19:
 cmp2_20:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa040,DATA(%a6)
 	move.l		#0x00000040,%a1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	chk2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2448,19 +2448,19 @@ cmp2_20:
 cmp2_21:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa040,DATA(%a6)
 	move.l		#0x111111b0,%d1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2469,19 +2469,19 @@ cmp2_21:
 cmp2_22:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa040,DATA(%a6)
 	move.l		#0x00000010,%a1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2490,19 +2490,19 @@ cmp2_22:
 cmp2_23:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa040,DATA(%a6)
 	move.l		#0x11111190,%d1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2511,19 +2511,19 @@ cmp2_23:
 cmp2_24:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa040,DATA(%a6)
 	move.l		#0x00000050,%a1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2533,19 +2533,19 @@ cmp2_24:
 cmp2_25:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa0c0,DATA(%a6)
 	move.l		#0x111111a0,%d1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2554,19 +2554,19 @@ cmp2_25:
 cmp2_26:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa0c0,DATA(%a6)
 	move.l		#0xffffffc0,%a1
 
 	move.w		#0x0004,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2575,19 +2575,19 @@ cmp2_26:
 cmp2_27:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa0c0,DATA(%a6)
 	move.l		#0x111111b0,%d1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	chk2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2596,19 +2596,19 @@ cmp2_27:
 cmp2_28:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa0c0,DATA(%a6)
 	move.l		#0x11111190,%a1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2617,19 +2617,19 @@ cmp2_28:
 cmp2_29:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa0c0,DATA(%a6)
 	move.l		#0x111111d0,%d1
 
 	move.w		#0x0001,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%d1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2638,19 +2638,19 @@ cmp2_29:
 cmp2_30:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.w		#0xa0c0,DATA(%a6)
 	move.l		#0x00000050,%a1
 
 	move.w		#0x001b,ICCR(%a6)
 	move.w		#0x001f,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	cmp2.b		DATA(%a6),%a1
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 
 	bsr.l		chkregs
 	tst.b		%d0
@@ -2670,7 +2670,7 @@ ea_str:
 ea_0:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -2678,12 +2678,12 @@ ea_0:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a0),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -2693,7 +2693,7 @@ ea_0:
 ea_1:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -2701,12 +2701,12 @@ ea_1:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a0)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a0
 	move.l		%a0,IREGS+0x20(%a6)
@@ -2718,19 +2718,19 @@ ea_1:
 ea_2:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	lea			EAMEM+0x4(%a6),%a0
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a0),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a0
 	move.l		%a0,IREGS+0x20(%a6)
@@ -2742,7 +2742,7 @@ ea_2:
 ea_3:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -2750,12 +2750,12 @@ ea_3:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(-0x1000,%a0),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -2765,7 +2765,7 @@ ea_3:
 ea_4:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -2773,12 +2773,12 @@ ea_4:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a0),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -2788,67 +2788,68 @@ ea_4:
 ea_5:
 	addq.l		#0x1,TESTCTR(%a6)
 
-/*
- * 	movem.l		(DEF_REGS).l(%pc),#0x3fff
-
- * 	clr.l		%d2
- * 	moveq.l		#0x00000002,%d3
-
- * 	move.w		#0x0000,ICCR(%a6)
- * 	move.w		#0x0000,%ccr
- * 	movem.l		#0xffff,IREGS(%a6)
-
- * 	mulu.l		EAMEM.w,%d2:%d3
-
- * 	move.w		%ccr,SCCR(%a6)
- * 	movem.l		#0xffff,SREGS(%a6)
- * 	move.l		#0x00000004,IREGS+0xc(%a6)
-
- * 	bsr.l		chkregs
- * 	tst.b		%d0
- * 	bne.l		error
- */
-
-ea_6:
-	addq.l		#0x1,TESTCTR(%a6)
-
-/*
- * 	movem.l		(DEF_REGS).l(%pc),#0x3fff
-
- * 	clr.l		%d2
- * 	moveq.l		#0x00000002,%d3
-
- * 	move.w		#0x0000,ICCR(%a6)
- * 	move.w		#0x0000,%ccr
- * 	movem.l		#0xffff,IREGS(%a6)
-
- * 	mulu.l		EAMEM.l,%d2:%d3
-
- * 	move.w		%ccr,SCCR(%a6)
- * 	movem.l		#0xffff,SREGS(%a6)
- * 	move.l		#0x00000004,IREGS+0xc(%a6)
-
- * 	bsr.l		chkregs
- * 	tst.b		%d0
- * 	bne.l		error
- */
-
-ea_7:
-	addq.l		#0x1,TESTCTR(%a6)
-
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	.IFNE 0 /* no portable way to use an absolute address */
+ 	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
+
+	mulu.l		EAMEM.w,%d2:%d3
+
+	move.w		%ccr,SCCR(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	move.l		#0x00000004,IREGS+0xc(%a6)
+
+	bsr.l		chkregs
+	tst.b		%d0
+ 	bne.l		error
+	.ENDC
+
+ea_6:
+	addq.l		#0x1,TESTCTR(%a6)
+
+	.IFNE 0 /* no portable way to use an absolute address */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+
+	clr.l		%d2
+	moveq.l		#0x00000002,%d3
+
+	move.w		#0x0000,ICCR(%a6)
+ 	move.w		#0x0000,%ccr
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
+
+	mulu.l		EAMEM.l,%d2:%d3
+
+	move.w		%ccr,SCCR(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	move.l		#0x00000004,IREGS+0xc(%a6)
+
+	bsr.l		chkregs
+ 	tst.b		%d0
+ 	bne.l		error
+	.ENDC
+
+
+ea_7:
+	addq.l		#0x1,TESTCTR(%a6)
+
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
+
+	clr.l		%d2
+	moveq.l		#0x00000002,%d3
+
+	move.w		#0x0000,ICCR(%a6)
+	move.w		#0x0000,%ccr
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		#0x00000002,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -2862,19 +2863,19 @@ ea_8:
 ea_8_mem:
 	.dc.l		0x00000002
 ea_8_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_8_mem.w,%pc),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -2884,19 +2885,19 @@ ea_8_next:
 ea_9:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	lea			EAMEM+0x4(%a6),%a1
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a0
 	move.l		%a0,IREGS+0x24(%a6)
@@ -2908,19 +2909,19 @@ ea_9:
 ea_10:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	lea			EAMEM+0x4(%a6),%a2
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a0
 	move.l		%a0,IREGS+0x28(%a6)
@@ -2932,19 +2933,19 @@ ea_10:
 ea_11:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	lea			EAMEM+0x4(%a6),%a3
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a3),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a0
 	move.l		%a0,IREGS+0x2c(%a6)
@@ -2956,19 +2957,19 @@ ea_11:
 ea_12:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	lea			EAMEM+0x4(%a6),%a4
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a0
 	move.l		%a0,IREGS+0x30(%a6)
@@ -2980,19 +2981,19 @@ ea_12:
 ea_13:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	lea			EAMEM+0x4(%a6),%a5
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a5),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a0
 	move.l		%a0,IREGS+0x34(%a6)
@@ -3004,7 +3005,7 @@ ea_13:
 ea_14:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -3014,12 +3015,12 @@ ea_14:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		-(%a6),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 	lea			EAMEM(%a1),%a0
 	move.l		%a0,IREGS+0x38(%a1)
@@ -3034,7 +3035,7 @@ ea_14:
 ea_15:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 	move.l		%a7,%a0
@@ -3042,12 +3043,12 @@ ea_15:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		-(%a7),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM(%a6),%a1
 	move.l		%a1,IREGS+0x3c(%a6)
@@ -3061,7 +3062,7 @@ ea_15:
 ea_16:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3070,12 +3071,12 @@ ea_16:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3085,7 +3086,7 @@ ea_16:
 ea_17:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3094,12 +3095,12 @@ ea_17:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.w*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3109,7 +3110,7 @@ ea_17:
 ea_18:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3118,12 +3119,12 @@ ea_18:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.w*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3133,7 +3134,7 @@ ea_18:
 ea_19:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3142,12 +3143,12 @@ ea_19:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.w*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3157,7 +3158,7 @@ ea_19:
 ea_20:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3166,12 +3167,12 @@ ea_20:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.l*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3181,7 +3182,7 @@ ea_20:
 ea_21:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3190,12 +3191,12 @@ ea_21:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.l*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3205,7 +3206,7 @@ ea_21:
 ea_22:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3214,12 +3215,12 @@ ea_22:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.l*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3229,7 +3230,7 @@ ea_22:
 ea_23:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3238,12 +3239,12 @@ ea_23:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%d4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3253,7 +3254,7 @@ ea_23:
 ea_24:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3262,12 +3263,12 @@ ea_24:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a0,%a4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3277,7 +3278,7 @@ ea_24:
 ea_25:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3286,12 +3287,12 @@ ea_25:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(-0x10.b,%a0,%a4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3301,7 +3302,7 @@ ea_25:
 ea_26:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3310,12 +3311,12 @@ ea_26:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a1,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3325,7 +3326,7 @@ ea_26:
 ea_27:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3334,12 +3335,12 @@ ea_27:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a2,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3349,7 +3350,7 @@ ea_27:
 ea_28:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3358,12 +3359,12 @@ ea_28:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a3,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3373,7 +3374,7 @@ ea_28:
 ea_29:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3382,12 +3383,12 @@ ea_29:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a4,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3397,7 +3398,7 @@ ea_29:
 ea_30:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3406,12 +3407,12 @@ ea_30:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a5,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3421,7 +3422,7 @@ ea_30:
 ea_31:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -3432,12 +3433,12 @@ ea_31:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		(0x10.b,%a6,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 
 	move.l		%a1,%a6
@@ -3449,7 +3450,7 @@ ea_31:
 ea_32:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3459,12 +3460,12 @@ ea_32:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x10.b,%a7,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	move.l		%a0,%a7
@@ -3475,7 +3476,7 @@ ea_32:
 ea_33:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3483,12 +3484,12 @@ ea_33:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3498,7 +3499,7 @@ ea_33:
 ea_34:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3506,12 +3507,12 @@ ea_34:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3521,7 +3522,7 @@ ea_34:
 ea_35:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3529,12 +3530,12 @@ ea_35:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a3),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3544,7 +3545,7 @@ ea_35:
 ea_36:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3552,12 +3553,12 @@ ea_36:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3567,7 +3568,7 @@ ea_36:
 ea_37:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3575,12 +3576,12 @@ ea_37:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a5),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3590,7 +3591,7 @@ ea_37:
 ea_38:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -3600,12 +3601,12 @@ ea_38:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		(%a6),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 
 	move.l		%a1,%a6
@@ -3617,7 +3618,7 @@ ea_38:
 ea_39:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3626,12 +3627,12 @@ ea_39:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a7),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	move.l		%a0,%a7
@@ -3642,7 +3643,7 @@ ea_39:
 ea_40:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3650,12 +3651,12 @@ ea_40:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a1)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a0
 	move.l		%a0,IREGS+0x24(%a6)
@@ -3667,7 +3668,7 @@ ea_40:
 ea_41:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3675,12 +3676,12 @@ ea_41:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a2)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a0
 	move.l		%a0,IREGS+0x28(%a6)
@@ -3692,7 +3693,7 @@ ea_41:
 ea_42:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3700,12 +3701,12 @@ ea_42:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a3)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a0
 	move.l		%a0,IREGS+0x2c(%a6)
@@ -3717,7 +3718,7 @@ ea_42:
 ea_43:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3725,12 +3726,12 @@ ea_43:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a4)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a0
 	move.l		%a0,IREGS+0x30(%a6)
@@ -3742,7 +3743,7 @@ ea_43:
 ea_44:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3750,12 +3751,12 @@ ea_44:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a5)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a0
 	move.l		%a0,IREGS+0x34(%a6)
@@ -3767,7 +3768,7 @@ ea_44:
 ea_45:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -3777,12 +3778,12 @@ ea_45:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		(%a6)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 	lea			EAMEM+0x4(%a1),%a0
 	move.l		%a0,IREGS+0x38(%a1)
@@ -3797,7 +3798,7 @@ ea_45:
 ea_46:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3806,12 +3807,12 @@ ea_46:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(%a7)+,%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 	lea			EAMEM+0x4(%a6),%a1
 	move.l		%a1,IREGS+0x3c(%a6)
@@ -3825,7 +3826,7 @@ ea_46:
 ea_47:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3833,12 +3834,12 @@ ea_47:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3848,7 +3849,7 @@ ea_47:
 ea_48:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3856,12 +3857,12 @@ ea_48:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3871,7 +3872,7 @@ ea_48:
 ea_49:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3879,12 +3880,12 @@ ea_49:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a3),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3894,7 +3895,7 @@ ea_49:
 ea_50:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3902,12 +3903,12 @@ ea_50:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3917,7 +3918,7 @@ ea_50:
 ea_51:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3925,12 +3926,12 @@ ea_51:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a5),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -3940,7 +3941,7 @@ ea_51:
 ea_52:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -3950,12 +3951,12 @@ ea_52:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		(0x1000,%a6),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 
 	move.l		%a1,%a6
@@ -3967,7 +3968,7 @@ ea_52:
 ea_53:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -3976,12 +3977,12 @@ ea_53:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(0x1000,%a7),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	move.l		%a0,%a7
@@ -3992,7 +3993,7 @@ ea_53:
 ea_54:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4000,12 +4001,12 @@ ea_54:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(-0x1000,%a0),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4020,19 +4021,19 @@ ea_55:
 ea_55_data:
 	.dc.l		0x00000002
 ea_55_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_55_data.w,%pc),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4042,7 +4043,7 @@ ea_55_next:
 ea_56:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4051,13 +4052,13 @@ ea_56:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.w*1),%d2:%d3 ; ZZZ -> translated to: */
 	mulu.l		0x10(%a3,%d4.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4067,7 +4068,7 @@ ea_56:
 ea_57:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4076,13 +4077,13 @@ ea_57:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.w*2),%d2:%d3 ; ZZZ -> translated to: */
 	mulu.l		0x10(%a3,%d4.w*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4092,7 +4093,7 @@ ea_57:
 ea_58:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4101,13 +4102,13 @@ ea_58:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.w*4),%d2:%d3 ; ZZZ -> translated to: */
 	mulu.l		0x10(%a3,%d4.w*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4117,7 +4118,7 @@ ea_58:
 ea_59:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4126,13 +4127,13 @@ ea_59:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.w*8),%d2:%d3 ; ZZZ -> translated to: */
 	mulu.l		0x10(%a3,%d4.w*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4142,7 +4143,7 @@ ea_59:
 ea_60:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4151,13 +4152,13 @@ ea_60:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.l*1),%d2:%d3 */
 	mulu.l		0x10(%a3,%d4.l*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4167,7 +4168,7 @@ ea_60:
 ea_61:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4176,13 +4177,13 @@ ea_61:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.l*2),%d2:%d3 */
 	mulu.l		0x10(%a3,%d4.l*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4192,7 +4193,7 @@ ea_61:
 ea_62:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4201,13 +4202,13 @@ ea_62:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.l*4),%d2:%d3 */
 	mulu.l		0x10(%a3,%d4.l*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4217,7 +4218,7 @@ ea_62:
 ea_63:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4226,13 +4227,13 @@ ea_63:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x10.w,%a3,%d4.l*8),%d2:%d3 */
 	mulu.l		0x10(%a3,%d4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4242,7 +4243,7 @@ ea_63:
 ea_64:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4251,13 +4252,13 @@ ea_64:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(-0x10.w,%a3,%a4.l*8),%d2:%d3 */
 	mulu.l		-0x10(%a3,%a4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4267,7 +4268,7 @@ ea_64:
 ea_65:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4276,14 +4277,14 @@ ea_65:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(0x00.w,%a3,%za4.l*8),%d2:%d3 */
 	/* mulu.l	(%a3,%zd0.w*8),%d2:%d3 */
 	.dc.w 0x4c33,0x3402,0x0750
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4293,7 +4294,7 @@ ea_65:
 ea_66:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4303,13 +4304,13 @@ ea_66:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		(-0x10.w,%za3,%a4.l*1),%d2:%d3 */
 	mulu.l		(-0x10.w,%za0,%a4.l*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4319,7 +4320,7 @@ ea_66:
 ea_67:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4328,13 +4329,13 @@ ea_67:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(-0x10.l,%a3,%a4.l*8),%d2:%d3 */
 	mulu.l		-0x10(%a3,%a4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4348,7 +4349,7 @@ ea_68:
 ea_68_mem:
 	.dc.l		0x00000002
 ea_68_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4357,13 +4358,13 @@ ea_68_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(ea_68_mem+0x10.w,%pc,%d4.w*1),%d2:%d3 */
 	mulu.l		ea_68_mem+0x10(%pc,%d4.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4377,7 +4378,7 @@ ea_69:
 ea_69_mem:
 	.dc.l		0x00000002
 ea_69_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4386,13 +4387,13 @@ ea_69_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_69_mem+0x10.w,%pc,%d4.w*2),%d2:%d3 */
 	mulu.l		ea_69_mem+0x10(%pc,%d4.w*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4406,7 +4407,7 @@ ea_70:
 ea_70_mem:
 	.dc.l		0x00000002
 ea_70_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4415,13 +4416,13 @@ ea_70_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_70_mem+0x10.w,%pc,%d4.w*4),%d2:%d3 */
 	mulu.l		ea_70_mem+0x10(%pc,%d4.w*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4435,7 +4436,7 @@ ea_71:
 ea_71_mem:
 	.dc.l		0x00000002
 ea_71_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4444,13 +4445,13 @@ ea_71_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_71_mem+0x10.w,%pc,%d4.w*8),%d2:%d3 */
 	mulu.l		ea_71_mem+0x10(%pc,%d4.w*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4464,7 +4465,7 @@ ea_72:
 ea_72_mem:
 	.dc.l		0x00000002
 ea_72_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4473,13 +4474,13 @@ ea_72_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_72_mem+0x10.w,%pc,%d4.l*1),%d2:%d3 */
 	mulu.l		ea_72_mem+0x10(%pc,%d4.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4493,7 +4494,7 @@ ea_73:
 ea_73_mem:
 	.dc.l		0x00000002
 ea_73_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4502,13 +4503,13 @@ ea_73_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_73_mem+0x10.w,%pc,%d4.l*2),%d2:%d3 */
 	mulu.l		ea_73_mem+0x10(%pc,%d4.l*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4522,7 +4523,7 @@ ea_74:
 ea_74_mem:
 	.dc.l		0x00000002
 ea_74_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4531,13 +4532,13 @@ ea_74_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_74_mem+0x10.w,%pc,%d4.l*4),%d2:%d3 */
 	mulu.l		ea_74_mem+0x10(%pc,%d4.l*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4551,7 +4552,7 @@ ea_75:
 ea_75_mem:
 	.dc.l		0x00000002
 ea_75_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4560,13 +4561,13 @@ ea_75_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0x7fff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,IREGS(%a6)
 
 	/* mulu.l	(ea_75_mem+0x10.w,%pc,%d4.l*8),%d2:%d3 */
 	mulu.l		ea_75_mem+0x10(%pc,%d4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0x7fff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a6,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4580,7 +4581,7 @@ ea_76:
 ea_76_mem:
 	.dc.l		0x00000002
 ea_76_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4589,13 +4590,13 @@ ea_76_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(ea_76_mem+0x10.w,%pc,%a4.l*8),%d2:%d3 */
 	mulu.l		ea_76_mem+0x10(%pc,%a4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4609,7 +4610,7 @@ ea_77:
 ea_77_mem:
 	.dc.l		0x00000002
 ea_77_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4618,14 +4619,14 @@ ea_77_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	(ea_77_mem+0x00.w,%pc,%za4.l*8),%d2:%d3 */
 	/* mulu.l	ea_77_mem+0x00(%pc,%zd0.w*8),%d2:%d3 */
 	.dc.w 0x4c3b,0x3402,0x0760,ea_77_mem-.+2
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4635,34 +4636,35 @@ ea_77_next:
 ea_78:
 	addq.l		#0x1,TESTCTR(%a6)
 
-/*
- * 	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	.IFNE 0 /* no portable way to use an absolute address */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
- * 	clr.l		%d2
- * 	moveq.l		#0x00000002,%d3
- * 	lea			EAMEM,%a3
- * 	move.l		%a3,%a4
- * 	add.l		#0x10,%a4
+	clr.l		%d2
+	moveq.l		#0x00000002,%d3
+	lea			EAMEM,%a3
+	move.l		%a3,%a4
+	add.l		#0x10,%a4
 
- * 	move.w		#0x0000,ICCR(%a6)
- * 	move.w		#0x0000,%ccr
- * 	movem.l		#0xffff,IREGS(%a6)
+	move.w		#0x0000,ICCR(%a6)
+	move.w		#0x0000,%ccr
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
- * 	mulu.l		(EAMEM-0x10.w,%zpc,%a4.l*1),%d2:%d3
+	mulu.l		(EAMEM-0x10.w,%zpc,%a4.l*1),%d2:%d3
 
- * 	move.w		%ccr,SCCR(%a6)
- * 	movem.l		#0xffff,SREGS(%a6)
- * 	move.l		#0x00000004,IREGS+0xc(%a6)
+	move.w		%ccr,SCCR(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	move.l		#0x00000004,IREGS+0xc(%a6)
 
- * 	bsr.l		chkregs
- * 	tst.b		%d0
- * 	bne.l		error
- */
+	bsr.l		chkregs
+	tst.b		%d0
+	bne.l		error
+	.ENDC
+
 
 ea_79:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4671,13 +4673,13 @@ ea_79:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l		(ea_79_mem-0x10.l,%pc,%a4.l*8),%d2:%d3 */
 	mulu.l		ea_79_mem-0x10.l(%pc,%a4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bra.b		ea_79_next
@@ -4696,7 +4698,7 @@ ea_80:
 ea_80_mem:
 	.dc.l		0x00000002
 ea_80_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4705,12 +4707,12 @@ ea_80_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_80_mem+0x10.b,%pc,%d4.w*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4724,7 +4726,7 @@ ea_81:
 ea_81_mem:
 	.dc.l		0x00000002
 ea_81_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4733,12 +4735,12 @@ ea_81_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_81_mem+0x10.b,%pc,%d4.w*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4752,7 +4754,7 @@ ea_82:
 ea_82_mem:
 	.dc.l		0x00000002
 ea_82_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4761,12 +4763,12 @@ ea_82_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_82_mem+0x10.b,%pc,%d4.w*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4780,7 +4782,7 @@ ea_83:
 ea_83_mem:
 	.dc.l		0x00000002
 ea_83_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4789,12 +4791,12 @@ ea_83_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_83_mem+0x10.b,%pc,%d4.w*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4808,7 +4810,7 @@ ea_84:
 ea_84_mem:
 	.dc.l		0x00000002
 ea_84_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4817,12 +4819,12 @@ ea_84_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_84_mem+0x10.b,%pc,%d4.l*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4836,7 +4838,7 @@ ea_85:
 ea_85_mem:
 	.dc.l		0x00000002
 ea_85_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4845,12 +4847,12 @@ ea_85_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_85_mem+0x10.b,%pc,%d4.l*2),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4864,7 +4866,7 @@ ea_86:
 ea_86_mem:
 	.dc.l		0x00000002
 ea_86_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4873,12 +4875,12 @@ ea_86_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_86_mem+0x10.b,%pc,%d4.l*4),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4892,7 +4894,7 @@ ea_87:
 ea_87_mem:
 	.dc.l		0x00000002
 ea_87_next:
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4901,12 +4903,12 @@ ea_87_next:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_87_mem+0x10.b,%pc,%d4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4916,7 +4918,7 @@ ea_87_next:
 ea_88:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4925,12 +4927,12 @@ ea_88:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		(ea_88_mem+0x10.b,%pc,%d4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bra.b		ea_88_next
@@ -4945,7 +4947,7 @@ ea_88_next:
 ea_89:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4956,12 +4958,12 @@ ea_89:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.w*1],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4971,7 +4973,7 @@ ea_89:
 ea_90:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -4982,12 +4984,12 @@ ea_90:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.w*2],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -4997,7 +4999,7 @@ ea_90:
 ea_91:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5008,12 +5010,12 @@ ea_91:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.w*4],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5023,7 +5025,7 @@ ea_91:
 ea_92:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5034,12 +5036,12 @@ ea_92:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.w*8],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5049,7 +5051,7 @@ ea_92:
 ea_93:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5060,12 +5062,12 @@ ea_93:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.l*1],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5075,7 +5077,7 @@ ea_93:
 ea_94:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5086,12 +5088,12 @@ ea_94:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.l*2],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5101,7 +5103,7 @@ ea_94:
 ea_95:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5112,12 +5114,12 @@ ea_95:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.l*4],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5127,7 +5129,7 @@ ea_95:
 ea_96:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5138,12 +5140,12 @@ ea_96:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4,%d4.l*8],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5153,7 +5155,7 @@ ea_96:
 ea_97:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5164,12 +5166,12 @@ ea_97:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.l,%a4,%d4.l*8],0x1000.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5179,7 +5181,7 @@ ea_97:
 ea_98:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5190,14 +5192,14 @@ ea_98:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	([0x00.l,%a4,%zd4.l*8],0x1000.l),%d2:%d3 */
 	/* mulu.l	([%a4,%zd0.w*8],0x1000.l),%d2:%d3 */
 	.dc.w 0x4c34,0x3402,0x0753,0x0000,0x1000
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5207,7 +5209,7 @@ ea_98:
 ea_99:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5218,14 +5220,14 @@ ea_99:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([%a4,%zd4.l*8],0x1000.l),%d2:%d3 */
 /*	mulu.l		([%a4,%zd0.w*8],0x1000.l),%d2:%d3 */
 	.dc.w		0x4c34,0x3402,0x0753,0x0000,0x1000
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5235,7 +5237,7 @@ ea_99:
 ea_100:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5247,13 +5249,13 @@ ea_100:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([0x10.l,%za4,%d4.l*1],0x1000.l),%d2:%d3 */
 	mulu.l		([0x10.l,%za0,%d4.l*1],0x1000.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5263,35 +5265,36 @@ ea_100:
 ea_101:
 	addq.l		#0x1,TESTCTR(%a6)
 
-/*
- * 	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	.IFNE 0 /* no portable way to use an absolute address */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
- * 	clr.l		%d2
- * 	moveq.l		#0x00000002,%d3
- * 	lea			EAMEM(%a6),%a3
- * 	lea			EASTORE(%a6),%a4
- * 	move.l		%a3,(%a4)
- * 	moveq.l		#-0x10,%d4
+	clr.l		%d2
+	moveq.l		#0x00000002,%d3
+	lea			EAMEM(%a6),%a3
+	lea			EASTORE(%a6),%a4
+	move.l		%a3,(%a4)
+ 	moveq.l		#-0x10,%d4
 
- * 	move.w		#0x0000,ICCR(%a6)
- * 	move.w		#0x0000,%ccr
- * 	movem.l		#0xffff,IREGS(%a6)
+ 	move.w		#0x0000,ICCR(%a6)
+	move.w		#0x0000,%ccr
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
- * 	mulu.l		([EASTORE.l,%za4,%zd4.l*1]),%d2:%d3
+	mulu.l		([EASTORE.l,%za4,%zd4.l*1]),%d2:%d3
 
- * 	move.w		%ccr,SCCR(%a6)
- * 	movem.l		#0xffff,SREGS(%a6)
- * 	move.l		#0x00000004,IREGS+0xc(%a6)
+	move.w		%ccr,SCCR(%a6)
+ 	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	move.l		#0x00000004,IREGS+0xc(%a6)
 
- * 	bsr.l		chkregs
- * 	tst.b		%d0
- * 	bne.l		error
- */
+	bsr.l		chkregs
+	tst.b		%d0
+	bne.l		error
+	.ENDC
+
 
 ea_102:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -5304,12 +5307,12 @@ ea_102:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		([0x10.w,%a4,%a6.l*8],-0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 
 	move.l		%a1,%a6
@@ -5321,7 +5324,7 @@ ea_102:
 ea_103:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -5334,12 +5337,12 @@ ea_103:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		([-0x10.w,%a4,%a6.l*8],-0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 
 	move.l		%a1,%a6
@@ -5351,7 +5354,7 @@ ea_103:
 ea_104:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5363,12 +5366,12 @@ ea_104:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.w*1,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5378,7 +5381,7 @@ ea_104:
 ea_105:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5390,12 +5393,12 @@ ea_105:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.w*2,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5405,7 +5408,7 @@ ea_105:
 ea_106:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5417,12 +5420,12 @@ ea_106:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.w*4,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5432,7 +5435,7 @@ ea_106:
 ea_107:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5444,12 +5447,12 @@ ea_107:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.w*8,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5459,7 +5462,7 @@ ea_107:
 ea_108:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5471,12 +5474,12 @@ ea_108:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.l*1,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5486,7 +5489,7 @@ ea_108:
 ea_109:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5498,12 +5501,12 @@ ea_109:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.w*2,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5513,7 +5516,7 @@ ea_109:
 ea_110:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5525,12 +5528,12 @@ ea_110:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.l*4,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5540,7 +5543,7 @@ ea_110:
 ea_111:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5552,12 +5555,12 @@ ea_111:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.w,%a4],%d4.l*8,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5567,7 +5570,7 @@ ea_111:
 ea_112:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5579,12 +5582,12 @@ ea_112:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([0x10.l,%a4],%d4.l*8,0x10.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5594,7 +5597,7 @@ ea_112:
 ea_113:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5605,14 +5608,14 @@ ea_113:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	/* mulu.l	([0x00.l,%a4],%zd4.l*8,0x20.l),%d2:%d3 */
 	/* mulu.l	([%a4,%zd0.w*8],0x20.l),%d2:%d3 */
 	.dc.w		0x4c34,0x3402,0x0753,0x0000,0x0020
 	
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5622,7 +5625,7 @@ ea_113:
 ea_114:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a7,%a0
 	clr.l		%d2
@@ -5634,12 +5637,12 @@ ea_114:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([%a7],%d4.l*1),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	move.l		%a0,%a7
@@ -5650,35 +5653,36 @@ ea_114:
 ea_115:
 	addq.l		#0x1,TESTCTR(%a6)
 
-/*
- * 	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	.IFNE 0 /* no portable way to use an absolute address */
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
- * 	clr.l		%d2
- * 	moveq.l		#0x00000002,%d3
- * 	lea			EAMEM-0x20(%pc),%a3
- * 	lea			EASTORE(%pc),%a4
- * 	move.l		%a3,(%a4)
- * 	moveq.l		#0x2,%d4
+	clr.l		%d2
+	moveq.l		#0x00000002,%d3
+	lea			EAMEM-0x20(%pc),%a3
+	lea			EASTORE(%pc),%a4
+ 	move.l		%a3,(%a4)
+ 	moveq.l		#0x2,%d4
 
- * 	move.w		#0x0000,ICCR(%a6)
- * 	move.w		#0x0000,%ccr
- * 	movem.l		#0xffff,IREGS(%a6)
+	move.w		#0x0000,ICCR(%a6)
+	move.w		#0x0000,%ccr
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
- * 	mulu.l		([EASTORE.l,%za4],%zd4.l*8,0x20.l),%d2:%d3
+	mulu.l		([EASTORE.l,%za4],%zd4.l*8,0x20.l),%d2:%d3
 
- * 	move.w		%ccr,SCCR(%a6)
- * 	movem.l		#0xffff,SREGS(%a6)
- * 	move.l		#0x00000004,IREGS+0xc(%a6)
+	move.w		%ccr,SCCR(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
+	move.l		#0x00000004,IREGS+0xc(%a6)
 
- * 	bsr.l		chkregs
- * 	tst.b		%d0
- * 	bne.l		error
- */
+	bsr.l		chkregs
+	tst.b		%d0
+	bne.l		error
+	.ENDC
+
 
 ea_116:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a6,%a1
 
@@ -5692,12 +5696,12 @@ ea_116:
 
 	move.w		#0x0000,ICCR(%a1)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a1)
 
 	mulu.l		([-0x10.w,%a6],%a5.l*8,0x10.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a1)
-	movem.l		#0xffff,SREGS(%a1)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a1)
 	move.l		#0x00000004,IREGS+0xc(%a1)
 
 	move.l		%a1,%a6
@@ -5713,7 +5717,7 @@ ea_116:
 ea_117:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5724,12 +5728,12 @@ ea_117:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.w*1],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5739,7 +5743,7 @@ ea_117:
 ea_118:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5750,12 +5754,12 @@ ea_118:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.w*2],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5765,7 +5769,7 @@ ea_118:
 ea_119:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5776,12 +5780,12 @@ ea_119:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.w*4],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5791,7 +5795,7 @@ ea_119:
 ea_120:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5802,12 +5806,12 @@ ea_120:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.w*8],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5817,7 +5821,7 @@ ea_120:
 ea_121:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5828,12 +5832,12 @@ ea_121:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.l*1],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5843,7 +5847,7 @@ ea_121:
 ea_122:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5854,12 +5858,12 @@ ea_122:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.l*2],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5869,7 +5873,7 @@ ea_122:
 ea_123:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5880,12 +5884,12 @@ ea_123:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.l*4],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5895,7 +5899,7 @@ ea_123:
 ea_124:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5906,12 +5910,12 @@ ea_124:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE+0x10.w,%pc,%d4.l*8],0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5921,7 +5925,7 @@ ea_124:
 ea_125:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5932,11 +5936,11 @@ ea_125:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 	mulu.l		([EASTORE+0x10.l,%pc,%d4.l*8],0x1000.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5946,7 +5950,7 @@ ea_125:
 ea_126:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5957,7 +5961,7 @@ ea_126:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([EASTORE+0x00.l,%pc,%zd4.l*8],0x1000.l),%d2:%d3 */
 /*	mulu.l		([EASTORE+0x00.l,%pc,%zd0.w*8],0x1000.l),%d2:%d3 */
@@ -5966,7 +5970,7 @@ ea_126:
 	.dc.w		0x0000,0x1000
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -5976,7 +5980,7 @@ ea_126:
 ea_127:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -5987,13 +5991,13 @@ ea_127:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([%zpc,%d4.l*1],0x1000.l),%d2:%d3 */
 	mulu.l		([%za0,%d4.l*1],0x1000.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6003,7 +6007,7 @@ ea_127:
 ea_128:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6015,13 +6019,13 @@ ea_128:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([0x10.l,%zpc,%d4.l*1],0x1000.l),%d2:%d3 */
 	mulu.l		([0x10.l,%za0,%d4.l*1],0x1000.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6040,13 +6044,13 @@ ea_129:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([EASTORE.l,%zpc,%zd4.l*1]),%d2:%d3 */
 	mulu.l		([EASTORE.l,%za0,%zd0.w*1]),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6056,7 +6060,7 @@ ea_129:
 ea_130:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6067,12 +6071,12 @@ ea_130:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE-0x10.w,%pc,%a6.l*8],-0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6082,7 +6086,7 @@ ea_130:
 ea_131:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a7,%a0
 	clr.l		%d2
@@ -6094,12 +6098,12 @@ ea_131:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE-0x10.w,%pc,%a7.l*8],-0x1000.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	move.l		%a0,%a7
@@ -6110,7 +6114,7 @@ ea_131:
 ea_132:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6122,12 +6126,12 @@ ea_132:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.w*1,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6137,7 +6141,7 @@ ea_132:
 ea_133:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6149,12 +6153,12 @@ ea_133:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.w*2,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6164,7 +6168,7 @@ ea_133:
 ea_134:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6176,12 +6180,12 @@ ea_134:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.w*4,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6191,7 +6195,7 @@ ea_134:
 ea_135:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6203,12 +6207,12 @@ ea_135:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.w*8,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6218,7 +6222,7 @@ ea_135:
 ea_136:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6230,12 +6234,12 @@ ea_136:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.l*1,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6245,7 +6249,7 @@ ea_136:
 ea_137:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6257,12 +6261,12 @@ ea_137:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.w*2,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6272,7 +6276,7 @@ ea_137:
 ea_138:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6284,12 +6288,12 @@ ea_138:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.l*4,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6299,7 +6303,7 @@ ea_138:
 ea_139:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6311,12 +6315,12 @@ ea_139:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%d4.l*8,0x10.w),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6326,7 +6330,7 @@ ea_139:
 ea_140:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6338,12 +6342,12 @@ ea_140:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.l,%pc],%d4.l*8,0x10.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6353,7 +6357,7 @@ ea_140:
 ea_141:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6364,7 +6368,7 @@ ea_141:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([EASTORE.l,%pc],%zd4.l*8,0x20.l),%d2:%d3 */
 /*	mulu.l		([EASTORE.l,%pc,%zd0.w*8],0x20.l),%d2:%d3 */
@@ -6373,7 +6377,7 @@ ea_141:
 	.dc.w		0x0000,0x0020
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6383,7 +6387,7 @@ ea_141:
 ea_142:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	clr.l		%d2
 	moveq.l		#0x00000002,%d3
@@ -6394,13 +6398,13 @@ ea_142:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 /* 	mulu.l		([EASTORE.l,%zpc],%d4.l*8),%d2:%d3 */
 	mulu.l		([EASTORE.l,%za0],%d4.l*8),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	bsr.l		chkregs
@@ -6410,7 +6414,7 @@ ea_142:
 ea_143:
 	addq.l		#0x1,TESTCTR(%a6)
 
-	movem.l		(DEF_REGS).l(%pc),#0x3fff
+	movem.l		(DEF_REGS).l(%pc),%d0-%d7/%a0-%a5
 
 	move.l		%a7,%a0
 	clr.l		%d2
@@ -6423,12 +6427,12 @@ ea_143:
 
 	move.w		#0x0000,ICCR(%a6)
 	move.w		#0x0000,%ccr
-	movem.l		#0xffff,IREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,IREGS(%a6)
 
 	mulu.l		([EASTORE.w,%pc],%a7.l*8,0x10.l),%d2:%d3
 
 	move.w		%ccr,SCCR(%a6)
-	movem.l		#0xffff,SREGS(%a6)
+	movem.l		%d0-%d7/%a0-%a7,SREGS(%a6)
 	move.l		#0x00000004,IREGS+0xc(%a6)
 
 	move.l		%a0,%a7

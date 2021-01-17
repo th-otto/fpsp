@@ -41,13 +41,13 @@
 
 	FP_SCR1 =		LV+80			/*  fp scratch 1 */
 	FP_SCR1_EX =		FP_SCR1+0
-	FP_SCR1_SGN =	FP_SCR1+2
+	FP_SCR1_SGN =		FP_SCR1+2
 	FP_SCR1_HI =		FP_SCR1+4
 	FP_SCR1_LO =		FP_SCR1+8
 
 	FP_SCR0 =		LV+68			/*  fp scratch 0 */
 	FP_SCR0_EX =		FP_SCR0+0
-	FP_SCR0_SGN =	FP_SCR0+2
+	FP_SCR0_SGN =		FP_SCR0+2
 	FP_SCR0_HI =		FP_SCR0+4
 	FP_SCR0_LO =		FP_SCR0+8
 
@@ -68,11 +68,11 @@
 	USER_FPSR =		LV+36			/*  FP status register */
 	FPSR_CC =		USER_FPSR+0		/*  FPSR condition codes */
 	FPSR_QBYTE =		USER_FPSR+1		/*  FPSR qoutient byte */
-	FPSR_EXCEPT =	USER_FPSR+2		/*  FPSR exception status byte */
-	FPSR_AEXCEPT =	USER_FPSR+3		/*  FPSR accrued exception byte */
+	FPSR_EXCEPT =		USER_FPSR+2		/*  FPSR exception status byte */
+	FPSR_AEXCEPT =		USER_FPSR+3		/*  FPSR accrued exception byte */
 
 	USER_FPCR =		LV+32			/*  FP control register */
-	FPCR_ENABLE =	USER_FPCR+2		/*  FPCR exception enable */
+	FPCR_ENABLE =		USER_FPCR+2		/*  FPCR exception enable */
 	FPCR_MODE =		USER_FPCR+3		/*  FPCR rounding mode control */
 
 	L_SCR3 =		LV+28			/*  integer scratch 3 */
@@ -84,14 +84,14 @@
 	EXC_TEMP2 =		LV+24			/*  temporary space */
 	EXC_TEMP =		LV+16			/*  temporary space */
 
-	DTAG =		LV+15			/*  destination operand type */
-	STAG =		LV+14			/*  source operand type */
+	DTAG =			LV+15			/*  destination operand type */
+	STAG =			LV+14			/*  source operand type */
 
 	SPCOND_FLG =		LV+10			/*  flag: special case (see below) */
 
 	EXC_CC =		LV+8			/*  saved condition codes */
-	EXC_EXTWPTR =	LV+4			/*  saved current PC (active) */
-	EXC_EXTWORD =	LV+2			/*  saved extension word */
+	EXC_EXTWPTR =		LV+4			/*  saved current PC (active) */
+	EXC_EXTWORD =		LV+2			/*  saved extension word */
 	EXC_CMDREG =		LV+2			/*  saved extension word */
 	EXC_OPWORD =		LV+0			/*  saved operation word */
 
@@ -99,26 +99,26 @@
 
 /*  Helpful macros */
 
-	FTEMP =		0			/*  offsets within an */
+	FTEMP =			0			/*  offsets within an */
 	FTEMP_EX =		0			/*  extended precision */
 	FTEMP_SGN =		2			/*  value saved in memory. */
 	FTEMP_HI =		4
 	FTEMP_LO =		8
 	FTEMP_GRS =		12
 
-	LOCAL =		0			/*  offsets within an */
+	LOCAL =			0			/*  offsets within an */
 	LOCAL_EX =		0			/*  extended precision */
 	LOCAL_SGN =		2			/*  value saved in memory. */
 	LOCAL_HI =		4
 	LOCAL_LO =		8
 	LOCAL_GRS =		12
 
-	DST =		0			/*  offsets within an */
+	DST =			0			/*  offsets within an */
 	DST_EX =		0			/*  extended precision */
 	DST_HI =		4			/*  value saved in memory. */
 	DST_LO =		8
 
-	SRC =		0			/*  offsets within an */
+	SRC =			0			/*  offsets within an */
 	SRC_EX =		0			/*  extended precision */
 	SRC_HI =		4			/*  value saved in memory. */
 	SRC_LO =		8
@@ -134,19 +134,19 @@
 	SGL_BIAS =		0x007f			/*  single precision bias */
 	DBL_BIAS =		0x03ff			/*  double precision bias */
 
-	NORM =		0x00			/*  operand type for STAG/DTAG */
-	ZERO =		0x01			/*  operand type for STAG/DTAG */
-	INF =		0x02			/*  operand type for STAG/DTAG */
-	QNAN =		0x03			/*  operand type for STAG/DTAG */
+	NORM =			0x00			/*  operand type for STAG/DTAG */
+	ZERO =			0x01			/*  operand type for STAG/DTAG */
+	INF =			0x02			/*  operand type for STAG/DTAG */
+	QNAN =			0x03			/*  operand type for STAG/DTAG */
 	DENORM =		0x04			/*  operand type for STAG/DTAG */
-	SNAN =		0x05			/*  operand type for STAG/DTAG */
+	SNAN =			0x05			/*  operand type for STAG/DTAG */
 	UNNORM =		0x06			/*  operand type for STAG/DTAG */
 
 /* ;;;;;;;;;;;;;;;;; */
 /*  FPSR/FPCR bits ; */
 /* ;;;;;;;;;;;;;;;;; */
 	neg_bit =		0x3			/*  negative result */
-	z_bit =		0x2			/*  zero result */
+	z_bit =			0x2			/*  zero result */
 	inf_bit =		0x1			/*  infinite result */
 	nan_bit =		0x0			/*  NAN result */
 
@@ -201,25 +201,25 @@
 	dzinf_mask =		inf_mask+dz_mask+adz_mask
 	opnan_mask =		nan_mask+operr_mask+aiop_mask
 	nzi_mask =		0x01ffffff		/* clears N, Z, and I */
-	unfinx_mask =	unfl_mask+inex2_mask+aunfl_mask+ainex_mask
-	unf2inx_mask =	unfl_mask+inex2_mask+ainex_mask
-	ovfinx_mask =	ovfl_mask+inex2_mask+aovfl_mask+ainex_mask
+	unfinx_mask =		unfl_mask+inex2_mask+aunfl_mask+ainex_mask
+	unf2inx_mask =		unfl_mask+inex2_mask+ainex_mask
+	ovfinx_mask =		ovfl_mask+inex2_mask+aovfl_mask+ainex_mask
 	inx1a_mask =		inex1_mask+ainex_mask
 	inx2a_mask =		inex2_mask+ainex_mask
-	snaniop_mask =	nan_mask+snan_mask+aiop_mask
-	snaniop2_mask =	snan_mask+aiop_mask
-	naniop_mask =	nan_mask+aiop_mask
-	neginf_mask =	neg_mask+inf_mask
-	infaiop_mask =	inf_mask+aiop_mask
+	snaniop_mask =		nan_mask+snan_mask+aiop_mask
+	snaniop2_mask =		snan_mask+aiop_mask
+	naniop_mask =		nan_mask+aiop_mask
+	neginf_mask =		neg_mask+inf_mask
+	infaiop_mask =		inf_mask+aiop_mask
 	negz_mask =		neg_mask+z_mask
 	opaop_mask =		operr_mask+aiop_mask
-	unfl_inx_mask =	unfl_mask+aunfl_mask+ainex_mask
-	ovfl_inx_mask =	ovfl_mask+aovfl_mask+ainex_mask
+	unfl_inx_mask =		unfl_mask+aunfl_mask+ainex_mask
+	ovfl_inx_mask =		ovfl_mask+aovfl_mask+ainex_mask
 
 /* ;;;;;;;; */
 /*  misc. ; */
 /* ;;;;;;;; */
-	rnd_stky_bit =	29			/*  stky bit pos in longword */
+	rnd_stky_bit =		29			/*  stky bit pos in longword */
 
 	sign_bit =		0x7			/*  sign bit */
 	signan_bit =		0x6			/*  signalling nan bit */
@@ -236,11 +236,11 @@
 	rm_mode =		0x2			/*  round-tp-minus-infinity */
 	rp_mode =		0x3			/*  round-to-plus-infinity */
 
-	mantissalen =	64			/*  length of mantissa in bits */
+	mantissalen =		64			/*  length of mantissa in bits */
 
-	BYTE =		1			/*  len(byte) == 1 byte */
-	WORD =		2			/*  len(word) == 2 bytes */
-	LONG =		4			/*  len(longword) == 2 bytes */
+	BYTE =			1			/*  len(byte) == 1 byte */
+	WORD =			2			/*  len(word) == 2 bytes */
+	LONG =			4			/*  len(longword) == 2 bytes */
 
 	BSUN_VEC =		0xc0			/*  bsun    vector offset */
 	INEX_VEC =		0xc4			/*  inexact vector offset */
@@ -253,14 +253,14 @@
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  SPecial CONDition FLaGs ; */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;; */
-	ftrapcc_flg =	0x01			/*  flag bit: ftrapcc exception */
+	ftrapcc_flg =		0x01			/*  flag bit: ftrapcc exception */
 	fbsun_flg =		0x02			/*  flag bit: bsun exception */
 	mia7_flg =		0x04			/*  flag bit: (a7)+ <ea> */
 	mda7_flg =		0x08			/*  flag bit: -(a7) <ea> */
 	fmovem_flg =		0x40			/*  flag bit: fmovem instruction */
 	immed_flg =		0x80			/*  flag bit: &<data> <ea> */
 
-	ftrapcc_bit =	0x0
+	ftrapcc_bit =		0x0
 	fbsun_bit =		0x1
 	mia7_bit =		0x2
 	mda7_bit =		0x3

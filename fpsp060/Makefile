@@ -1,7 +1,7 @@
 CROSS=m68k-atari-mint-
 CC = $(CROSS)gcc
 AS = $(CC)
-ASFLAGS = -m68060
+ASFLAGS = -m68060 -Isrc
 LDFLAGS = -s
 
 CC_FOR_BUILD = gcc

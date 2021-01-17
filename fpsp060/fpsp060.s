@@ -8,6 +8,9 @@ _dtt1   = 0x0007
 _pcr    = 0x0808
 
 
+XBRA     = 0x58425241              /* "XBRA" */
+XBRA_ID  = 0x46505350              /* "FPSP" */
+
         .text
 
 /*
@@ -94,36 +97,53 @@ crnl:
 doinstall:
  bsr get_cpu_typ
  cmpi.w   #40,d0
- bcs.b    no_060
- lea      unim_int_instr(pc),a0
+ bcs      no_060
+ lea      new_int_instr(pc),a0
  move.l   0xf4.w,a1
- cmp.l    #0x58425241,-12(a1)              /* "XBRA" */
+ cmp.l    #XBRA,-12(a1)
  bne.s    doinstall1
- cmp.l    #0x46505350,-8(a1)               /* "FPSP" */
- beq.s    already_installed
+ cmp.l    #XBRA_ID,-8(a1)
+ beq      already_installed
 doinstall1:
- move.l   a1,-4(a0)
- move.l   0xc4.w,-16(a0)                   /* save old div-by-zero vector */
+ move.l   a1,-4(a0)                        /* save old unimplemented integer vector */
  move.l   a0,0xf4.w                        /* set new unimplemented integer vector */
- lea      xFP_CALL_TOP+0x80(pc),a0
+
+ lea      new_snan(pc),a0
+ move.l   0xd8.w,-4(a0)                    /* save old snan vector */
+ move.l   a0,0xd8.w                        /* set new snan vector */
+
+ lea      new_operr(pc),a0
+ move.l   0xd0.w,-4(a0)                    /* save old operr vector */
+ move.l   a0,0xd0.w                        /* set new operr vector */
+
+ lea      new_overflow(pc),a0
+ move.l   0xd4.w,-4(a0)                    /* save old overflow vector */
+ move.l   a0,0xd4.w                        /* set new overflow vector */
+
+ lea      new_underflow(pc),a0
+ move.l   0xcc.w,-4(a0)                    /* save old underflow vector */
+ move.l   a0,0xcc.w                        /* set new undeflow vector */
+
+ lea      new_div_zero(pc),a0
+ move.l   0xc8.w,-4(a0)                    /* save old div-by-zero vector */
+ move.l   a0,0xc8.w                        /* set new div-by-zero vector */
+
+ lea      new_inex(pc),a0
+ move.l   0xc4.w,-4(a0)                    /* save old inex vector */
+ move.l   a0,0xc4.w                        /* set new inex vector */
+
+ lea      new_fline(pc),a0
  move.l   0x2c.w,-4(a0)                    /* save old linef vector */
- move.l   a0,0xd8.w                        /* xFP_CALL_TOP+0x80+0x00: snan */
- addq.l   #8,a0
- move.l   a0,0xd0.w                        /* xFP_CALL_TOP+0x80+0x08: operr */
- addq.l   #8,a0
- move.l   a0,0xd4.w                        /* xFP_CALL_TOP+0x80+0x10: overflow */
- addq.l   #8,a0
- move.l   a0,0xcc.w                        /* xFP_CALL_TOP+0x80+0x18: underflow */
- addq.l   #8,a0
- move.l   a0,0xc8.w                        /* xFP_CALL_TOP+0x80+0x20: divide by zero */
- addq.l   #8,a0
- move.l   a0,0xc4.w                        /* xFP_CALL_TOP+0x80+0x28: inex */
- addq.l   #8,a0
- move.l   a0,0x2c.w                        /* xFP_CALL_TOP+0x80+0x30: fline */
- addq.l   #8,a0
- move.l   a0,0xdc.w                        /* xFP_CALL_TOP+0x80+0x38: unsupp */
- addq.l   #8,a0
- move.l   a0,0xf0.w                        /* xFP_CALL_TOP+0x80+0x40: effadd */
+ move.l   a0,0x2c.w                        /* set new linef vector */
+
+ lea      new_unsupp(pc),a0
+ move.l   0xdc.w,-4(a0)                    /* save old unsupp vector */
+ move.l   a0,0xdc.w                        /* set new unsupp vector */
+
+ lea      new_effadd(pc),a0
+ move.l   0xf0.w,-4(a0)                    /* save old effective address vector */
+ move.l   a0,0xf0.w                        /* set new effective address vector */
+
  .dc.l    0xf23c,0x9000,0,0                /* fmove.l #0,fpcr */
  moveq #0,d0                               /* no error */
  rts
@@ -193,6 +213,67 @@ set_cpu_typ:
  move.l   (a7)+,0x10.w             /* restore illegal instruction */
  rts
 
+/* ******************************************************************************************************************* */
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_int_instr:
+    bra xI_CALL_TOP+0x80+0
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_snan:
+    bra xFP_CALL_TOP+0x80+0x00
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_operr:
+    bra xFP_CALL_TOP+0x80+0x08
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_overflow:
+    bra xFP_CALL_TOP+0x80+0x10
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_underflow:
+    bra xFP_CALL_TOP+0x80+0x18
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_div_zero:
+    bra xFP_CALL_TOP+0x80+0x20
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_inex:
+    bra xFP_CALL_TOP+0x80+0x28
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_fline:
+    bra xFP_CALL_TOP+0x80+0x30
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_unsupp:
+    bra xFP_CALL_TOP+0x80+0x38
+
+    .dc.l XBRA
+    .dc.l XBRA_ID
+    .dc.l 0
+new_effadd:
+    bra xFP_CALL_TOP+0x80+0x40
 
 /* ******************************************************************************************************************* */
 
@@ -208,7 +289,7 @@ x060_real_chk:
         rts
 
 x060_real_divbyzero:
-        move.l unim_int_instr-16(pc),-(a7)
+        move.l 0x14.w,-(a7)
         rts
 
 x060_real_lock_page:
@@ -429,9 +510,9 @@ xI_CALL_TOP:
         dc.l x060_dmem_write_word-xI_CALL_TOP
         dc.l x060_dmem_write_long-xI_CALL_TOP
         dc.l 0
-        dc.l 0              /* used to chain old div-by-zero */
-        dc.l 0x58425241     /* "XBRA" */
-        dc.l 0x46505350     /* "FPSP" */
+        dc.l 0
+        dc.l 0
+        dc.l 0
         dc.l 0
 unim_int_instr:
 	    .include "isp.sa"
@@ -456,7 +537,7 @@ x060_real_inex:
         rte
 
 x060_real_fline:
-        move.l    xFP_CALL_TOP+0x80-4(pc),-(a7)
+        move.l    new_fline-4(pc),-(a7)
         rts
 
 /*
@@ -537,8 +618,8 @@ xFP_CALL_TOP:
         dc.l x060_dmem_write_long-xFP_CALL_TOP
         dc.l 0
         dc.l 0
-        dc.l 0x58425241     /* "XBRA" */
-        dc.l 0x46505350     /* "FPSP" */
+        dc.l 0
+        dc.l 0
         dc.l 0
 
 /*

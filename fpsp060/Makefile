@@ -89,7 +89,7 @@ all: fpsp.sa isp.sa fpsp060.prg ftest.sa itest.sa fpsptst.tos
 fpsp060.prg: fpsp060.s fpsp.sa isp.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
 
-fpsptst.tos: fpsptst.s fpsp.sa isp.sa
+fpsptst.tos: fpsptst.s ftest.sa itest.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
 
 fpsp.bin: $(FPSP060_SRCS) Makefile

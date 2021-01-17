@@ -287,10 +287,10 @@ fu_in_ovflchk:
  *	shift enabled exception field into lo byte of d0;
  *	if (((INEX2 || INEX1) && inex_enabled && OVFL && ovfl_disabled) ||
  *	    ((INEX2 || INEX1) && inex_enabled && UNFL && unfl_disabled)) {
- *		/*
+ *		 *
  *		 * this is the case where we must call _real_inex() now or else
  *		 * there will be no other way to pass it the exceptional operand
- *		 */
+ *		 *
  *		call _real_inex();
  *	} else {
  *		restore exc state (SNAN||OPERR||OVFL||UNFL||DZ||INEX) into the FPU;
@@ -865,10 +865,10 @@ fu_in_ovflchk_p:
  *	shift enabled exception field into lo byte of d0;
  *	if (((INEX2 || INEX1) && inex_enabled && OVFL && ovfl_disabled) ||
  *	    ((INEX2 || INEX1) && inex_enabled && UNFL && unfl_disabled)) {
- *		/*
+ *		 *
  *		 * this is the case where we must call _real_inex() now or else
  *		 * there will be no other way to pass it the exceptional operand
- *		 */
+ *		 *
  *		call _real_inex();
  *	} else {
  *		restore exc state (SNAN||OPERR||OVFL||UNFL||DZ||INEX) into the FPU;

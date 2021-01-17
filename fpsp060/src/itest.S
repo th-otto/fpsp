@@ -3030,6 +3030,7 @@ ea_14:
 	tst.b		%d0
 	bne.l		error
 
+	.ifne 0 /* currently crashes Hatari */
 ea_15:
 	addq.l		#0x1,TESTCTR(%a6)
 
@@ -3055,6 +3056,7 @@ ea_15:
 	bsr.l		chkregs
 	tst.b		%d0
 	bne.l		error
+	.ENDC
 
 ea_16:
 	addq.l		#0x1,TESTCTR(%a6)
@@ -3791,6 +3793,7 @@ ea_45:
 	tst.b		%d0
 	bne.l		error
 
+	.ifne 0 /* currently crashes Hatari */
 ea_46:
 	addq.l		#0x1,TESTCTR(%a6)
 
@@ -3817,6 +3820,7 @@ ea_46:
 	bsr.l		chkregs
 	tst.b		%d0
 	bne.l		error
+	.endc
 
 ea_47:
 	addq.l		#0x1,TESTCTR(%a6)

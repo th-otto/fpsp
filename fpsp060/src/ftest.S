@@ -1457,6 +1457,7 @@ chkregs_loop:
 	rts
 
 chkregs_error:
+	bsr         _real_debug_dregs
 	moveq.l		#0x1,%d0
 	rts
 
@@ -1487,6 +1488,7 @@ chkfpregs_loop:
 	rts
 
 chkfpregs_error:
+	bsr         _real_debug_fregs
 	moveq.l		#0x1,%d0
 	rts
 
@@ -1522,6 +1524,20 @@ _print_str:
 _print_num:
 	move.l		%d0,-(%sp)
 	move.l		(TESTTOP-0x80+0x4,%pc),%d0
+	pea			((TESTTOP-0x80).l,%pc,%d0.l)
+	move.l		4(%sp),%d0
+	rtd			#0x4
+
+_real_debug_dregs:
+	move.l		%d0,-(%sp)
+	move.l		(TESTTOP-0x80+0x8,%pc),%d0
+	pea			((TESTTOP-0x80).l,%pc,%d0.l)
+	move.l		4(%sp),%d0
+	rtd			#0x4
+
+_real_debug_fregs:
+	move.l		%d0,-(%sp)
+	move.l		(TESTTOP-0x80+0xc,%pc),%d0
 	pea			((TESTTOP-0x80).l,%pc,%d0.l)
 	move.l		4(%sp),%d0
 	rtd			#0x4

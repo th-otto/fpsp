@@ -36,17 +36,17 @@
 
 	.globl		_fdbcc
 _fdbcc:
-	move.l		%d0,L_SCR1(%a6)		/*  save displacement */
+	move.l		d0,L_SCR1(a6)		/*  save displacement */
 
-	move.w		EXC_CMDREG(%a6),%d0	/*  fetch predicate */
+	move.w		EXC_CMDREG(a6),d0	/*  fetch predicate */
 
-	clr.l		%d1			/*  clear scratch reg */
-	move.b		FPSR_CC(%a6),%d1	/*  fetch fp ccodes */
-	ror.l		&0x8,%d1		/*  rotate to top byte */
-	fmove.l		%d1,%fpsr		/*  insert into FPSR */
+	clr.l		d1			/*  clear scratch reg */
+	move.b		FPSR_CC(a6),d1	/*  fetch fp ccodes */
+	ror.l		#0x8,d1		/*  rotate to top byte */
+	fmove.l		d1,fpsr		/*  insert into FPSR */
 
-	move.w		(tbl_fdbcc.b,%pc,%d0.w*2),%d1 /*  load table */
-	jmp		(tbl_fdbcc.b,%pc,%d1.w) /*  jump to fdbcc routine */
+	move.w		(tbl_fdbcc.b,pc,d0.w*2),d1 /*  load table */
+	jmp		(tbl_fdbcc.b,pc,d1.w) /*  jump to fdbcc routine */
 
 tbl_fdbcc:
 	.dc.w		fdbcc_f		-	tbl_fdbcc	/*  00 */
@@ -131,10 +131,10 @@ fdbcc_neq_yes:
  */
 fdbcc_gt:
 	fbgt		fdbcc_gt_yes		/*  greater than? */
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		fdbcc_false		/*  no;go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_gt_yes:
@@ -150,10 +150,10 @@ fdbcc_ngt:
 fdbcc_ngt_no:
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_ngt_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		fdbcc_ngt_done		/*  no;go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_ngt_done:
 	rts					/*  no; do nothing */
@@ -166,17 +166,17 @@ fdbcc_ngt_done:
 fdbcc_ge:
 	fbge		fdbcc_ge_yes		/*  greater than or equal? */
 fdbcc_ge_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		fdbcc_false		/*  no;go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_ge_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		fdbcc_ge_yes_done	/*  no;go do nothing */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_ge_yes_done:
 	rts					/*  do nothing */
@@ -191,10 +191,10 @@ fdbcc_nge:
 fdbcc_nge_no:
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_nge_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		fdbcc_nge_done		/*  no;go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_nge_done:
 	rts					/*  no; do nothing */
@@ -207,10 +207,10 @@ fdbcc_nge_done:
 fdbcc_lt:
 	fblt		fdbcc_lt_yes		/*  less than? */
 fdbcc_lt_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		fdbcc_false		/*  no; go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_lt_yes:
@@ -226,10 +226,10 @@ fdbcc_nlt:
 fdbcc_nlt_no:
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_nlt_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		fdbcc_nlt_done		/*  no;go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_nlt_done:
 	rts					/*  no; do nothing */
@@ -242,17 +242,17 @@ fdbcc_nlt_done:
 fdbcc_le:
 	fble		fdbcc_le_yes		/*  less than or equal? */
 fdbcc_le_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		fdbcc_false		/*  no; go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_le_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		fdbcc_le_yes_done	/*  no; go do nothing */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_le_yes_done:
 	rts					/*  do nothing */
@@ -267,10 +267,10 @@ fdbcc_nle:
 fdbcc_nle_no:
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_nle_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		fdbcc_nle_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_nle_done:
 	rts					/*  no; do nothing */
@@ -283,10 +283,10 @@ fdbcc_nle_done:
 fdbcc_gl:
 	fbgl		fdbcc_gl_yes		/*  greater or less than? */
 fdbcc_gl_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		fdbcc_false		/*  no; handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_gl_yes:
@@ -302,10 +302,10 @@ fdbcc_ngl:
 fdbcc_ngl_no:
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_ngl_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		fdbcc_ngl_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_ngl_done:
 	rts					/*  no; do nothing */
@@ -318,8 +318,8 @@ fdbcc_ngl_done:
 fdbcc_gle:
 	fbgle		fdbcc_gle_yes		/*  greater, less, or equal? */
 fdbcc_gle_no:
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_gle_yes:
@@ -335,8 +335,8 @@ fdbcc_ngle:
 fdbcc_ngle_no:
 	bra.w		fdbcc_false		/*  no; go handle counter */
 fdbcc_ngle_yes:
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	rts					/*  no; do nothing */
 
@@ -370,10 +370,10 @@ fdbcc_t:					/*  no bsun possible */
  *	False
  */
 fdbcc_sf:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set? */
 	beq.w		fdbcc_false		/*  no;go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  go handle counter */
 
@@ -383,10 +383,10 @@ fdbcc_sf:
  *	True
  */
 fdbcc_st:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set? */
 	beq.b		fdbcc_st_done		/*  no;go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_st_done:
 	rts
@@ -399,17 +399,17 @@ fdbcc_st_done:
 fdbcc_seq:
 	fbseq		fdbcc_seq_yes		/*  signalling equal? */
 fdbcc_seq_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set? */
 	beq.w		fdbcc_false		/*  no;go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  go handle counter */
 fdbcc_seq_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set? */
 	beq.b		fdbcc_seq_yes_done	/*  no;go do nothing */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_seq_yes_done:
 	rts					/*  yes; do nothing */
@@ -422,17 +422,17 @@ fdbcc_seq_yes_done:
 fdbcc_sneq:
 	fbsne	fdbcc_sneq_yes		/*  signalling not equal? */
 fdbcc_sneq_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set? */
 	beq.w		fdbcc_false		/*  no;go handle counter */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 	bra.w		fdbcc_false		/*  go handle counter */
 fdbcc_sneq_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.w		fdbcc_sneq_done		/*  no;go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  is BSUN enabled? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  is BSUN enabled? */
 	bne.w		fdbcc_bsun		/*  yes; we have an exception */
 fdbcc_sneq_done:
 	rts
@@ -604,25 +604,25 @@ fdbcc_un_yes:
  *	pc += sign_ext(16-bit displacement)
  */
 fdbcc_false:
-	move.b		1+EXC_OPWORD(%a6), %d1	/*  fetch lo opword */
-	andi.w		&0x7, %d1		/*  extract count register */
+	move.b		1+EXC_OPWORD(a6), d1	/*  fetch lo opword */
+	andi.w		#0x7, d1		/*  extract count register */
 
 	bsr.l		fetch_dreg		/*  fetch count value */
 /*  make sure that d0 isn't corrupted between calls... */
 
-	subq.w		&0x1, %d0		/*  Dn - 1 -> Dn */
+	subq.w		#0x1, d0		/*  Dn - 1 -> Dn */
 
 	bsr.l		store_dreg_l		/*  store new count value */
 
-	cmpi.w		&-0x1,%d0		/*  is (Dn == -1)? */
+	cmpi.w		#-0x1,d0		/*  is (Dn == -1)? */
 	bne.b		fdbcc_false_cont	/*  no; */
 	rts
 
 fdbcc_false_cont:
-	move.l		L_SCR1(%a6),%d0		/*  fetch displacement */
-	add.l		USER_FPIAR(%a6),%d0	/*  add instruction PC */
-	addq.l		&0x4,%d0		/*  add instruction length */
-	move.l		%d0,EXC_PC(%a6)		/*  set new PC */
+	move.l		L_SCR1(a6),d0		/*  fetch displacement */
+	add.l		USER_FPIAR(a6),d0	/*  add instruction PC */
+	addq.l		#0x4,d0		/*  add instruction length */
+	move.l		d0,EXC_PC(a6)		/*  set new PC */
 	rts
 
 /*  the emulation routine set bsun and BSUN was enabled. have to */
@@ -630,6 +630,6 @@ fdbcc_false_cont:
 /*  let the caller of this routine shift the stack frame up to */
 /*  eliminate the effective address field. */
 fdbcc_bsun:
-	move.b		&fbsun_flg,SPCOND_FLG(%a6)
+	move.b		#fbsun_flg,SPCOND_FLG(a6)
 	rts
 

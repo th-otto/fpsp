@@ -1,0 +1,6 @@
+isp.bin
+.S[-2]
+.S[-S]
+.L[-S=0] ; no stack needed
+=
+src\isp.S

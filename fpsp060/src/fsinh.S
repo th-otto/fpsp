@@ -51,68 +51,68 @@
 
 	.globl		ssinh
 ssinh:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
-	move.l		%d1,%a1			/*  save (compacted) operand */
-	andi.l		&0x7FFFFFFF,%d1
-	cmpi.l		&0x400CB167,%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
+	move.l		d1,a1			/*  save (compacted) operand */
+	andi.l		#0x7FFFFFFF,d1
+	cmpi.l		#0x400CB167,d1
 	bgt.b		SINHBIG
 
 /* --THIS IS THE USUAL CASE, |X| < 16380 LOG2 */
 /* --Y = |X|, Z = EXPM1(Y), SINH(X) = SIGN(X)*(1/2)*( Z + Z/(1+Z) ) */
 
-	fabs.x		%fp0			/*  Y = |X| */
+	fabs.x		fp0			/*  Y = |X| */
 
-	movem.l		%d0/%a1,-(%sp)		/*  {a1/d0} */
-	fmovem.x	%fp0,-(%sp)		/*  save Y on stack */
-	lea		(%sp),%a0		/*  pass ptr to Y */
-	clr.l		%d0
+	movem.l		d0/a1,-(sp)		/*  {a1/d0} */
+	fmovem.x	fp0,-(sp)		/*  save Y on stack */
+	lea		(sp),a0		/*  pass ptr to Y */
+	clr.l		d0
 	bsr.l		setoxm1			/*  FP0 IS Z = EXPM1(Y) */
-	add.l		&0xc,%sp		/*  clear Y from stack */
-	fmove.l		&0,%fpcr
-	movem.l		(%sp)+,%d0/%a1		/*  {a1/d0} */
+	add.l		#0xc,sp		/*  clear Y from stack */
+	fmove.l		#0,fpcr
+	movem.l		(sp)+,d0/a1		/*  {a1/d0} */
 
-	fmove.x		%fp0,%fp1
-	fadd.s		&0x3F800000,%fp1	/*  1+Z */
-	fmove.x		%fp0,-(%sp)
-	fdiv.x		%fp1,%fp0		/*  Z/(1+Z) */
-	move.l		%a1,%d1
-	andi.l		&0x80000000,%d1
-	ori.l		&0x3F000000,%d1
-	fadd.x		(%sp)+,%fp0
-	move.l		%d1,-(%sp)
+	fmove.x		fp0,fp1
+	fadd.s		#0x3F800000,fp1	/*  1+Z */
+	fmove.x		fp0,-(sp)
+	fdiv.x		fp1,fp0		/*  Z/(1+Z) */
+	move.l		a1,d1
+	andi.l		#0x80000000,d1
+	ori.l		#0x3F000000,d1
+	fadd.x		(sp)+,fp0
+	move.l		d1,-(sp)
 
-	fmove.l		%d0,%fpcr
-	move.b		&FMUL_OP,%d1		/*  last inst is MUL */
-	fmul.s		(%sp)+,%fp0		/*  last fp inst - possible exceptions set */
+	fmove.l		d0,fpcr
+	move.b		#FMUL_OP,d1		/*  last inst is MUL */
+	fmul.s		(sp)+,fp0		/*  last fp inst - possible exceptions set */
 	bra.l		t_catch
 
 SINHBIG:
-	cmpi.l		&0x400CB2B3,%d1
+	cmpi.l		#0x400CB2B3,d1
 	bgt.l		t_ovfl
-	fabs.x		%fp0
-	fsub.d		T1(%pc),%fp0		/*  (|X|-16381LOG2_LEAD) */
-	move.l		&0,-(%sp)
-	move.l		&0x80000000,-(%sp)
-	move.l		%a1,%d1
-	andi.l		&0x80000000,%d1
-	ori.l		&0x7FFB0000,%d1
-	move.l		%d1,-(%sp)		/*  EXTENDED FMT */
-	fsub.d		T2(%pc),%fp0		/*  |X| - 16381 LOG2, ACCURATE */
+	fabs.x		fp0
+	fsub.d		T1(pc),fp0		/*  (|X|-16381LOG2_LEAD) */
+	move.l		#0,-(sp)
+	move.l		#0x80000000,-(sp)
+	move.l		a1,d1
+	andi.l		#0x80000000,d1
+	ori.l		#0x7FFB0000,d1
+	move.l		d1,-(sp)		/*  EXTENDED FMT */
+	fsub.d		T2(pc),fp0		/*  |X| - 16381 LOG2, ACCURATE */
 
-	move.l		%d0,-(%sp)
-	clr.l		%d0
-	fmovem.x		%fp0,-(%sp)		/*  save fp0 on stack */
-	lea		(%sp),%a0		/*  pass ptr to fp0 */
+	move.l		d0,-(sp)
+	clr.l		d0
+	fmovem.x		fp0,-(sp)		/*  save fp0 on stack */
+	lea		(sp),a0		/*  pass ptr to fp0 */
 	bsr.l		setox
-	add.l		&0xc,%sp		/*  clear fp0 from stack */
+	add.l		#0xc,sp		/*  clear fp0 from stack */
 
-	move.l		(%sp)+,%d0
-	fmove.l		%d0,%fpcr
-	move.b		&FMUL_OP,%d1		/*  last inst is MUL */
-	fmul.x		(%sp)+,%fp0		/*  possible exception */
+	move.l		(sp)+,d0
+	fmove.l		d0,fpcr
+	move.b		#FMUL_OP,d1		/*  last inst is MUL */
+	fmul.x		(sp)+,fp0		/*  possible exception */
 	bra.l		t_catch
 
 	.globl		ssinhd

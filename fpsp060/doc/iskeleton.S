@@ -69,12 +69,12 @@
 
 	.globl		_060_isp_done
 _060_isp_done:
-	btst	#0x5,%sp@		| supervisor bit set in saved SR?
+	btst	#0x5,sp@		| supervisor bit set in saved SR?
 	beq	.Lnotkern
 	rte
 .Lnotkern:
 	SAVE_ALL_INT
-	GET_CURRENT(%d0)
+	GET_CURRENT(d0)
 	| deliver signals, reschedule etc..
 	jra	ret_from_exception
 
@@ -91,7 +91,7 @@ _060_isp_done:
 
 	.globl		_060_real_chk
 _060_real_chk:
-|	tst.b		(%sp)			| is tracing enabled?
+|	tst.b		(sp)			| is tracing enabled?
 |	bpls		real_chk_end		| no
 
 |
@@ -107,7 +107,7 @@ _060_real_chk:
 |	*      SR	*	*      SR	*
 |	*****************	*****************
 |
-|	move.b		#0x24,0x7(%sp)		| set trace vecno
+|	move.b		#0x24,0x7(sp)		| set trace vecno
 |	bral		_060_real_trace
 
 real_chk_end:
@@ -131,7 +131,7 @@ real_chk_end:
 
 	.globl		_060_real_divbyzero
 _060_real_divbyzero:
-|	tst.b		(%sp)			| is tracing enabled?
+|	tst.b		(sp)			| is tracing enabled?
 |	bpls		real_divbyzero_end	| no
 
 |
@@ -147,7 +147,7 @@ _060_real_divbyzero:
 |	*      SR	*	*      SR	*
 |	*****************	*****************
 |
-|	move.b		#0x24,0x7(%sp)		| set trace vecno
+|	move.b		#0x24,0x7(sp)		| set trace vecno
 |	bral		_060_real_trace
 
 real_divbyzero_end:
@@ -200,33 +200,33 @@ _060_real_cas2:
 |
 	.globl		_060_real_lock_page
 _060_real_lock_page:
-	move.l	%d2,-(%sp)
+	move.l	d2,-(sp)
 	| load sfc/dfc
-	tst.b	%d0
+	tst.b	d0
 	jne	1f
-	moveq	#1,%d0
+	moveq	#1,d0
 	jra	2f
-1:	moveq	#5,%d0
-2:	movec.l	%dfc,%d2
-	movec.l	%d0,%dfc
-	movec.l	%d0,%sfc
+1:	moveq	#5,d0
+2:	movec.l	dfc,d2
+	movec.l	d0,dfc
+	movec.l	d0,sfc
 
-	clr.l	%d0
+	clr.l	d0
 	| prefetch address
 	.chip	68060
-	move.l	%a0,%a1
-1:	plpaw	(%a1)
-	addq.w	#1,%a0
-	tst.b	%d1
+	move.l	a0,a1
+1:	plpaw	(a1)
+	addq.w	#1,a0
+	tst.b	d1
 	jeq	2f
-	addq.w	#2,%a0
-2:	plpaw	(%a0)
+	addq.w	#2,a0
+2:	plpaw	(a0)
 3:	.chip	68k
 
 	| restore sfc/dfc
-	movec.l	%d2,%dfc
-	movec.l	%d2,%sfc
-	move.l	(%sp)+,%d2
+	movec.l	d2,dfc
+	movec.l	d2,sfc
+	move.l	(sp)+,d2
 	rts
 
 .section __ex_table,"a"
@@ -236,13 +236,13 @@ _060_real_lock_page:
 .previous
 .section .fixup,"ax"
 	.even
-11:	move.l	#0x020003c0,%d0
-	or.l	%d2,%d0
-	swap	%d0
+11:	move.l	#0x020003c0,d0
+	or.l	d2,d0
+	swap	d0
 	jra	3b
-21:	move.l	#0x02000bc0,%d0
-	or.l	%d2,%d0
-	swap	%d0
+21:	move.l	#0x02000bc0,d0
+	or.l	d2,d0
+	swap	d0
 	jra	3b
 .previous
 
@@ -262,7 +262,7 @@ _060_real_lock_page:
 
 	.globl		_060_real_unlock_page
 _060_real_unlock_page:
-	clr.l		%d0
+	clr.l		d0
 	rts
 
 |###########################################################################

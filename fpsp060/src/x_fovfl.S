@@ -57,125 +57,138 @@
 
 	.include "hdr.fpu"
 
+	.xref _real_trace
+	.xref _real_inex
+	.xref _real_ovfl
+	.xref _fpsp_done
+	.xref set_tag_x
+	.xref tbl_unsupp
+	.xref load_fpn2
+	.xref store_fpreg
+	.xref unnorm_fix
+	.xref fix_skewed_ops
+	.xref fout
+	.xref _imem_read_long
+
 	.globl		_fpsp_ovfl
 
 	.text
 _fpsp_ovfl:
 
-/* 	sub.l		&24,%sp			; make room for src/dst */
+/* 	sub.l		#24,sp			; make room for src/dst */
 
-	link.w		%a6,&-LOCAL_SIZE	/*  init stack frame */
+	link.w		a6,#-LOCAL_SIZE	/*  init stack frame */
 
-	fsave		FP_SRC(%a6)		/*  grab the "busy" frame */
+	fsave		FP_SRC(a6)		/*  grab the "busy" frame */
 
-	movem.l		%d0-%d1/%a0-a1,EXC_DREGS(%a6)	/*  save d0-d1/a0-a1 */
-	fmovem.l		%fpcr/%fpsr/%fpiar,USER_FPCR(%a6) /*  save ctrl regs */
-	fmovem.x		%fp0-%fp1,EXC_FPREGS(%a6)	/*  save fp0-fp1 on stack */
+	movem.l		d0-d1/a0-a1,EXC_DREGS(a6)	/*  save d0-d1/a0-a1 */
+	fmovem.l		fpcr/fpsr/fpiar,USER_FPCR(a6) /*  save ctrl regs */
+	fmovem.x		fp0-fp1,EXC_FPREGS(a6)	/*  save fp0-fp1 on stack */
 
 /*  the FPIAR holds the "current PC" of the faulting instruction */
-	move.l		USER_FPIAR(%a6),EXC_EXTWPTR(%a6)
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		USER_FPIAR(a6),EXC_EXTWPTR(a6)
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch the instruction words */
-	move.l		%d0,EXC_OPWORD(%a6)
+	move.l		d0,EXC_OPWORD(a6)
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-	btst		&0x5,EXC_CMDREG(%a6)	/*  is instr an fmove out? */
+	btst		#0x5,EXC_CMDREG(a6)	/*  is instr an fmove out? */
 	bne.w		fovfl_out
 
 
-	lea		FP_SRC(%a6),%a0		/*  pass: ptr to src op */
+	lea		FP_SRC(a6),a0		/*  pass: ptr to src op */
 	bsr.l		fix_skewed_ops		/*  fix src op */
 
 /*  since, I believe, only NORMs and DENORMs can come through here, */
 /*  maybe we can avoid the subroutine call. */
-	lea		FP_SRC(%a6),%a0		/*  pass: ptr to src op */
+	lea		FP_SRC(a6),a0		/*  pass: ptr to src op */
 	bsr.l		set_tag_x		/*  tag the operand type */
-	move.b		%d0,STAG(%a6)		/*  maybe NORM,DENORM */
+	move.b		d0,STAG(a6)		/*  maybe NORM,DENORM */
 
 /*  bit five of the fp extension word separates the monadic and dyadic operations */
 /*  that can pass through fpsp_ovfl(). remember that fcmp, ftst, and fsincos */
 /*  will never take this exception. */
-	btst		&0x5,1+EXC_CMDREG(%a6)	/*  is operation monadic or dyadic? */
+	btst		#0x5,1+EXC_CMDREG(a6)	/*  is operation monadic or dyadic? */
 	beq.b		fovfl_extract		/*  monadic */
 
-	bfextu		EXC_CMDREG(%a6){&6:&3},%d0 /*  dyadic; load dst reg */
+	bfextu		EXC_CMDREG(a6){6:3},d0 /*  dyadic; load dst reg */
 	bsr.l		load_fpn2		/*  load dst into FP_DST */
 
-	lea		FP_DST(%a6),%a0		/*  pass: ptr to dst op */
+	lea		FP_DST(a6),a0		/*  pass: ptr to dst op */
 	bsr.l		set_tag_x		/*  tag the operand type */
-	cmpi.b		&UNNORM,%d0		/*  is operand an UNNORM? */
+	cmpi.b		#UNNORM,d0		/*  is operand an UNNORM? */
 	bne.b		fovfl_op2_done		/*  no */
 	bsr.l		unnorm_fix		/*  yes; convert to NORM,DENORM,or ZERO */
 fovfl_op2_done:
-	move.b		%d0,DTAG(%a6)		/*  save dst optype tag */
+	move.b		d0,DTAG(a6)		/*  save dst optype tag */
 
 fovfl_extract:
 
-/* $;	move.l		FP_SRC_EX(%a6),TRAP_SRCOP_EX(%a6) */
-/* $;	move.l		FP_SRC_HI(%a6),TRAP_SRCOP_HI(%a6) */
-/* $;	move.l		FP_SRC_LO(%a6),TRAP_SRCOP_LO(%a6) */
-/* $;	move.l		FP_DST_EX(%a6),TRAP_DSTOP_EX(%a6) */
-/* $;	move.l		FP_DST_HI(%a6),TRAP_DSTOP_HI(%a6) */
-/* $;	move.l		FP_DST_LO(%a6),TRAP_DSTOP_LO(%a6) */
+/* $;	move.l		FP_SRC_EX(a6),TRAP_SRCOP_EX(a6) */
+/* $;	move.l		FP_SRC_HI(a6),TRAP_SRCOP_HI(a6) */
+/* $;	move.l		FP_SRC_LO(a6),TRAP_SRCOP_LO(a6) */
+/* $;	move.l		FP_DST_EX(a6),TRAP_DSTOP_EX(a6) */
+/* $;	move.l		FP_DST_HI(a6),TRAP_DSTOP_HI(a6) */
+/* $;	move.l		FP_DST_LO(a6),TRAP_DSTOP_LO(a6) */
 
-	clr.l		%d0
-	move.b		FPCR_MODE(%a6),%d0	/*  pass rnd prec/mode */
+	clr.l		d0
+	move.b		FPCR_MODE(a6),d0	/*  pass rnd prec/mode */
 
-	move.b		1+EXC_CMDREG(%a6),%d1
-	andi.w		&0x007f,%d1		/*  extract extension */
+	move.b		1+EXC_CMDREG(a6),d1
+	andi.w		#0x007f,d1		/*  extract extension */
 
-	andi.l		&0x00ff01ff,USER_FPSR(%a6) /*  zero all but accured field */
+	andi.l		#0x00ff01ff,USER_FPSR(a6) /*  zero all but accured field */
 
-	fmove.l		&0x0,%fpcr		/*  zero current control regs */
-	fmove.l		&0x0,%fpsr
+	fmove.l		#0x0,fpcr		/*  zero current control regs */
+	fmove.l		#0x0,fpsr
 
-	lea		FP_SRC(%a6),%a0
-	lea		FP_DST(%a6),%a1
+	lea		FP_SRC(a6),a0
+	lea		FP_DST(a6),a1
 
 /*  maybe we can make these entry points ONLY the OVFL entry points of each routine. */
-	move.l		(tbl_unsupp.l,%pc,%d1.w*4),%d1 /*  fetch routine addr */
-	jsr		(tbl_unsupp.l,%pc,%d1.l*1)
+	move.l		(tbl_unsupp.l,pc,d1.w*4),d1 /*  fetch routine addr */
+	jsr		(tbl_unsupp.l,pc,d1.l*1)
 
 /*  the operation has been emulated. the result is in fp0. */
 /*  the EXOP, if an exception occurred, is in fp1. */
 /*  we must save the default result regardless of whether */
 /*  traps are enabled or disabled. */
-	bfextu		EXC_CMDREG(%a6){&6:&3},%d0
+	bfextu		EXC_CMDREG(a6){6:3},d0
 	bsr.l		store_fpreg
 
 /*  the exceptional possibilities we have left ourselves with are ONLY overflow */
 /*  and inexact. and, the inexact is such that overflow occurred and was disabled */
 /*  but inexact was enabled. */
-	btst		&ovfl_bit,FPCR_ENABLE(%a6)
+	btst		#ovfl_bit,FPCR_ENABLE(a6)
 	bne.b		fovfl_ovfl_on
 
-	btst		&inex2_bit,FPCR_ENABLE(%a6)
+	btst		#inex2_bit,FPCR_ENABLE(a6)
 	bne.b		fovfl_inex_on
 
-	fmovem.x		EXC_FPREGS(%a6),%fp0-%fp1	/*  restore fp0-fp1 */
-	fmovem.l		USER_FPCR(%a6),%fpcr/%fpsr/%fpiar /*  restore ctrl regs */
-	movem.l		EXC_DREGS(%a6),%d0-%d1/%a0-a1	/*  restore d0-d1/a0-a1 */
+	fmovem.x		EXC_FPREGS(a6),fp0-fp1	/*  restore fp0-fp1 */
+	fmovem.l		USER_FPCR(a6),fpcr/fpsr/fpiar /*  restore ctrl regs */
+	movem.l		EXC_DREGS(a6),d0-d1/a0-a1	/*  restore d0-d1/a0-a1 */
 
-	unlk		%a6
-/* $;	add.l		&24,%sp */
+	unlk		a6
+/* $;	add.l		#24,sp */
 	bra.l		_fpsp_done
 
 /*  overflow is enabled AND overflow, of course, occurred. so, we have the EXOP */
 /*  in fp1. now, simply jump to _real_ovfl()! */
 fovfl_ovfl_on:
-	fmovem.x		%fp1,FP_SRC(%a6)	/*  save EXOP (fp1) to stack */
+	fmovem.x		fp1,FP_SRC(a6)	/*  save EXOP (fp1) to stack */
 
-	move.w		&0xe005,2+FP_SRC(%a6)	/*  save exc status */
+	move.w		#0xe005,2+FP_SRC(a6)	/*  save exc status */
 
-	fmovem.x		EXC_FPREGS(%a6),%fp0-%fp1	/*  restore fp0-fp1 */
-	fmovem.l		USER_FPCR(%a6),%fpcr/%fpsr/%fpiar /*  restore ctrl regs */
-	movem.l		EXC_DREGS(%a6),%d0-%d1/%a0-a1	/*  restore d0-d1/a0-a1 */
+	fmovem.x		EXC_FPREGS(a6),fp0-fp1	/*  restore fp0-fp1 */
+	fmovem.l		USER_FPCR(a6),fpcr/fpsr/fpiar /*  restore ctrl regs */
+	movem.l		EXC_DREGS(a6),d0-d1/a0-a1	/*  restore d0-d1/a0-a1 */
 
-	frestore	FP_SRC(%a6)		/*  do this after fmovem,other f<op>s! */
+	frestore	FP_SRC(a6)		/*  do this after fmovem,other f<op>s! */
 
-	unlk		%a6
+	unlk		a6
 
 	bra.l		_real_ovfl
 
@@ -183,18 +196,18 @@ fovfl_ovfl_on:
 /*  we must jump to real_inex(). */
 fovfl_inex_on:
 
-	fmovem.x		%fp1,FP_SRC(%a6)	/*  save EXOP (fp1) to stack */
+	fmovem.x		fp1,FP_SRC(a6)	/*  save EXOP (fp1) to stack */
 
-	move.b		&0xc4,1+EXC_VOFF(%a6)	/*  vector offset = 0xc4 */
-	move.w		&0xe001,2+FP_SRC(%a6)	/*  save exc status */
+	move.b		#0xc4,1+EXC_VOFF(a6)	/*  vector offset = 0xc4 */
+	move.w		#0xe001,2+FP_SRC(a6)	/*  save exc status */
 
-	fmovem.x		EXC_FPREGS(%a6),%fp0-%fp1	/*  restore fp0-fp1 */
-	fmovem.l		USER_FPCR(%a6),%fpcr/%fpsr/%fpiar /*  restore ctrl regs */
-	movem.l		EXC_DREGS(%a6),%d0-%d1/%a0-%a1	/*  restore d0-d1/a0-a1 */
+	fmovem.x		EXC_FPREGS(a6),fp0-fp1	/*  restore fp0-fp1 */
+	fmovem.l		USER_FPCR(a6),fpcr/fpsr/fpiar /*  restore ctrl regs */
+	movem.l		EXC_DREGS(a6),d0-d1/a0-a1	/*  restore d0-d1/a0-a1 */
 
-	frestore	FP_SRC(%a6)		/*  do this after fmovem,other f<op>s! */
+	frestore	FP_SRC(a6)		/*  do this after fmovem,other f<op>s! */
 
-	unlk		%a6
+	unlk		a6
 
 	bra.l		_real_inex
 
@@ -202,42 +215,42 @@ fovfl_inex_on:
 fovfl_out:
 
 
-/* $;	move.l		FP_SRC_EX(%a6),TRAP_SRCOP_EX(%a6) */
-/* $;	move.l		FP_SRC_HI(%a6),TRAP_SRCOP_HI(%a6) */
-/* $;	move.l		FP_SRC_LO(%a6),TRAP_SRCOP_LO(%a6) */
+/* $;	move.l		FP_SRC_EX(a6),TRAP_SRCOP_EX(a6) */
+/* $;	move.l		FP_SRC_HI(a6),TRAP_SRCOP_HI(a6) */
+/* $;	move.l		FP_SRC_LO(a6),TRAP_SRCOP_LO(a6) */
 
 /*  the src operand is definitely a NORM(!), so tag it as such */
-	move.b		&NORM,STAG(%a6)		/*  set src optype tag */
+	move.b		#NORM,STAG(a6)		/*  set src optype tag */
 
-	clr.l		%d0
-	move.b		FPCR_MODE(%a6),%d0	/*  pass rnd prec/mode */
+	clr.l		d0
+	move.b		FPCR_MODE(a6),d0	/*  pass rnd prec/mode */
 
-	and.l		&0xffff00ff,USER_FPSR(%a6) /*  zero all but accured field */
+	and.l		#0xffff00ff,USER_FPSR(a6) /*  zero all but accured field */
 
-	fmove.l		&0x0,%fpcr		/*  zero current control regs */
-	fmove.l		&0x0,%fpsr
+	fmove.l		#0x0,fpcr		/*  zero current control regs */
+	fmove.l		#0x0,fpsr
 
-	lea		FP_SRC(%a6),%a0		/*  pass ptr to src operand */
+	lea		FP_SRC(a6),a0		/*  pass ptr to src operand */
 
 	bsr.l		fout
 
-	btst		&ovfl_bit,FPCR_ENABLE(%a6)
+	btst		#ovfl_bit,FPCR_ENABLE(a6)
 	bne.w		fovfl_ovfl_on
 
-	btst		&inex2_bit,FPCR_ENABLE(%a6)
+	btst		#inex2_bit,FPCR_ENABLE(a6)
 	bne.w		fovfl_inex_on
 
-	fmovem.x		EXC_FPREGS(%a6),%fp0-%fp1	/*  restore fp0-fp1 */
-	fmovem.l		USER_FPCR(%a6),%fpcr/%fpsr/%fpiar /*  restore ctrl regs */
-	movem.l		EXC_DREGS(%a6),%d0-%d1/%a0-%a1	/*  restore d0-d1/a0-a1 */
+	fmovem.x		EXC_FPREGS(a6),fp0-fp1	/*  restore fp0-fp1 */
+	fmovem.l		USER_FPCR(a6),fpcr/fpsr/fpiar /*  restore ctrl regs */
+	movem.l		EXC_DREGS(a6),d0-d1/a0-a1	/*  restore d0-d1/a0-a1 */
 
-	unlk		%a6
-/* $;	add.l		&24,%sp */
+	unlk		a6
+/* $;	add.l		#24,sp */
 
-	btst		&0x7,(%sp)		/*  is trace on? */
+	btst		#0x7,(sp)		/*  is trace on? */
 	beq.l		_fpsp_done		/*  no */
 
-	fmove.l		%fpiar,0x8(%sp)		/*  "Current PC" is in FPIAR */
-	move.w		&0x2024,0x6(%sp)	/*  stk fmt = 0x2; voff = 0x024 */
+	fmove.l		fpiar,0x8(sp)		/*  "Current PC" is in FPIAR */
+	move.w		#0x2024,0x6(sp)	/*  stk fmt = 0x2; voff = 0x024 */
 	bra.l		_real_trace
 

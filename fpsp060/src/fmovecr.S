@@ -17,29 +17,29 @@
 
 	.globl		smovecr
 smovecr:
-	move.l		%d1,-(%sp)		/*  save rom offset for a sec */
+	move.l		d1,-(sp)		/*  save rom offset for a sec */
 
-	lsr.b		&0x4,%d0		/*  shift ctrl bits to lo */
-	move.l		%d0,%d1			/*  make a copy */
-	andi.w		&0x3,%d1		/*  extract rnd mode */
-	andi.w		&0xc,%d0		/*  extract rnd prec */
-	swap		%d0			/*  put rnd prec in hi */
-	move.w		%d1,%d0			/*  put rnd mode in lo */
+	lsr.b		#0x4,d0		/*  shift ctrl bits to lo */
+	move.l		d0,d1			/*  make a copy */
+	andi.w		#0x3,d1		/*  extract rnd mode */
+	andi.w		#0xc,d0		/*  extract rnd prec */
+	swap		d0			/*  put rnd prec in hi */
+	move.w		d1,d0			/*  put rnd mode in lo */
 
-	move.l		(%sp)+,%d1		/*  get rom offset */
+	move.l		(sp)+,d1		/*  get rom offset */
 
 /*
  * check range of offset
  */
-	tst.b		%d1			/*  if zero, offset is to pi */
+	tst.b		d1			/*  if zero, offset is to pi */
 	beq.b		pi_tbl			/*  it is pi */
-	cmpi.b		&0x0a,%d1		/*  check range $01 - $0a */
+	cmpi.b		#0x0a,d1		/*  check range $01 - $0a */
 	ble.b		z_val			/*  if in this range, return zero */
-	cmpi.b		&0x0e,%d1		/*  check range $0b - $0e */
+	cmpi.b		#0x0e,d1		/*  check range $0b - $0e */
 	ble.b		sm_tbl			/*  valid constants in this range */
-	cmpi.b		&0x2f,%d1		/*  check range $10 - $2f */
+	cmpi.b		#0x2f,d1		/*  check range $10 - $2f */
 	ble.b		z_val			/*  if in this range, return zero */
-	cmpi.b		&0x3f,%d1		/*  check range $30 - $3f */
+	cmpi.b		#0x3f,d1		/*  check range $30 - $3f */
 	ble.b		bg_tbl			/*  valid constants in this range */
 
 z_val:
@@ -52,19 +52,19 @@ z_val:
  * precision.
  */
 pi_tbl:
-	tst.b		%d0			/*  is rmode RN? */
+	tst.b		d0			/*  is rmode RN? */
 	bne.b		pi_not_rn		/*  no */
 pi_rn:
-	lea.l		(PIRN).l(%pc),%a0		/*  yes; load PI RN table addr */
+	lea.l		(PIRN).l(pc),a0		/*  yes; load PI RN table addr */
 	bra.w		set_finx
 pi_not_rn:
-	cmpi.b		&rp_mode,%d0		/*  is rmode RP? */
+	cmpi.b		#rp_mode,d0		/*  is rmode RP? */
 	beq.b		pi_rp			/*  yes */
 pi_rzrm:
-	lea.l		(PIRZRM).l(%pc),%a0		/*  no; load PI RZ,RM table addr */
+	lea.l		(PIRZRM).l(pc),a0		/*  no; load PI RZ,RM table addr */
 	bra.b		set_finx
 pi_rp:
-	lea.l		(PIRP).l(%pc),%a0		/*  load PI RP table addr */
+	lea.l		(PIRP).l(pc),a0		/*  load PI RP table addr */
 	bra.b		set_finx
 
 /*
@@ -78,23 +78,23 @@ pi_rp:
  * precision.
  */
 sm_tbl:
-	subi.b		&0xb,%d1		/*  make offset in 0-4 range */
-	tst.b		%d0			/*  is rmode RN? */
+	subi.b		#0xb,d1		/*  make offset in 0-4 range */
+	tst.b		d0			/*  is rmode RN? */
 	bne.b		sm_not_rn		/*  no */
 sm_rn:
-	lea.l		(SMALRN).l(%pc),%a0		/*  yes; load RN table addr */
+	lea.l		(SMALRN).l(pc),a0		/*  yes; load RN table addr */
 sm_tbl_cont:
-	cmpi.b		&0x2,%d1		/*  is result log10(e)? */
+	cmpi.b		#0x2,d1		/*  is result log10(e)? */
 	ble.b		set_finx		/*  no; answer is inexact */
 	bra.b		no_finx			/*  yes; answer is exact */
 sm_not_rn:
-	cmpi.b		&rp_mode,%d0		/*  is rmode RP? */
+	cmpi.b		#rp_mode,d0		/*  is rmode RP? */
 	beq.b		sm_rp			/*  yes */
 sm_rzrm:
-	lea.l		(SMALRZRM).l(%pc),%a0	/*  no; load RZ,RM table addr */
+	lea.l		(SMALRZRM).l(pc),a0	/*  no; load RZ,RM table addr */
 	bra.b		sm_tbl_cont
 sm_rp:
-	lea.l		(SMALRP).l(%pc),%a0		/*  load RP table addr */
+	lea.l		(SMALRP).l(pc),a0		/*  load RP table addr */
 	bra.b		sm_tbl_cont
 
 /*
@@ -120,61 +120,62 @@ sm_rp:
  * precision.
  */
 bg_tbl:
-	subi.b		&0x30,%d1		/*  make offset in 0-f range */
-	tst.b		%d0			/*  is rmode RN? */
+	subi.b		#0x30,d1		/*  make offset in 0-f range */
+	tst.b		d0			/*  is rmode RN? */
 	bne.b		bg_not_rn		/*  no */
 bg_rn:
-	lea.l		(BIGRN).l(%pc),%a0		/*  yes; load RN table addr */
+	lea.l		(BIGRN).l(pc),a0		/*  yes; load RN table addr */
 bg_tbl_cont:
-	cmpi.b		&0x1,%d1		/*  is offset <= $31? */
+	cmpi.b		#0x1,d1		/*  is offset <= $31? */
 	ble.b		set_finx		/*  yes; answer is inexact */
-	cmpi.b		&0x7,%d1		/*  is $32 <= offset <= $37? */
+	cmpi.b		#0x7,d1		/*  is $32 <= offset <= $37? */
 	ble.b		no_finx			/*  yes; answer is exact */
 	bra.b		set_finx		/*  no; answer is inexact */
 bg_not_rn:
-	cmpi.b		&rp_mode,%d0		/*  is rmode RP? */
+	cmpi.b		#rp_mode,d0		/*  is rmode RP? */
 	beq.b		bg_rp			/*  yes */
 bg_rzrm:
-	lea.l		(BIGRZRM).l(%pc),%a0	/*  no; load RZ,RM table addr */
+	lea.l		(BIGRZRM).l(pc),a0	/*  no; load RZ,RM table addr */
 	bra.b		bg_tbl_cont
 bg_rp:
-	lea.l		(BIGRP).l(%pc),%a0		/*  load RP table addr */
+	lea.l		(BIGRP).l(pc),a0		/*  load RP table addr */
 	bra.b		bg_tbl_cont
 
 /*  answer is inexact, so set INEX2 and AINEX in the user's FPSR. */
 set_finx:
-	ori.l		&inx2a_mask,USER_FPSR(%a6) /*  set INEX2/AINEX */
+	ori.l		#inx2a_mask,USER_FPSR(a6) /*  set INEX2/AINEX */
 no_finx:
-	mulu.w		&0xc,%d1		/*  offset points into tables */
-	swap		%d0			/*  put rnd prec in lo word */
-	tst.b		%d0			/*  is precision extended? */
+	mulu.w		#0xc,d1		/*  offset points into tables */
+	swap		d0			/*  put rnd prec in lo word */
+	tst.b		d0			/*  is precision extended? */
 
 	bne.b		not_ext			/*  if xprec, do not call round */
 
 /*  Precision is extended */
-	fmovem.x	(%a0,%d1.w),%fp0	/*  return result in fp0 */
+	fmovem.x	(a0,d1.w),fp0	/*  return result in fp0 */
 	rts
 
 /*  Precision is single or double */
 not_ext:
-	swap		%d0			/*  rnd prec in upper word */
+	swap		d0			/*  rnd prec in upper word */
 
 /*  call round() to round the answer to the proper precision. */
 /*  exponents out of range for single or double DO NOT cause underflow */
 /*  or overflow. */
-	move.w		0x0(%a0,%d1.w),FP_SCR1_EX(%a6) /*  load first word */
-	move.l		0x4(%a0,%d1.w),FP_SCR1_HI(%a6) /*  load second word */
-	move.l		0x8(%a0,%d1.w),FP_SCR1_LO(%a6) /*  load third word */
-	move.l		%d0,%d1
-	clr.l		%d0			/*  clear g,r,s */
-	lea		FP_SCR1(%a6),%a0	/*  pass ptr to answer */
-	clr.w		LOCAL_SGN(%a0)		/*  sign always positive */
+	move.w		0x0(a0,d1.w),FP_SCR1_EX(a6) /*  load first word */
+	move.l		0x4(a0,d1.w),FP_SCR1_HI(a6) /*  load second word */
+	move.l		0x8(a0,d1.w),FP_SCR1_LO(a6) /*  load third word */
+	move.l		d0,d1
+	clr.l		d0			/*  clear g,r,s */
+	lea		FP_SCR1(a6),a0	/*  pass ptr to answer */
+	clr.w		LOCAL_SGN(a0)		/*  sign always positive */
 	bsr.l		_round			/*  round the mantissa */
 
-	fmovem.x	(%a0),%fp0		/*  return rounded result in fp0 */
+	fmovem.x	(a0),fp0		/*  return rounded result in fp0 */
 	rts
 
-	.balignw		4,0x51fc
+	/* .balignw		4,0x51fc */
+	.dc.w 0x51fc
 
 PIRN:	.dc.l		0x40000000,0xc90fdaa2,0x2168c235	/*  pi */
 PIRZRM:	.dc.l		0x40000000,0xc90fdaa2,0x2168c234	/*  pi */

@@ -35,15 +35,15 @@
 
 	.globl		_ftrapcc
 _ftrapcc:
-	move.w		EXC_CMDREG(%a6),%d0	/*  fetch predicate */
+	move.w		EXC_CMDREG(a6),d0	/*  fetch predicate */
 
-	clr.l		%d1			/*  clear scratch reg */
-	move.b		FPSR_CC(%a6),%d1	/*  fetch fp ccodes */
-	ror.l		&0x8,%d1		/*  rotate to top byte */
-	fmove.l		%d1,%fpsr		/*  insert into FPSR */
+	clr.l		d1			/*  clear scratch reg */
+	move.b		FPSR_CC(a6),d1	/*  fetch fp ccodes */
+	ror.l		#0x8,d1		/*  rotate to top byte */
+	fmove.l		d1,fpsr		/*  insert into FPSR */
 
-	move.w		(tbl_ftrapcc.b,%pc,%d0.w*2), %d1 /*  load table */
-	jmp		(tbl_ftrapcc.b,%pc,%d1.w) /*  jump to ftrapcc routine */
+	move.w		(tbl_ftrapcc.b,pc,d0.w*2), d1 /*  load table */
+	jmp		(tbl_ftrapcc.b,pc,d1.w) /*  jump to ftrapcc routine */
 
 tbl_ftrapcc:
 	.dc.w		ftrapcc_f	-	tbl_ftrapcc	/*  00 */
@@ -123,10 +123,10 @@ ftrapcc_neq_no:
 ftrapcc_gt:
 	fbgt		ftrapcc_trap		/*  greater than? */
 ftrapcc_gt_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		ftrapcc_gt_done		/*  no */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_gt_done:
 	rts					/*  no; do nothing */
@@ -141,10 +141,10 @@ ftrapcc_ngt:
 ftrapcc_ngt_no:
 	rts					/*  do nothing */
 ftrapcc_ngt_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -156,18 +156,18 @@ ftrapcc_ngt_yes:
 ftrapcc_ge:
 	fbge		ftrapcc_ge_yes		/*  greater than or equal? */
 ftrapcc_ge_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		ftrapcc_ge_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_ge_done:
 	rts					/*  no; do nothing */
 ftrapcc_ge_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -181,10 +181,10 @@ ftrapcc_nge:
 ftrapcc_nge_no:
 	rts					/*  do nothing */
 ftrapcc_nge_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -196,10 +196,10 @@ ftrapcc_nge_yes:
 ftrapcc_lt:
 	fblt		ftrapcc_trap		/*  less than? */
 ftrapcc_lt_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		ftrapcc_lt_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_lt_done:
 	rts					/*  no; do nothing */
@@ -214,10 +214,10 @@ ftrapcc_nlt:
 ftrapcc_nlt_no:
 	rts					/*  do nothing */
 ftrapcc_nlt_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -229,18 +229,18 @@ ftrapcc_nlt_yes:
 ftrapcc_le:
 	fble		ftrapcc_le_yes		/*  less than or equal? */
 ftrapcc_le_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		ftrapcc_le_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_le_done:
 	rts					/*  no; do nothing */
 ftrapcc_le_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -254,10 +254,10 @@ ftrapcc_nle:
 ftrapcc_nle_no:
 	rts					/*  do nothing */
 ftrapcc_nle_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -269,10 +269,10 @@ ftrapcc_nle_yes:
 ftrapcc_gl:
 	fbgl		ftrapcc_trap		/*  greater or less than? */
 ftrapcc_gl_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.b		ftrapcc_gl_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_gl_done:
 	rts					/*  no; do nothing */
@@ -287,10 +287,10 @@ ftrapcc_ngl:
 ftrapcc_ngl_no:
 	rts					/*  do nothing */
 ftrapcc_ngl_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  is NAN set in cc? */
+	btst		#nan_bit, FPSR_CC(a6)	/*  is NAN set in cc? */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -302,8 +302,8 @@ ftrapcc_ngl_yes:
 ftrapcc_gle:
 	fbgle		ftrapcc_trap		/*  greater, less, or equal? */
 ftrapcc_gle_no:
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	rts					/*  no; do nothing */
 
@@ -317,8 +317,8 @@ ftrapcc_ngle:
 ftrapcc_ngle_no:
 	rts					/*  do nothing */
 ftrapcc_ngle_yes:
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -354,10 +354,10 @@ ftrapcc_t:
  *	False
  */
 ftrapcc_sf:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.b		ftrapcc_sf_done		/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_sf_done:
 	rts					/*  no; do nothing */
@@ -368,10 +368,10 @@ ftrapcc_sf_done:
  *	True
  */
 ftrapcc_st:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -383,18 +383,18 @@ ftrapcc_st:
 ftrapcc_seq:
 	fbseq		ftrapcc_seq_yes		/*  signalling equal? */
 ftrapcc_seq_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.w		ftrapcc_seq_done	/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_seq_done:
 	rts					/*  no; do nothing */
 ftrapcc_seq_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -406,18 +406,18 @@ ftrapcc_seq_yes:
 ftrapcc_sneq:
 	fbsne	ftrapcc_sneq_yes	/*  signalling equal? */
 ftrapcc_sneq_no:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.w		ftrapcc_sneq_no_done	/*  no; go finish */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 ftrapcc_sneq_no_done:
 	rts					/*  do nothing */
 ftrapcc_sneq_yes:
-	btst		&nan_bit, FPSR_CC(%a6)	/*  set BSUN exc bit */
+	btst		#nan_bit, FPSR_CC(a6)	/*  set BSUN exc bit */
 	beq.w		ftrapcc_trap		/*  no; go take trap */
-	ori.l		&bsun_mask+aiop_mask, USER_FPSR(%a6) /*  set BSUN exc bit */
-	btst		&bsun_bit, FPCR_ENABLE(%a6) /*  was BSUN set? */
+	ori.l		#bsun_mask+aiop_mask, USER_FPSR(a6) /*  set BSUN exc bit */
+	btst		#bsun_bit, FPCR_ENABLE(a6) /*  was BSUN set? */
 	bne.w		ftrapcc_bsun		/*  yes */
 	bra.w		ftrapcc_trap		/*  no; go take trap */
 
@@ -560,7 +560,7 @@ ftrapcc_un_no:
 /*  of the ftrapcc instruction and the vector offset field */
 /*  should denote the ftrapcc trap. */
 ftrapcc_trap:
-	move.b		&ftrapcc_flg,SPCOND_FLG(%a6)
+	move.b		#ftrapcc_flg,SPCOND_FLG(a6)
 	rts
 
 /*  the emulation routine set bsun and BSUN was enabled. have to */
@@ -568,6 +568,6 @@ ftrapcc_trap:
 /*  let the caller of this routine shift the stack frame up to */
 /*  eliminate the effective address field. */
 ftrapcc_bsun:
-	move.b		&fbsun_flg,SPCOND_FLG(%a6)
+	move.b		#fbsun_flg,SPCOND_FLG(a6)
 	rts
 

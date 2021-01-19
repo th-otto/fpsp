@@ -36,54 +36,66 @@
 
 	.include "hdr.fpu"
 
+	.xref satan
+	.xref t_extdnrm
+	.xref t_inx2
+	.xref t_catch
+	.xref t_pinx2
+	.xref t_minx2
+	.xref t_operr
+	.xref ld_pzero
+	.xref TWOBYPI
+	.xref PIBY2
+	.xref PI
+
 	.text
 
 	.globl		sacos
 sacos:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1		/*  pack exp w/ upper 16 fraction */
-	move.w		4(%a0),%d1
-	andi.l		&0x7FFFFFFF,%d1
-	cmpi.l		&0x3FFF8000,%d1
+	move.l		(a0),d1		/*  pack exp w/ upper 16 fraction */
+	move.w		4(a0),d1
+	andi.l		#0x7FFFFFFF,d1
+	cmpi.l		#0x3FFF8000,d1
 	bge.b		ACOSBIG
 
 /* --THIS IS THE USUAL CASE, |X| < 1 */
 /* --ACOS(X) = 2 * ATAN(	SQRT( (1-X)/(1+X) ) ) */
 
 ACOSMAIN:
-	fmove.s		&0x3F800000,%fp1
-	fadd.x		%fp0,%fp1		/*  1+X */
-	fneg.x		%fp0			/*  -X */
-	fadd.s		&0x3F800000,%fp0	/*  1-X */
-	fdiv.x		%fp1,%fp0		/*  (1-X)/(1+X) */
-	fsqrt.x		%fp0			/*  SQRT((1-X)/(1+X)) */
-	move.l		%d0,-(%sp)		/*  save original users fpcr */
-	clr.l		%d0
-	fmovem.x		%fp0,-(%sp)		/*  save SQRT(...) to stack */
-	lea		(%sp),%a0		/*  pass ptr to sqrt */
+	fmove.s		#0x3F800000,fp1
+	fadd.x		fp0,fp1		/*  1+X */
+	fneg.x		fp0			/*  -X */
+	fadd.s		#0x3F800000,fp0	/*  1-X */
+	fdiv.x		fp1,fp0		/*  (1-X)/(1+X) */
+	fsqrt.x		fp0			/*  SQRT((1-X)/(1+X)) */
+	move.l		d0,-(sp)		/*  save original users fpcr */
+	clr.l		d0
+	fmovem.x		fp0,-(sp)		/*  save SQRT(...) to stack */
+	lea		(sp),a0		/*  pass ptr to sqrt */
 	bsr.l		satan			/*  ATAN(SQRT([1-X]/[1+X])) */
-	add.l		&0xc,%sp		/*  clear SQRT(...) from stack */
+	add.l		#0xc,sp		/*  clear SQRT(...) from stack */
 
-	fmove.l		(%sp)+,%fpcr		/*  restore users round prec,mode */
-	fadd.x		%fp0,%fp0		/*  2 * ATAN( STUFF ) */
+	fmove.l		(sp)+,fpcr		/*  restore users round prec,mode */
+	fadd.x		fp0,fp0		/*  2 * ATAN( STUFF ) */
 	bra.l		t_pinx2
 
 ACOSBIG:
-	fabs.x		%fp0
-	fcmp.s		&0x3F800000,%fp0
+	fabs.x		fp0
+	fcmp.s		#0x3F800000,fp0
 	fbgt.l		t_operr			/*  cause an operr exception */
 
 /* --|X| = 1, ACOS(X) = 0 OR PI */
-	tst.b		(%a0)			/*  is X positive or negative? */
+	tst.b		(a0)			/*  is X positive or negative? */
 	bpl.b		ACOSP1
 
 /* --X = -1 */
 /* Returns PI and inexact exception */
 ACOSM1:
-	fmove.x		PI(%pc),%fp0		/*  load PI */
-	fmove.l		%d0,%fpcr		/*  load round mode,prec */
-	fadd.s		&0x00800000,%fp0	/*  add a small value */
+	fmove.x		PI(pc),fp0		/*  load PI */
+	fmove.l		d0,fpcr		/*  load round mode,prec */
+	fadd.s		#0x00800000,fp0	/*  add a small value */
 	bra.l		t_pinx2
 
 ACOSP1:
@@ -92,7 +104,7 @@ ACOSP1:
 	.globl		sacosd
 /* --ACOS(X) = PI/2 FOR DENORMALIZED X */
 sacosd:
-	fmove.l		%d0,%fpcr		/*  load user's rnd mode/prec */
-	fmove.x		PIBY2(%pc),%fp0
+	fmove.l		d0,fpcr		/*  load user's rnd mode/prec */
+	fmove.x		PIBY2(pc),fp0
 	bra.l		t_pinx2
 

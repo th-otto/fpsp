@@ -1,0 +1,6 @@
+ftest.bin
+.S[-4]
+.S[-S]
+.L[-S=0] ; no stack needed
+=
+src\ftest.S

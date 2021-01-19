@@ -37,7 +37,7 @@
 
 	.text
 
-	.balignw		16,0x51fc
+	/* .balignw		16,0x51fc */
 tbl_fmul_ovfl:
 	.dc.l		0x3fff - 0x7ffe		/*  ext_max */
 	.dc.l		0x3fff - 0x407e		/*  sgl_max */
@@ -49,49 +49,49 @@ tbl_fmul_unfl:
 
 	.globl		fsmul
 fsmul:
-	andi.b		&0x30,%d0		/*  clear rnd prec */
-	ori.b		&s_mode*0x10,%d0	/*  insert sgl prec */
+	andi.b		#0x30,d0		/*  clear rnd prec */
+	ori.b		#s_mode*0x10,d0	/*  insert sgl prec */
 	bra.b		fmul
 
 	.globl		fdmul
 fdmul:
-	andi.b		&0x30,%d0
-	ori.b		&d_mode*0x10,%d0	/*  insert dbl prec */
+	andi.b		#0x30,d0
+	ori.b		#d_mode*0x10,d0	/*  insert dbl prec */
 
 	.globl		fmul
 fmul:
-	move.l		%d0,L_SCR3(%a6)		/*  store rnd info */
+	move.l		d0,L_SCR3(a6)		/*  store rnd info */
 
-	clr.w		%d1
-	move.b		DTAG(%a6),%d1
-	lsl.b		&0x3,%d1
-	or.b		STAG(%a6),%d1		/*  combine src tags */
+	clr.w		d1
+	move.b		DTAG(a6),d1
+	lsl.b		#0x3,d1
+	or.b		STAG(a6),d1		/*  combine src tags */
 	bne.w		fmul_not_norm		/*  optimize on non-norm input */
 
 fmul_norm:
-	move.w		DST_EX.w(%a1),FP_SCR1_EX(%a6)
-	move.l		DST_HI(%a1),FP_SCR1_HI(%a6)
-	move.l		DST_LO(%a1),FP_SCR1_LO(%a6)
+	move.w		DST_EX.w(a1),FP_SCR1_EX(a6)
+	move.l		DST_HI(a1),FP_SCR1_HI(a6)
+	move.l		DST_LO(a1),FP_SCR1_LO(a6)
 
-	move.w		SRC_EX.w(%a0),FP_SCR0_EX(%a6)
-	move.l		SRC_HI(%a0),FP_SCR0_HI(%a6)
-	move.l		SRC_LO(%a0),FP_SCR0_LO(%a6)
+	move.w		SRC_EX.w(a0),FP_SCR0_EX(a6)
+	move.l		SRC_HI(a0),FP_SCR0_HI(a6)
+	move.l		SRC_LO(a0),FP_SCR0_LO(a6)
 
 	bsr.l		scale_to_zero_src	/*  scale src exponent */
-	move.l		%d0,-(%sp)		/*  save scale factor 1 */
+	move.l		d0,-(sp)		/*  save scale factor 1 */
 
 	bsr.l		scale_to_zero_dst	/*  scale dst exponent */
 
-	add.l		%d0,(%sp)		/*  SCALE_FACTOR = scale1 + scale2 */
+	add.l		d0,(sp)		/*  SCALE_FACTOR = scale1 + scale2 */
 
-	move.w		2+L_SCR3(%a6),%d1	/*  fetch precision */
-	lsr.b		&0x6,%d1		/*  shift to lo bits */
-	move.l		(%sp)+,%d0		/*  load S.F. */
-	cmp.l		(tbl_fmul_ovfl.b,%pc,%d1.w*4),%d0 /*  would result ovfl? */
+	move.w		2+L_SCR3(a6),d1	/*  fetch precision */
+	lsr.b		#0x6,d1		/*  shift to lo bits */
+	move.l		(sp)+,d0		/*  load S.F. */
+	cmp.l		(tbl_fmul_ovfl.b,pc,d1.w*4),d0 /*  would result ovfl? */
 	beq.w		fmul_may_ovfl		/*  result may rnd to overflow */
 	blt.w		fmul_ovfl		/*  result will overflow */
 
-	cmp.l		(tbl_fmul_unfl.b,%pc,%d1.w*4),%d0 /*  would result unfl? */
+	cmp.l		(tbl_fmul_unfl.b,pc,d1.w*4),d0 /*  would result unfl? */
 	beq.w		fmul_may_unfl		/*  result may rnd to no unfl */
 	bgt.w		fmul_unfl		/*  result will underflow */
 
@@ -104,30 +104,30 @@ fmul_norm:
  * this will do.
  */
 fmul_normal:
-	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst operand */
+	fmovem.x	FP_SCR1(a6),fp0	/*  load dst operand */
 
-	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		L_SCR3(a6),fpcr	/*  set FPCR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp0	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp0	/*  execute multiply */
 
-	fmove.l		%fpsr,%d1		/*  save status */
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		fpsr,d1		/*  save status */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 
-	or.l		%d1,USER_FPSR(%a6)	/*  save INEX2,N */
+	or.l		d1,USER_FPSR(a6)	/*  save INEX2,N */
 
 fmul_normal_exit:
-	fmovem.x	%fp0,FP_SCR0(%a6)	/*  store out result */
-	move.l		%d2,-(%sp)		/*  save d2 */
-	move.w		FP_SCR0_EX(%a6),%d1	/*  load {sgn,exp} */
-	move.l		%d1,%d2			/*  make a copy */
-	andi.l		&0x7fff,%d1		/*  strip sign */
-	andi.w		&0x8000,%d2		/*  keep old sign */
-	sub.l		%d0,%d1			/*  add scale factor */
-	or.w		%d2,%d1			/*  concat old sign,new exp */
-	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
-	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
+	fmovem.x	fp0,FP_SCR0(a6)	/*  store out result */
+	move.l		d2,-(sp)		/*  save d2 */
+	move.w		FP_SCR0_EX(a6),d1	/*  load {sgn,exp} */
+	move.l		d1,d2			/*  make a copy */
+	andi.l		#0x7fff,d1		/*  strip sign */
+	andi.w		#0x8000,d2		/*  keep old sign */
+	sub.l		d0,d1			/*  add scale factor */
+	or.w		d2,d1			/*  concat old sign,new exp */
+	move.w		d1,FP_SCR0_EX(a6)	/*  insert new exponent */
+	move.l		(sp)+,d2		/*  restore d2 */
+	fmovem.x	FP_SCR0(a6),fp0	/*  return default result in fp0 */
 	rts
 
 /*
@@ -144,34 +144,34 @@ fmul_normal_exit:
  * exceptional operand.
  */
 fmul_ovfl:
-	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst operand */
+	fmovem.x	FP_SCR1(a6),fp0	/*  load dst operand */
 
-	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		L_SCR3(a6),fpcr	/*  set FPCR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp0	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp0	/*  execute multiply */
 
-	fmove.l		%fpsr,%d1		/*  save status */
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		fpsr,d1		/*  save status */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 
-	or.l		%d1,USER_FPSR(%a6)	/*  save INEX2,N */
+	or.l		d1,USER_FPSR(a6)	/*  save INEX2,N */
 
 /*  save setting this until now because this is where fmul_may_ovfl may jump in */
 fmul_ovfl_tst:
-	ori.l		&ovfl_inx_mask,USER_FPSR(%a6) /*  set ovfl/aovfl/ainex */
+	ori.l		#ovfl_inx_mask,USER_FPSR(a6) /*  set ovfl/aovfl/ainex */
 
-	move.b		FPCR_ENABLE(%a6),%d1
-	andi.b		&0x13,%d1		/*  is OVFL or INEX enabled? */
+	move.b		FPCR_ENABLE(a6),d1
+	andi.b		#0x13,d1		/*  is OVFL or INEX enabled? */
 	bne.b		fmul_ovfl_ena		/*  yes */
 
 /*  calculate the default result */
 fmul_ovfl_dis:
-	btst		&neg_bit,FPSR_CC(%a6)	/*  is result negative? */
-	sne		%d1			/*  set sign param accordingly */
-	move.l		L_SCR3(%a6),%d0		/*  pass rnd prec,mode */
+	btst		#neg_bit,FPSR_CC(a6)	/*  is result negative? */
+	sne		d1			/*  set sign param accordingly */
+	move.l		L_SCR3(a6),d0		/*  pass rnd prec,mode */
 	bsr.l		ovf_res			/*  calculate default result */
-	or.b		%d0,FPSR_CC(%a6)	/*  set INF,N if applicable */
-	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
+	or.b		d0,FPSR_CC(a6)	/*  set INF,N if applicable */
+	fmovem.x	(a0),fp0		/*  return default result in fp0 */
 	rts
 
 /*
@@ -181,37 +181,37 @@ fmul_ovfl_dis:
  * calculate a result rounded to extended precision.
  */
 fmul_ovfl_ena:
-	move.l		L_SCR3(%a6),%d1
-	andi.b		&0xc0,%d1		/*  test the rnd prec */
+	move.l		L_SCR3(a6),d1
+	andi.b		#0xc0,d1		/*  test the rnd prec */
 	bne.b		fmul_ovfl_ena_sd	/*  it's sgl or dbl */
 
 fmul_ovfl_ena_cont:
-	fmovem.x	%fp0,FP_SCR0(%a6)	/*  move result to stack */
+	fmovem.x	fp0,FP_SCR0(a6)	/*  move result to stack */
 
-	move.l		%d2,-(%sp)		/*  save d2 */
-	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
-	move.w		%d1,%d2			/*  make a copy */
-	andi.l		&0x7fff,%d1		/*  strip sign */
-	sub.l		%d0,%d1			/*  add scale factor */
-	subi.l		&0x6000,%d1		/*  subtract bias */
-	andi.w		&0x7fff,%d1		/*  clear sign bit */
-	andi.w		&0x8000,%d2		/*  keep old sign */
-	or.w		%d2,%d1			/*  concat old sign,new exp */
-	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
-	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	move.l		d2,-(sp)		/*  save d2 */
+	move.w		FP_SCR0_EX(a6),d1	/*  fetch {sgn,exp} */
+	move.w		d1,d2			/*  make a copy */
+	andi.l		#0x7fff,d1		/*  strip sign */
+	sub.l		d0,d1			/*  add scale factor */
+	subi.l		#0x6000,d1		/*  subtract bias */
+	andi.w		#0x7fff,d1		/*  clear sign bit */
+	andi.w		#0x8000,d2		/*  keep old sign */
+	or.w		d2,d1			/*  concat old sign,new exp */
+	move.w		d1,FP_SCR0_EX(a6)	/*  insert new exponent */
+	move.l		(sp)+,d2		/*  restore d2 */
+	fmovem.x		FP_SCR0(a6),fp1	/*  return EXOP in fp1 */
 	bra.b		fmul_ovfl_dis
 
 fmul_ovfl_ena_sd:
-	fmovem.x		FP_SCR1(%a6),%fp0	/*  load dst operand */
+	fmovem.x		FP_SCR1(a6),fp0	/*  load dst operand */
 
-	move.l		L_SCR3(%a6),%d1
-	andi.b		&0x30,%d1		/*  keep rnd mode only */
-	fmove.l		%d1,%fpcr		/*  set FPCR */
+	move.l		L_SCR3(a6),d1
+	andi.b		#0x30,d1		/*  keep rnd mode only */
+	fmove.l		d1,fpcr		/*  set FPCR */
 
-	fmul.x		FP_SCR0(%a6),%fp0	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp0	/*  execute multiply */
 
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 	bra.b		fmul_ovfl_ena_cont
 
 /*
@@ -222,20 +222,20 @@ fmul_ovfl_ena_sd:
  * - calculate the default result and return it in fp0.
  */
 fmul_may_ovfl:
-	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst op */
+	fmovem.x	FP_SCR1(a6),fp0	/*  load dst op */
 
-	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		L_SCR3(a6),fpcr	/*  set FPCR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp0	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp0	/*  execute multiply */
 
-	fmove.l		%fpsr,%d1		/*  save status */
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		fpsr,d1		/*  save status */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 
-	or.l		%d1,USER_FPSR(%a6)	/*  save INEX2,N */
+	or.l		d1,USER_FPSR(a6)	/*  save INEX2,N */
 
-	fabs.x		%fp0,%fp1		/*  make a copy of result */
-	fcmp.b		&0x2,%fp1		/*  is |result| >= 2.b? */
+	fabs.x		fp0,fp1		/*  make a copy of result */
+	fcmp.b		#0x2,fp1		/*  is |result| >= 2.b? */
 	fbge		fmul_ovfl_tst		/*  yes; overflow has occurred */
 
 /*  no, it didn't overflow; we have correct result */
@@ -255,77 +255,77 @@ fmul_may_ovfl:
  * exceptional operand.
  */
 fmul_unfl:
-	bset		&unfl_bit,FPSR_EXCEPT(%a6) /*  set unfl exc bit */
+	bset		#unfl_bit,FPSR_EXCEPT(a6) /*  set unfl exc bit */
 
 /*  for fun, let's use only extended precision, round to zero. then, let */
 /*  the unf_res() routine figure out all the rest. */
 /*  will we get the correct answer. */
-	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst operand */
+	fmovem.x	FP_SCR1(a6),fp0	/*  load dst operand */
 
-	fmove.l		&rz_mode*0x10,%fpcr	/*  set FPCR */
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		#rz_mode*0x10,fpcr	/*  set FPCR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp0	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp0	/*  execute multiply */
 
-	fmove.l		%fpsr,%d1		/*  save status */
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		fpsr,d1		/*  save status */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 
-	or.l		%d1,USER_FPSR(%a6)	/*  save INEX2,N */
+	or.l		d1,USER_FPSR(a6)	/*  save INEX2,N */
 
-	move.b		FPCR_ENABLE(%a6),%d1
-	andi.b		&0x0b,%d1		/*  is UNFL or INEX enabled? */
+	move.b		FPCR_ENABLE(a6),d1
+	andi.b		#0x0b,d1		/*  is UNFL or INEX enabled? */
 	bne.b		fmul_unfl_ena		/*  yes */
 
 fmul_unfl_dis:
-	fmovem.x	%fp0,FP_SCR0(%a6)	/*  store out result */
+	fmovem.x	fp0,FP_SCR0(a6)	/*  store out result */
 
-	lea		FP_SCR0(%a6),%a0	/*  pass: result addr */
-	move.l		L_SCR3(%a6),%d1		/*  pass: rnd prec,mode */
+	lea		FP_SCR0(a6),a0	/*  pass: result addr */
+	move.l		L_SCR3(a6),d1		/*  pass: rnd prec,mode */
 	bsr.l		unf_res			/*  calculate default result */
-	or.b		%d0,FPSR_CC(%a6)	/*  unf_res2 may have set 'Z' */
-	fmovem.x	FP_SCR0(%a6),%fp0	/*  return default result in fp0 */
+	or.b		d0,FPSR_CC(a6)	/*  unf_res2 may have set 'Z' */
+	fmovem.x	FP_SCR0(a6),fp0	/*  return default result in fp0 */
 	rts
 
 /*
  * UNFL is enabled.
  */
 fmul_unfl_ena:
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst op */
+	fmovem.x		FP_SCR1(a6),fp1	/*  load dst op */
 
-	move.l		L_SCR3(%a6),%d1
-	andi.b		&0xc0,%d1		/*  is precision extended? */
+	move.l		L_SCR3(a6),d1
+	andi.b		#0xc0,d1		/*  is precision extended? */
 	bne.b		fmul_unfl_ena_sd	/*  no, sgl or dbl */
 
 /*  if the rnd mode is anything but RZ, then we have to re-do the above */
 /*  multiplication because we used RZ for all. */
-	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
+	fmove.l		L_SCR3(a6),fpcr	/*  set FPCR */
 
 fmul_unfl_ena_cont:
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp1	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp1	/*  execute multiply */
 
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 
-	fmovem.x		%fp1,FP_SCR0(%a6)	/*  save result to stack */
-	move.l		%d2,-(%sp)		/*  save d2 */
-	move.w		FP_SCR0_EX(%a6),%d1	/*  fetch {sgn,exp} */
-	move.l		%d1,%d2			/*  make a copy */
-	andi.l		&0x7fff,%d1		/*  strip sign */
-	andi.w		&0x8000,%d2		/*  keep old sign */
-	sub.l		%d0,%d1			/*  add scale factor */
-	addi.l		&0x6000,%d1		/*  add bias */
-	andi.w		&0x7fff,%d1
-	or.w		%d2,%d1			/*  concat old sign,new exp */
-	move.w		%d1,FP_SCR0_EX(%a6)	/*  insert new exponent */
-	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	fmovem.x		fp1,FP_SCR0(a6)	/*  save result to stack */
+	move.l		d2,-(sp)		/*  save d2 */
+	move.w		FP_SCR0_EX(a6),d1	/*  fetch {sgn,exp} */
+	move.l		d1,d2			/*  make a copy */
+	andi.l		#0x7fff,d1		/*  strip sign */
+	andi.w		#0x8000,d2		/*  keep old sign */
+	sub.l		d0,d1			/*  add scale factor */
+	addi.l		#0x6000,d1		/*  add bias */
+	andi.w		#0x7fff,d1
+	or.w		d2,d1			/*  concat old sign,new exp */
+	move.w		d1,FP_SCR0_EX(a6)	/*  insert new exponent */
+	move.l		(sp)+,d2		/*  restore d2 */
+	fmovem.x		FP_SCR0(a6),fp1	/*  return EXOP in fp1 */
 	bra.w		fmul_unfl_dis
 
 fmul_unfl_ena_sd:
-	move.l		L_SCR3(%a6),%d1
-	andi.b		&0x30,%d1		/*  use only rnd mode */
-	fmove.l		%d1,%fpcr		/*  set FPCR */
+	move.l		L_SCR3(a6),d1
+	andi.b		#0x30,d1		/*  use only rnd mode */
+	fmove.l		d1,fpcr		/*  set FPCR */
 
 	bra.b		fmul_unfl_ena_cont
 
@@ -333,20 +333,20 @@ fmul_unfl_ena_sd:
 /*  -use the correct rounding mode and precision. this code favors operations */
 /*  that do not underflow. */
 fmul_may_unfl:
-	fmovem.x	FP_SCR1(%a6),%fp0	/*  load dst operand */
+	fmovem.x	FP_SCR1(a6),fp0	/*  load dst operand */
 
-	fmove.l		L_SCR3(%a6),%fpcr	/*  set FPCR */
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		L_SCR3(a6),fpcr	/*  set FPCR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp0	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp0	/*  execute multiply */
 
-	fmove.l		%fpsr,%d1		/*  save status */
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
+	fmove.l		fpsr,d1		/*  save status */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
 
-	or.l		%d1,USER_FPSR(%a6)	/*  save INEX2,N */
+	or.l		d1,USER_FPSR(a6)	/*  save INEX2,N */
 
-	fabs.x		%fp0,%fp1		/*  make a copy of result */
-	fcmp.b		&0x2,%fp1		/*  is |result| > 2.b? */
+	fabs.x		fp0,fp1		/*  make a copy of result */
+	fcmp.b		#0x2,fp1		/*  is |result| > 2.b? */
 	fbgt		fmul_normal_exit	/*  no; no underflow occurred */
 	fblt		fmul_unfl		/*  yes; underflow occurred */
 
@@ -357,20 +357,20 @@ fmul_may_unfl:
  * using RZ as the rounding mode to see what the pre-rounded result is.
  * this case should be relatively rare.
  */
-	fmovem.x		FP_SCR1(%a6),%fp1	/*  load dst operand */
+	fmovem.x		FP_SCR1(a6),fp1	/*  load dst operand */
 
-	move.l		L_SCR3(%a6),%d1
-	andi.b		&0xc0,%d1		/*  keep rnd prec */
-	ori.b		&rz_mode*0x10,%d1	/*  insert RZ */
+	move.l		L_SCR3(a6),d1
+	andi.b		#0xc0,d1		/*  keep rnd prec */
+	ori.b		#rz_mode*0x10,d1	/*  insert RZ */
 
-	fmove.l		%d1,%fpcr		/*  set FPCR */
-	fmove.l		&0x0,%fpsr		/*  clear FPSR */
+	fmove.l		d1,fpcr		/*  set FPCR */
+	fmove.l		#0x0,fpsr		/*  clear FPSR */
 
-	fmul.x		FP_SCR0(%a6),%fp1	/*  execute multiply */
+	fmul.x		FP_SCR0(a6),fp1	/*  execute multiply */
 
-	fmove.l		&0x0,%fpcr		/*  clear FPCR */
-	fabs.x		%fp1			/*  make absolute value */
-	fcmp.b		&0x2,%fp1		/*  is |result| < 2.b? */
+	fmove.l		#0x0,fpcr		/*  clear FPCR */
+	fabs.x		fp1			/*  make absolute value */
+	fcmp.b		#0x2,fp1		/*  is |result| < 2.b? */
 	fbge		fmul_normal_exit	/*  no; no underflow occurred */
 	bra.w		fmul_unfl		/*  yes, underflow occurred */
 
@@ -380,10 +380,11 @@ fmul_may_unfl:
  * Multiply: inputs are not both normalized; what are they?
  */
 fmul_not_norm:
-	move.w		(tbl_fmul_op.b,%pc,%d1.w*2),%d1
-	jmp		(tbl_fmul_op.b,%pc,%d1.w)
+	move.w		(tbl_fmul_op.b,pc,d1.w*2),d1
+	jmp		(tbl_fmul_op.b,pc,d1.w)
 
-	swbeg		&48
+	/* swbeg		#48 */
+	.dc.w 0x4afc,48
 tbl_fmul_op:
 	.dc.w		fmul_norm-tbl_fmul_op /*  NORM x NORM */
 	.dc.w		fmul_zero-tbl_fmul_op /*  NORM x ZERO */
@@ -451,17 +452,17 @@ fmul_res_qnan:
  */
 	.globl		fmul_zero		/*  global for fsglmul */
 fmul_zero:
-	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX.w(%a1),%d1
-	eor.b		%d0,%d1
+	move.b		SRC_EX.w(a0),d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(a1),d1
+	eor.b		d0,d1
 	bpl.b		fmul_zero_p		/*  result ZERO is pos. */
 fmul_zero_n:
-	fmove.s		&0x80000000,%fp0	/*  load -ZERO */
-	move.b		&z_bmask+neg_bmask,FPSR_CC(%a6) /*  set Z/N */
+	fmove.s		#0x80000000,fp0	/*  load -ZERO */
+	move.b		#z_bmask+neg_bmask,FPSR_CC(a6) /*  set Z/N */
 	rts
 fmul_zero_p:
-	fmove.s		&0x00000000,%fp0	/*  load +ZERO */
-	move.b		&z_bmask,FPSR_CC(%a6)	/*  set Z */
+	fmove.s		#0x00000000,fp0	/*  load +ZERO */
+	move.b		#z_bmask,FPSR_CC(a6)	/*  set Z */
 	rts
 
 /*
@@ -474,27 +475,27 @@ fmul_zero_p:
  */
 	.globl		fmul_inf_dst		/*  global for fsglmul */
 fmul_inf_dst:
-	fmovem.x	DST.w(%a1),%fp0		/*  return INF result in fp0 */
-	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX.w(%a1),%d1
-	eor.b		%d0,%d1
+	fmovem.x	DST.w(a1),fp0		/*  return INF result in fp0 */
+	move.b		SRC_EX.w(a0),d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(a1),d1
+	eor.b		d0,d1
 	bpl.b		fmul_inf_dst_p		/*  result INF is pos. */
 fmul_inf_dst_n:
-	fabs.x		%fp0			/*  clear result sign */
-	fneg.x		%fp0			/*  set result sign */
-	move.b		&inf_bmask+neg_bmask,FPSR_CC(%a6) /*  set INF/N */
+	fabs.x		fp0			/*  clear result sign */
+	fneg.x		fp0			/*  set result sign */
+	move.b		#inf_bmask+neg_bmask,FPSR_CC(a6) /*  set INF/N */
 	rts
 fmul_inf_dst_p:
-	fabs.x		%fp0			/*  clear result sign */
-	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set INF */
+	fabs.x		fp0			/*  clear result sign */
+	move.b		#inf_bmask,FPSR_CC(a6)	/*  set INF */
 	rts
 
 	.globl		fmul_inf_src		/*  global for fsglmul */
 fmul_inf_src:
-	fmovem.x	SRC.w(%a0),%fp0		/*  return INF result in fp0 */
-	move.b		SRC_EX.w(%a0),%d0		/*  exclusive or the signs */
-	move.b		DST_EX.w(%a1),%d1
-	eor.b		%d0,%d1
+	fmovem.x	SRC.w(a0),fp0		/*  return INF result in fp0 */
+	move.b		SRC_EX.w(a0),d0		/*  exclusive or the signs */
+	move.b		DST_EX.w(a1),d1
+	eor.b		d0,d1
 	bpl.b		fmul_inf_dst_p		/*  result INF is pos. */
 	bra.b		fmul_inf_dst_n
 

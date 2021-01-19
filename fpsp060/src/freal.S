@@ -38,6 +38,16 @@
 	_off_dww = 0x64
 	_off_dwl = 0x68
 
+	.xref _fpsp_snan
+	.xref _fpsp_operr
+	.xref _fpsp_ovfl
+	.xref _fpsp_unfl
+	.xref _fpsp_dz
+	.xref _fpsp_inex
+	.xref _fpsp_fline
+	.xref _fpsp_unsupp
+	.xref _fpsp_effadd
+
 _060FPSP_TABLE:
 
     .text
@@ -96,197 +106,197 @@ _060FPSP_TABLE:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		_fpsp_done
 _fpsp_done:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_done,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_done,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_ovfl
 _real_ovfl:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_ovfl,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_ovfl,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_unfl
 _real_unfl:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_unfl,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_unfl,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_inex
 _real_inex:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_inex,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_inex,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_bsun
 _real_bsun:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_bsun,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_bsun,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_operr
 _real_operr:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_operr,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_operr,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_snan
 _real_snan:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_snan,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_snan,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_dz
 _real_dz:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_dz,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_dz,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_fline
 _real_fline:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_fline,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_fline,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_fpu_disabled
 _real_fpu_disabled:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_fpu_dis,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_fpu_dis,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_trap
 _real_trap:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_trap,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_trap,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_trace
 _real_trace:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_trace,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_trace,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_real_access
 _real_access:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_access,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_access,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
 	.globl		_imem_read
 _imem_read:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_imr,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_imr,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_read
 _dmem_read:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_dmr,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_dmr,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_write
 _dmem_write:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_dmw,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_dmw,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_imem_read_word
 _imem_read_word:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_irw,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_irw,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_imem_read_long
 _imem_read_long:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_irl,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_irl,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_read_byte
 _dmem_read_byte:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_drb,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_drb,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_read_word
 _dmem_read_word:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_drw,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_drw,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_read_long
 _dmem_read_long:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_drl,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_drl,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_write_byte
 _dmem_write_byte:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_dwb,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_dwb,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_write_word
 _dmem_write_word:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_dww,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_dww,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 	.globl		_dmem_write_long
 _dmem_write_long:
-	move.l		%d0,-(%sp)
-	move.l		(_060FPSP_TABLE-0x80+_off_dwl,%pc),%d0
-	pea.l		((_060FPSP_TABLE-0x80).l,%pc,%d0.l)
-	move.l		0x4(%sp),%d0
-	rtd		&0x4
+	move.l		d0,-(sp)
+	move.l		(_060FPSP_TABLE-0x80+_off_dwl,pc),d0
+	pea.l		((_060FPSP_TABLE-0x80).l,pc,d0.l)
+	move.l		0x4(sp),d0
+	rtd		#0x4
 
 
 /* ;;;;;;;;;;;; */

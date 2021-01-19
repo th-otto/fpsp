@@ -42,30 +42,51 @@
 
 	.include "hdr.fpu"
 
+	.xref _real_trace
+	.xref _real_access
+	.xref _real_operr
+	.xref _fpsp_done
+	.xref set_tag_x
+	.xref tbl_unsupp
+	.xref store_fpreg
+	.xref unnorm_fix
+	.xref _imem_read_long
+	.xref _dmem_write_byte
+	.xref _dmem_write_word
+	.xref _dmem_write_long
+	.xref store_dreg_b
+	.xref store_dreg_w
+	.xref store_dreg_l
+	.xref _imem_read
+	.xref fix_skewed_ops
+	.xref facc_out_b
+	.xref facc_out_w
+	.xref facc_out_l
+
 	.text
 
 	.globl		_fpsp_operr
 _fpsp_operr:
 
-	link.w		%a6,&-LOCAL_SIZE	/*  init stack frame */
+	link.w		a6,#-LOCAL_SIZE	/*  init stack frame */
 
-	fsave		FP_SRC(%a6)		/*  grab the "busy" frame */
+	fsave		FP_SRC(a6)		/*  grab the "busy" frame */
 
-	movem.l		%d0-%d1/%a0-%a1,EXC_DREGS(%a6)	/*  save d0-d1/a0-a1 */
-	fmovem.l		%fpcr/%fpsr/%fpiar,USER_FPCR(%a6) /*  save ctrl regs */
-	fmovem.x		%fp0-%fp1,EXC_FPREGS(%a6)	/*  save fp0-fp1 on stack */
+	movem.l		d0-d1/a0-a1,EXC_DREGS(a6)	/*  save d0-d1/a0-a1 */
+	fmovem.l		fpcr/fpsr/fpiar,USER_FPCR(a6) /*  save ctrl regs */
+	fmovem.x		fp0-fp1,EXC_FPREGS(a6)	/*  save fp0-fp1 on stack */
 
 /*  the FPIAR holds the "current PC" of the faulting instruction */
-	move.l		USER_FPIAR(%a6),EXC_EXTWPTR(%a6)
+	move.l		USER_FPIAR(a6),EXC_EXTWPTR(a6)
 
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch the instruction words */
-	move.l		%d0,EXC_OPWORD(%a6)
+	move.l		d0,EXC_OPWORD(a6)
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-	btst		&13,%d0			/*  is instr an fmove out? */
+	btst		#13,d0			/*  is instr an fmove out? */
 	bne.b		foperr_out		/*  fmove out */
 
 
@@ -73,17 +94,17 @@ _fpsp_operr:
 /*  this would be the case for opclass two operations with a source infinity or */
 /*  denorm operand in the sgl or dbl format. NANs also become skewed, but can't */
 /*  cause an operr so we don't need to check for them here. */
-	lea		FP_SRC(%a6),%a0		/*  pass: ptr to src op */
+	lea		FP_SRC(a6),a0		/*  pass: ptr to src op */
 	bsr.l		fix_skewed_ops		/*  fix src op */
 
 foperr_exit:
-	fmovem.x		EXC_FPREGS(%a6),%fp0-%fp1	/*  restore fp0-fp1 */
-	fmovem.l		USER_FPCR(%a6),%fpcr/%fpsr/%fpiar /*  restore ctrl regs */
-	movem.l		EXC_DREGS(%a6),%d0-%d1/%a0-%a1	/*  restore d0-d1/a0-a1 */
+	fmovem.x		EXC_FPREGS(a6),fp0-fp1	/*  restore fp0-fp1 */
+	fmovem.l		USER_FPCR(a6),fpcr/fpsr/fpiar /*  restore ctrl regs */
+	movem.l		EXC_DREGS(a6),d0-d1/a0-a1	/*  restore d0-d1/a0-a1 */
 
-	frestore	FP_SRC(%a6)
+	frestore	FP_SRC(a6)
 
-	unlk		%a6
+	unlk		a6
 	bra.l		_real_operr
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -105,33 +126,33 @@ foperr_exit:
  */
 foperr_out:
 
-	move.w		FP_SRC_EX(%a6),%d1	/*  fetch exponent */
-	andi.w		&0x7fff,%d1
-	cmpi.w		&0x7fff,%d1
+	move.w		FP_SRC_EX(a6),d1	/*  fetch exponent */
+	andi.w		#0x7fff,d1
+	cmpi.w		#0x7fff,d1
 	bne.b		foperr_out_not_qnan
 /*  the operand is either an infinity or a QNAN. */
-	tst.l		FP_SRC_LO(%a6)
+	tst.l		FP_SRC_LO(a6)
 	bne.b		foperr_out_qnan
-	move.l		FP_SRC_HI(%a6),%d1
-	andi.l		&0x7fffffff,%d1
+	move.l		FP_SRC_HI(a6),d1
+	andi.l		#0x7fffffff,d1
 	beq.b		foperr_out_not_qnan
 foperr_out_qnan:
-	move.l		FP_SRC_HI(%a6),L_SCR1(%a6)
+	move.l		FP_SRC_HI(a6),L_SCR1(a6)
 	bra.b		foperr_out_jmp
 
 foperr_out_not_qnan:
-	move.l		&0x7fffffff,%d1
-	tst.b		FP_SRC_EX(%a6)
+	move.l		#0x7fffffff,d1
+	tst.b		FP_SRC_EX(a6)
 	bpl.b		foperr_out_not_qnan2
-	addq.l		&0x1,%d1
+	addq.l		#0x1,d1
 foperr_out_not_qnan2:
-	move.l		%d1,L_SCR1(%a6)
+	move.l		d1,L_SCR1(a6)
 
 foperr_out_jmp:
-	bfextu		%d0{&19:&3},%d0		/*  extract dst format field */
-	move.b		1+EXC_OPWORD(%a6),%d1	/*  extract <ea> mode,reg */
-	move.w		(tbl_operr.b,%pc,%d0.w*2),%a0
-	jmp		(tbl_operr.b,%pc,%a0.l)
+	bfextu		d0{19:3},d0		/*  extract dst format field */
+	move.b		1+EXC_OPWORD(a6),d1	/*  extract <ea> mode,reg */
+	move.w		(tbl_operr.b,pc,d0.w*2),a0
+	jmp		(tbl_operr.b,pc,a0.l)
 
 tbl_operr:
 	.dc.w		foperr_out_l - tbl_operr /*  long word integer */
@@ -144,50 +165,50 @@ tbl_operr:
 	.dc.w		tbl_operr    - tbl_operr /*  packed won't enter here */
 
 foperr_out_b:
-	move.b		L_SCR1(%a6),%d0		/*  load positive default result */
-	cmpi.b		&0x7,%d1		/*  is <ea> mode a data reg? */
+	move.b		L_SCR1(a6),d0		/*  load positive default result */
+	cmpi.b		#0x7,d1		/*  is <ea> mode a data reg? */
 	ble.b		foperr_out_b_save_dn	/*  yes */
-	move.l		EXC_EA(%a6),%a0		/*  pass: <ea> of default result */
+	move.l		EXC_EA(a6),a0		/*  pass: <ea> of default result */
 	bsr.l		_dmem_write_byte	/*  write the default result */
 
-	tst.l		%d1			/*  did dstore fail? */
+	tst.l		d1			/*  did dstore fail? */
 	bne.l		facc_out_b		/*  yes */
 
 	bra.w		foperr_exit
 foperr_out_b_save_dn:
-	andi.w		&0x0007,%d1
+	andi.w		#0x0007,d1
 	bsr.l		store_dreg_b		/*  store result to regfile */
 	bra.w		foperr_exit
 
 foperr_out_w:
-	move.w		L_SCR1(%a6),%d0		/*  load positive default result */
-	cmpi.b		&0x7,%d1		/*  is <ea> mode a data reg? */
+	move.w		L_SCR1(a6),d0		/*  load positive default result */
+	cmpi.b		#0x7,d1		/*  is <ea> mode a data reg? */
 	ble.b		foperr_out_w_save_dn	/*  yes */
-	move.l		EXC_EA(%a6),%a0		/*  pass: <ea> of default result */
+	move.l		EXC_EA(a6),a0		/*  pass: <ea> of default result */
 	bsr.l		_dmem_write_word	/*  write the default result */
 
-	tst.l		%d1			/*  did dstore fail? */
+	tst.l		d1			/*  did dstore fail? */
 	bne.l		facc_out_w		/*  yes */
 
 	bra.w		foperr_exit
 foperr_out_w_save_dn:
-	andi.w		&0x0007,%d1
+	andi.w		#0x0007,d1
 	bsr.l		store_dreg_w		/*  store result to regfile */
 	bra.w		foperr_exit
 
 foperr_out_l:
-	move.l		L_SCR1(%a6),%d0		/*  load positive default result */
-	cmpi.b		&0x7,%d1		/*  is <ea> mode a data reg? */
+	move.l		L_SCR1(a6),d0		/*  load positive default result */
+	cmpi.b		#0x7,d1		/*  is <ea> mode a data reg? */
 	ble.b		foperr_out_l_save_dn	/*  yes */
-	move.l		EXC_EA(%a6),%a0		/*  pass: <ea> of default result */
+	move.l		EXC_EA(a6),a0		/*  pass: <ea> of default result */
 	bsr.l		_dmem_write_long	/*  write the default result */
 
-	tst.l		%d1			/*  did dstore fail? */
+	tst.l		d1			/*  did dstore fail? */
 	bne.l		facc_out_l		/*  yes */
 
 	bra.w		foperr_exit
 foperr_out_l_save_dn:
-	andi.w		&0x0007,%d1
+	andi.w		#0x0007,d1
 	bsr.l		store_dreg_l		/*  store result to regfile */
 	bra.w		foperr_exit
 

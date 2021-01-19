@@ -79,26 +79,26 @@
 |	a0 - supervisor source address
 |	a1 - user destination address
 |	d0 - number of bytes to write
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d1 - 0 = success, !0 = failure
 |
 	.globl		_060_dmem_write
 _060_dmem_write:
-	subq.l		#1,%d0
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	subq.l		#1,d0
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	beqs		user_write
 super_write:
-	move.b		(%a0)+,(%a1)+		| copy 1 byte
-	dbra		%d0,super_write		| quit if --ctr < 0
-	clr.l		%d1			| return success
+	move.b		(a0)+,(a1)+		| copy 1 byte
+	dbra		d0,super_write		| quit if --ctr < 0
+	clr.l		d1			| return success
 	rts
 user_write:
-	move.b		(%a0)+,%d1		| copy 1 byte
+	move.b		(a0)+,d1		| copy 1 byte
 copyoutae:
-	movs.b		%d1,(%a1)+
-	dbra		%d0,user_write		| quit if --ctr < 0
-	clr.l		%d1			| return success
+	movs.b		d1,(a1)+
+	dbra		d0,user_write		| quit if --ctr < 0
+	clr.l		d1			| return success
 	rts
 
 |
@@ -110,7 +110,7 @@ copyoutae:
 |	a0 - user source address
 |	a1 - supervisor destination address
 |	d0 - number of bytes to read
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d1 - 0 = success, !0 = failure
 |
@@ -118,20 +118,20 @@ copyoutae:
 	.globl		_060_dmem_read
 _060_imem_read:
 _060_dmem_read:
-	subq.l		#1,%d0
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	subq.l		#1,d0
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	beqs		user_read
 super_read:
-	move.b		(%a0)+,(%a1)+		| copy 1 byte
-	dbra		%d0,super_read		| quit if --ctr < 0
-	clr.l		%d1			| return success
+	move.b		(a0)+,(a1)+		| copy 1 byte
+	dbra		d0,super_read		| quit if --ctr < 0
+	clr.l		d1			| return success
 	rts
 user_read:
 copyinae:
-	movs.b		(%a0)+,%d1
-	move.b		%d1,(%a1)+		| copy 1 byte
-	dbra		%d0,user_read		| quit if --ctr < 0
-	clr.l		%d1			| return success
+	movs.b		(a0)+,d1
+	move.b		d1,(a1)+		| copy 1 byte
+	dbra		d0,user_read		| quit if --ctr < 0
+	clr.l		d1			| return success
 	rts
 
 |
@@ -141,20 +141,20 @@ copyinae:
 |
 | INPUTS:
 |	a0 - user source address
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d0 - data byte in d0
 |	d1 - 0 = success, !0 = failure
 |
 	.globl		_060_dmem_read_byte
 _060_dmem_read_byte:
-	clr.l		%d0			| clear whole longword
-	clr.l		%d1			| assume success
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	clr.l		d0			| clear whole longword
+	clr.l		d1			| assume success
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	bnes		dmrbs			| supervisor
-dmrbuae:movs.b		(%a0),%d0		| fetch user byte
+dmrbuae:movs.b		(a0),d0		| fetch user byte
 	rts
-dmrbs:	move.b		(%a0),%d0		| fetch super byte
+dmrbs:	move.b		(a0),d0		| fetch super byte
 	rts
 
 |
@@ -164,7 +164,7 @@ dmrbs:	move.b		(%a0),%d0		| fetch super byte
 |
 | INPUTS:
 |	a0 - user source address
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d0 - data word in d0
 |	d1 - 0 = success, !0 = failure
@@ -175,7 +175,7 @@ dmrbs:	move.b		(%a0),%d0		| fetch super byte
 |
 | INPUTS:
 |	a0 - user source address
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d0 - instruction word in d0
 |	d1 - 0 = success, !0 = failure
@@ -184,13 +184,13 @@ dmrbs:	move.b		(%a0),%d0		| fetch super byte
 	.globl		_060_imem_read_word
 _060_dmem_read_word:
 _060_imem_read_word:
-	clr.l		%d1			| assume success
-	clr.l		%d0			| clear whole longword
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	clr.l		d1			| assume success
+	clr.l		d0			| clear whole longword
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	bnes		dmrws			| supervisor
-dmrwuae:movs.w		(%a0), %d0		| fetch user word
+dmrwuae:movs.w		(a0), d0		| fetch user word
 	rts
-dmrws:	move.w		(%a0), %d0		| fetch super word
+dmrws:	move.w		(a0), d0		| fetch super word
 	rts
 
 |
@@ -200,7 +200,7 @@ dmrws:	move.w		(%a0), %d0		| fetch super word
 |
 | INPUTS:
 |	a0 - user source address
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d0 - data longword in d0
 |	d1 - 0 = success, !0 = failure
@@ -211,7 +211,7 @@ dmrws:	move.w		(%a0), %d0		| fetch super word
 |
 | INPUTS:
 |	a0 - user source address
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d0 - instruction longword in d0
 |	d1 - 0 = success, !0 = failure
@@ -220,12 +220,12 @@ dmrws:	move.w		(%a0), %d0		| fetch super word
 	.globl		_060_imem_read_long
 _060_dmem_read_long:
 _060_imem_read_long:
-	clr.l		%d1			| assume success
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	clr.l		d1			| assume success
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	bnes		dmrls			| supervisor
-dmrluae:movs.l		(%a0),%d0		| fetch user longword
+dmrluae:movs.l		(a0),d0		| fetch user longword
 	rts
-dmrls:	move.l		(%a0),%d0		| fetch super longword
+dmrls:	move.l		(a0),d0		| fetch super longword
 	rts
 
 |
@@ -236,18 +236,18 @@ dmrls:	move.l		(%a0),%d0		| fetch super longword
 | INPUTS:
 |	a0 - user destination address
 |	d0 - data byte in d0
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d1 - 0 = success, !0 = failure
 |
 	.globl		_060_dmem_write_byte
 _060_dmem_write_byte:
-	clr.l		%d1			| assume success
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	clr.l		d1			| assume success
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	bnes		dmwbs			| supervisor
-dmwbuae:movs.b		%d0,(%a0)		| store user byte
+dmwbuae:movs.b		d0,(a0)		| store user byte
 	rts
-dmwbs:	move.b		%d0,(%a0)		| store super byte
+dmwbs:	move.b		d0,(a0)		| store super byte
 	rts
 
 |
@@ -258,20 +258,20 @@ dmwbs:	move.b		%d0,(%a0)		| store super byte
 | INPUTS:
 |	a0 - user destination address
 |	d0 - data word in d0
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d1 - 0 = success, !0 = failure
 |
 	.globl		_060_dmem_write_word
 _060_dmem_write_word:
-	clr.l		%d1			| assume success
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	clr.l		d1			| assume success
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	bnes		dmwws			| supervisor
 dmwwu:
-dmwwuae:movs.w		%d0,(%a0)		| store user word
+dmwwuae:movs.w		d0,(a0)		| store user word
 	bras		dmwwr
-dmwws:	move.w		%d0,(%a0)		| store super word
-dmwwr:	clr.l		%d1			| return success
+dmwws:	move.w		d0,(a0)		| store super word
+dmwwr:	clr.l		d1			| return success
 	rts
 
 |
@@ -282,18 +282,18 @@ dmwwr:	clr.l		%d1			| return success
 | INPUTS:
 |	a0 - user destination address
 |	d0 - data longword in d0
-|	0x4(%a6),bit5 - 1 = supervisor mode, 0 = user mode
+|	0x4(a6),bit5 - 1 = supervisor mode, 0 = user mode
 | OUTPUTS:
 |	d1 - 0 = success, !0 = failure
 |
 	.globl		_060_dmem_write_long
 _060_dmem_write_long:
-	clr.l		%d1			| assume success
-	btst		#0x5,0x4(%a6)		| check for supervisor state
+	clr.l		d1			| assume success
+	btst		#0x5,0x4(a6)		| check for supervisor state
 	bnes		dmwls			| supervisor
-dmwluae:movs.l		%d0,(%a0)		| store user longword
+dmwluae:movs.l		d0,(a0)		| store user longword
 	rts
-dmwls:	move.l		%d0,(%a0)		| store super longword
+dmwls:	move.l		d0,(a0)		| store super longword
 	rts
 
 
@@ -315,16 +315,16 @@ dmwls:	move.l		%d0,(%a0)		| store super longword
 |
 	.globl		_copyout
 _copyout:
-	move.l		4(%sp),%a0		| source
-	move.l		8(%sp),%a1		| destination
-	move.l		12(%sp),%d0		| count
-	subq.l		#1,%d0
+	move.l		4(sp),a0		| source
+	move.l		8(sp),a1		| destination
+	move.l		12(sp),d0		| count
+	subq.l		#1,d0
 moreout:
-	move.b		(%a0)+,%d1		| fetch supervisor byte
+	move.b		(a0)+,d1		| fetch supervisor byte
 copyoutae:
-	movs.b		%d1,(%a1)+		| store user byte
-	dbra		%d0,moreout		| are we through yet?
-	moveq		#0,%d0			| return success
+	movs.b		d1,(a1)+		| store user byte
+	dbra		d0,moreout		| are we through yet?
+	moveq		#0,d0			| return success
 	rts
 
 |
@@ -332,16 +332,16 @@ copyoutae:
 |
 	.globl		_copyin
 _copyin:
-	move.l		4(%sp),%a0		| source
-	move.l		8(%sp),%a1		| destination
-	move.l		12(%sp),%d0		| count
-    subq.l      #1,%d0
+	move.l		4(sp),a0		| source
+	move.l		8(sp),a1		| destination
+	move.l		12(sp),d0		| count
+    subq.l      #1,d0
 morein:
 copyinae:
-	movs.b		(%a0)+,%d1		| fetch user byte
-	move.b		%d1,(%a1)+		| write supervisor byte
-	dbra		%d0,morein		| are we through yet?
-	moveq		#0,%d0			| return success
+	movs.b		(a0)+,d1		| fetch user byte
+	move.b		d1,(a1)+		| write supervisor byte
+	dbra		d0,morein		| are we through yet?
+	moveq		#0,d0			| return success
 	rts
 #endif
 
@@ -381,7 +381,7 @@ _060_real_access:
 | Execption handling for movs access to illegal memory
 	.section .fixup,#alloc,#execinstr
 	.even
-1:	moveq		#-1,%d1
+1:	moveq		#-1,d1
 	rts
 .section __ex_table,#alloc
 	.balignw 4,0x51fc

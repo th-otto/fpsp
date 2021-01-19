@@ -24,6 +24,8 @@ int main(int argc, const char **argv)
 	{
 		if (buf[0] != 0x40 || buf[1] != 0x02 || buf[2] != 0x01 || buf[3] != 0x07)
 			fseek(f, 0, SEEK_SET);
+		if (buf[0] == 0x60 && buf[1] == 0x1a)
+			fseek(f, 28, SEEK_SET);
 	}
 	pos = 0;
 	printf("\t.text\n");

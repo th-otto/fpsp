@@ -46,17 +46,17 @@ _round:
  */
 	bsr.l		ext_grs			/*  extract G,R,S */
 
-	tst.l		%d0			/*  are G,R,S zero? */
+	tst.l		d0			/*  are G,R,S zero? */
 	beq.w		truncate		/*  yes; round is complete */
 
-	ori.w		&inx2a_mask, 2+USER_FPSR(%a6) /*  set inex2/ainex */
+	ori.w		#inx2a_mask, 2+USER_FPSR(a6) /*  set inex2/ainex */
 
 /*
  * Use rounding mode as an index into a jump table for these modes.
  * All of the following assumes grs != 0.
  */
-	move.w		(tbl_mode.b,%pc,%d1.w*2), %a1 /*  load jump offset */
-	jmp		(tbl_mode.b,%pc,%a1.l)	/*  jmp to rnd mode handler */
+	move.w		(tbl_mode.b,pc,d1.w*2), a1 /*  load jump offset */
+	jmp		(tbl_mode.b,pc,a1.l)	/*  jmp to rnd mode handler */
 
 tbl_mode:
 	.dc.w		rnd_near - tbl_mode
@@ -70,13 +70,13 @@ tbl_mode:
 /* 	If sign of fp number = 0 (positive), then add 1 to l.	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 rnd_plus:
-	tst.b		FTEMP_SGN(%a0)		/*  check for sign */
+	tst.b		FTEMP_SGN(a0)		/*  check for sign */
 	bmi.w		truncate		/*  if positive then truncate */
 
-	moveq.l		&0xffffffff, %d0	/*  force g,r,s to be all f's */
-	swap		%d1			/*  set up d1 for round prec. */
+	moveq.l		#0xffffffff, d0	/*  force g,r,s to be all f's */
+	swap		d1			/*  set up d1 for round prec. */
 
-	cmpi.b		&s_mode,%d1		/*  is prec = sgl? */
+	cmpi.b		#s_mode,d1		/*  is prec = sgl? */
 	beq.w		add_sgl			/*  yes */
 	bgt.w		add_dbl			/*  no; it's dbl */
 	bra.w		add_ext			/*  no; it's ext */
@@ -87,13 +87,13 @@ rnd_plus:
 /* 	If sign of fp number = 1 (negative), then add 1 to l.	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 rnd_mnus:
-	tst.b		FTEMP_SGN(%a0)		/*  check for sign */
+	tst.b		FTEMP_SGN(a0)		/*  check for sign */
 	bpl.w		truncate		/*  if negative then truncate */
 
-	moveq.l		&0xffffffff, %d0	/*  force g,r,s to be all f's */
-	swap		%d1			/*  set up d1 for round prec. */
+	moveq.l		#0xffffffff, d0	/*  force g,r,s to be all f's */
+	swap		d1			/*  set up d1 for round prec. */
 
-	cmpi.b		&s_mode,%d1		/*  is prec = sgl? */
+	cmpi.b		#s_mode,d1		/*  is prec = sgl? */
 	beq.w		add_sgl			/*  yes */
 	bgt.w		add_dbl			/*  no; it's dbl */
 	bra.w		add_ext			/*  no; it's ext */
@@ -105,12 +105,12 @@ rnd_mnus:
 /* 	Note that this will round to even in case of a tie.	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 rnd_near:
-	asl.l		&0x1, %d0		/*  shift g-bit to c-bit */
+	asl.l		#0x1, d0		/*  shift g-bit to c-bit */
 	bcc.w		truncate		/*  if (g=1) then */
 
-	swap		%d1			/*  set up d1 for round prec. */
+	swap		d1			/*  set up d1 for round prec. */
 
-	cmpi.b		&s_mode,%d1		/*  is prec = sgl? */
+	cmpi.b		#s_mode,d1		/*  is prec = sgl? */
 	beq.w		add_sgl			/*  yes */
 	bgt.w		add_dbl			/*  no; it's dbl */
 	bra.w		add_ext			/*  no; it's ext */
@@ -123,37 +123,37 @@ rnd_near:
 /* 	ADD SINGLE	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;; */
 add_sgl:
-	add.l		&ad_1_sgl, FTEMP_HI(%a0)
+	add.l		#ad_1_sgl, FTEMP_HI(a0)
 	bcc.b		scc_clr			/*  no mantissa overflow */
-	roxr.w		FTEMP_HI(%a0)		/*  shift v-bit back in */
-	roxr.w		FTEMP_HI+2(%a0)		/*  shift v-bit back in */
-	addq.w		&0x1,FTEMP_EX.w(%a0)	/*  and incr exponent */
+	roxr.w		FTEMP_HI(a0)		/*  shift v-bit back in */
+	roxr.w		FTEMP_HI+2(a0)		/*  shift v-bit back in */
+	addq.w		#0x1,FTEMP_EX.w(a0)	/*  and incr exponent */
 scc_clr:
-	tst.l		%d0			/*  test for rs = 0 */
+	tst.l		d0			/*  test for rs = 0 */
 	bne.b		sgl_done
-	andi.w		&0xfe00, FTEMP_HI+2(%a0) /*  clear the l-bit */
+	andi.w		#0xfe00, FTEMP_HI+2(a0) /*  clear the l-bit */
 sgl_done:
-	andi.l		&0xffffff00, FTEMP_HI(%a0) /*  truncate bits beyond sgl limit */
-	clr.l		FTEMP_LO(%a0)		/*  clear d2 */
+	andi.l		#0xffffff00, FTEMP_HI(a0) /*  truncate bits beyond sgl limit */
+	clr.l		FTEMP_LO(a0)		/*  clear d2 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;; */
 /* 	ADD EXTENDED	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;; */
 add_ext:
-	addq.l		&1,FTEMP_LO(%a0)	/*  add 1 to l-bit */
+	addq.l		#1,FTEMP_LO(a0)	/*  add 1 to l-bit */
 	bcc.b		xcc_clr			/*  test for carry out */
-	addq.l		&1,FTEMP_HI(%a0)	/*  propagate carry */
+	addq.l		#1,FTEMP_HI(a0)	/*  propagate carry */
 	bcc.b		xcc_clr
-	roxr.w		FTEMP_HI(%a0)		/*  mant is 0 so restore v-bit */
-	roxr.w		FTEMP_HI+2(%a0)		/*  mant is 0 so restore v-bit */
-	roxr.w		FTEMP_LO(%a0)
-	roxr.w		FTEMP_LO+2(%a0)
-	addq.w		&0x1,FTEMP_EX.w(%a0)	/*  and inc exp */
+	roxr.w		FTEMP_HI(a0)		/*  mant is 0 so restore v-bit */
+	roxr.w		FTEMP_HI+2(a0)		/*  mant is 0 so restore v-bit */
+	roxr.w		FTEMP_LO(a0)
+	roxr.w		FTEMP_LO+2(a0)
+	addq.w		#0x1,FTEMP_EX.w(a0)	/*  and inc exp */
 xcc_clr:
-	tst.l		%d0			/*  test rs = 0 */
+	tst.l		d0			/*  test rs = 0 */
 	bne.b		add_ext_done
-	and.b		&0xfe,FTEMP_LO+3(%a0)	/*  clear the l bit */
+	and.b		#0xfe,FTEMP_LO+3(a0)	/*  clear the l bit */
 add_ext_done:
 	rts
 
@@ -161,32 +161,32 @@ add_ext_done:
 /* 	ADD DOUBLE	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;; */
 add_dbl:
-	add.l		&ad_1_dbl, FTEMP_LO(%a0) /*  add 1 to lsb */
+	add.l		#ad_1_dbl, FTEMP_LO(a0) /*  add 1 to lsb */
 	bcc.b		dcc_clr			/*  no carry */
-	addq.l		&0x1, FTEMP_HI(%a0)	/*  propagate carry */
+	addq.l		#0x1, FTEMP_HI(a0)	/*  propagate carry */
 	bcc.b		dcc_clr			/*  no carry */
 
-	roxr.w		FTEMP_HI(%a0)		/*  mant is 0 so restore v-bit */
-	roxr.w		FTEMP_HI+2(%a0)		/*  mant is 0 so restore v-bit */
-	roxr.w		FTEMP_LO(%a0)
-	roxr.w		FTEMP_LO+2(%a0)
-	addq.w		&0x1,FTEMP_EX.w(%a0)	/*  incr exponent */
+	roxr.w		FTEMP_HI(a0)		/*  mant is 0 so restore v-bit */
+	roxr.w		FTEMP_HI+2(a0)		/*  mant is 0 so restore v-bit */
+	roxr.w		FTEMP_LO(a0)
+	roxr.w		FTEMP_LO+2(a0)
+	addq.w		#0x1,FTEMP_EX.w(a0)	/*  incr exponent */
 dcc_clr:
-	tst.l		%d0			/*  test for rs = 0 */
+	tst.l		d0			/*  test for rs = 0 */
 	bne.b		dbl_done
-	andi.w		&0xf000, FTEMP_LO+2(%a0) /*  clear the l-bit */
+	andi.w		#0xf000, FTEMP_LO+2(a0) /*  clear the l-bit */
 
 dbl_done:
-	and.l		&0xfffff800,FTEMP_LO(%a0) /*  truncate bits beyond dbl limit */
+	and.l		#0xfffff800,FTEMP_LO(a0) /*  truncate bits beyond dbl limit */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Truncate all other bits  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;; */
 truncate:
-	swap		%d1			/*  select rnd prec */
+	swap		d1			/*  select rnd prec */
 
-	cmpi.b		&s_mode,%d1		/*  is prec sgl? */
+	cmpi.b		#s_mode,d1		/*  is prec sgl? */
 	beq.w		sgl_done		/*  yes */
 	bgt.b		dbl_done		/*  no; it's dbl */
 	rts					/*  no; it's ext */
@@ -214,22 +214,22 @@ truncate:
  */
 
 ext_grs:
-	swap		%d1			/*  have d1.w point to round precision */
-	tst.b		%d1			/*  is rnd prec = extended? */
+	swap		d1			/*  have d1.w point to round precision */
+	tst.b		d1			/*  is rnd prec = extended? */
 	bne.b		ext_grs_not_ext		/*  no; go handle sgl or dbl */
 
 /*
- * %d0 actually already hold g,r,s since _round() had it before calling
+ * d0 actually already hold g,r,s since _round() had it before calling
  * this function. so, as long as we don't disturb it, we are "returning" it.
  */
 ext_grs_ext:
-	swap		%d1			/*  yes; return to correct positions */
+	swap		d1			/*  yes; return to correct positions */
 	rts
 
 ext_grs_not_ext:
-	movem.l		%d2-%d3, -(%sp)		/*  make some temp registers {d2/d3} */
+	movem.l		d2-d3, -(sp)		/*  make some temp registers {d2/d3} */
 
-	cmpi.b		&s_mode,%d1		/*  is rnd prec = sgl? */
+	cmpi.b		#s_mode,d1		/*  is rnd prec = sgl? */
 	bne.b		ext_grs_dbl		/*  no; go handle dbl */
 
 /*
@@ -245,15 +245,15 @@ ext_grs_not_ext:
  *                                 gr      new sticky
  */
 ext_grs_sgl:
-	bfextu		FTEMP_HI(%a0){&24:&2}, %d3 /*  sgl prec. g-r are 2 bits right */
-	moveq.l		&30, %d2		/*  of the sgl prec. limits */
-	lsl.l		%d2, %d3		/*  shift g-r bits to MSB of d3 */
-	move.l		FTEMP_HI(%a0),%d2	/*  get word 2 for s-bit test */
-	andi.l		&0x0000003f,%d2		/*  s bit is the or of all other */
+	bfextu		FTEMP_HI(a0){24:2}, d3 /*  sgl prec. g-r are 2 bits right */
+	moveq.l		#30, d2		/*  of the sgl prec. limits */
+	lsl.l		d2, d3		/*  shift g-r bits to MSB of d3 */
+	move.l		FTEMP_HI(a0),d2	/*  get word 2 for s-bit test */
+	andi.l		#0x0000003f,d2		/*  s bit is the or of all other */
 	bne.b		ext_grs_st_stky		/*  bits to the right of g-r */
-	tst.l		FTEMP_LO(%a0)		/*  test lower mantissa */
+	tst.l		FTEMP_LO(a0)		/*  test lower mantissa */
 	bne.b		ext_grs_st_stky		/*  if any are set, set sticky */
-	tst.l		%d0			/*  test original g,r,s */
+	tst.l		d0			/*  test original g,r,s */
 	bne.b		ext_grs_st_stky		/*  if any are set, set sticky */
 	bra.b		ext_grs_end_sd		/*  if words 3 and 4 are clr, exit */
 
@@ -270,23 +270,23 @@ ext_grs_sgl:
  *                                                gr    new sticky
  */
 ext_grs_dbl:
-	bfextu		FTEMP_LO(%a0){&21:&2}, %d3 /*  dbl-prec. g-r are 2 bits right */
-	moveq.l		&30,%d2				/*  of the dbl prec. limits */
-	lsl.l		%d2,%d3				/*  shift g-r bits to the MSB of d3 */
-	move.l		FTEMP_LO(%a0), %d2	/*  get lower mantissa  for s-bit test */
-	andi.l		&0x000001ff, %d2	/*  s bit is the or-ing of all */
+	bfextu		FTEMP_LO(a0){21:2}, d3 /*  dbl-prec. g-r are 2 bits right */
+	moveq.l		#30,d2				/*  of the dbl prec. limits */
+	lsl.l		d2,d3				/*  shift g-r bits to the MSB of d3 */
+	move.l		FTEMP_LO(a0), d2	/*  get lower mantissa  for s-bit test */
+	andi.l		#0x000001ff, d2	/*  s bit is the or-ing of all */
 	bne.b		ext_grs_st_stky		/*  other bits to the right of g-r */
-	tst.l		%d0					/*  test word original g,r,s */
+	tst.l		d0					/*  test word original g,r,s */
 	bne.b		ext_grs_st_stky		/*  if any are set, set sticky */
 	bra.b		ext_grs_end_sd		/*  if clear, exit */
 
 ext_grs_st_stky:
-	bset		&rnd_stky_bit, %d3	/*  set sticky bit */
+	bset		#rnd_stky_bit, d3	/*  set sticky bit */
 ext_grs_end_sd:
-	move.l		%d3, %d0		/*  return grs to d0 */
+	move.l		d3, d0		/*  return grs to d0 */
 
-	movem.l		(%sp)+, %d2-%d3		/*  restore scratch registers {d2/d3} */
+	movem.l		(sp)+, d2-d3		/*  restore scratch registers {d2/d3} */
 
-	swap		%d1			/*  restore d1 to original */
+	swap		d1			/*  restore d1 to original */
 	rts
 

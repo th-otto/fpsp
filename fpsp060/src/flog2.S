@@ -96,59 +96,59 @@ INV_L2:
 	.globl		slog10
 /* --entry point for Log10(X), X is normalized */
 slog10:
-	fmove.b		&0x1,%fp0
-	fcmp.x		(%a0),%fp0		/*  if operand == 1, */
+	fmove.b		#0x1,fp0
+	fcmp.x		(a0),fp0		/*  if operand == 1, */
 	fbeq.l		ld_pzero		/*  return an EXACT zero */
 
-	move.l		(%a0),%d1
+	move.l		(a0),d1
 	blt.w		invalid
-	move.l		%d0,-(%sp)
-	clr.l		%d0
+	move.l		d0,-(sp)
+	clr.l		d0
 	bsr.l		slogn			/*  log(X), X normal. */
-	fmove.l		(%sp)+,%fpcr
-	fmul.x		INV_L10(%pc),%fp0
+	fmove.l		(sp)+,fpcr
+	fmul.x		INV_L10(pc),fp0
 	bra.l		t_inx2
 
 	.globl		slog10d
 /* --entry point for Log10(X), X is denormalized */
 slog10d:
-	move.l		(%a0),%d1
+	move.l		(a0),d1
 	blt.w		invalid
-	move.l		%d0,-(%sp)
-	clr.l		%d0
+	move.l		d0,-(sp)
+	clr.l		d0
 	bsr.l		slognd			/*  log(X), X denorm. */
-	fmove.l		(%sp)+,%fpcr
-	fmul.x		INV_L10(%pc),%fp0
+	fmove.l		(sp)+,fpcr
+	fmul.x		INV_L10(pc),fp0
 	bra.l		t_minx2
 
 	.globl		slog2
 /* --entry point for Log2(X), X is normalized */
 slog2:
-	move.l		(%a0),%d1
+	move.l		(a0),d1
 	blt.w		invalid
 
-	move.l		8(%a0),%d1
+	move.l		8(a0),d1
 	bne.b		continue		/*  X is not 2^k */
 
-	move.l		4(%a0),%d1
-	andi.l		&0x7FFFFFFF,%d1
+	move.l		4(a0),d1
+	andi.l		#0x7FFFFFFF,d1
 	bne.b		continue
 
 /* --X = 2^k. */
-	move.w		(%a0),%d1
-	andi.l		&0x00007FFF,%d1
-	subi.l		&0x3FFF,%d1
+	move.w		(a0),d1
+	andi.l		#0x00007FFF,d1
+	subi.l		#0x3FFF,d1
 	beq.l		ld_pzero
-	fmove.l		%d0,%fpcr
-	fmove.l		%d1,%fp0
+	fmove.l		d0,fpcr
+	fmove.l		d1,fp0
 	bra.l		t_inx2
 
 continue:
-	move.l		%d0,-(%sp)
-	clr.l		%d0
+	move.l		d0,-(sp)
+	clr.l		d0
 	bsr.l		slogn			/*  log(X), X normal. */
-	fmove.l		(%sp)+,%fpcr
-	fmul.x		INV_L2(%pc),%fp0
+	fmove.l		(sp)+,fpcr
+	fmul.x		INV_L2(pc),fp0
 	bra.l		t_inx2
 
 invalid:
@@ -157,12 +157,12 @@ invalid:
 	.globl		slog2d
 /* --entry point for Log2(X), X is denormalized */
 slog2d:
-	move.l		(%a0),%d1
+	move.l		(a0),d1
 	blt.w		invalid
-	move.l		%d0,-(%sp)
-	clr.l		%d0
+	move.l		d0,-(sp)
+	clr.l		d0
 	bsr.l		slognd			/*  log(X), X denorm. */
-	fmove.l		(%sp)+,%fpcr
-	fmul.x		INV_L2(%pc),%fp0
+	fmove.l		(sp)+,fpcr
+	fmul.x		INV_L2(pc),fp0
 	bra.l		t_minx2
 

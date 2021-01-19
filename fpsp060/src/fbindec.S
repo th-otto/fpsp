@@ -154,8 +154,8 @@ RBDTBL:
  */
 	.globl		bindec
 bindec:
-	movem.l		%d2-%d7/%a2,-(%sp)	/*   {%d2-%d7/%a2} */
-	fmovem.x		%fp0-%fp2,-(%sp)	/*   {%fp0-%fp2} */
+	movem.l		d2-d7/a2,-(sp)	/*   {d2-d7/a2} */
+	fmovem.x		fp0-fp2,-(sp)	/*   {fp0-fp2} */
 
 /*
  * A1. Set RM and size ext. Set SIGMA = sign input;
@@ -165,48 +165,48 @@ bindec:
  *     to signal denorm.  If the input is unnormalized, normalize
  *     the input and test for denormalized result.
  */
-	fmove.l		&rm_mode*0x10,%fpcr	/*  set RM and ext */
-	move.l		(%a0),L_SCR2(%a6)	/*  save exponent for sign check */
-	move.l		%d0,%d7		/*  move k-factor to d7 */
+	fmove.l		#rm_mode*0x10,fpcr	/*  set RM and ext */
+	move.l		(a0),L_SCR2(a6)	/*  save exponent for sign check */
+	move.l		d0,d7		/*  move k-factor to d7 */
 
-	clr.b		BINDEC_FLG(%a6)	/*  clr norm/denorm flag */
-	cmpi.b		&DENORM,STAG(%a6) /*  is input a DENORM? */
+	clr.b		BINDEC_FLG(a6)	/*  clr norm/denorm flag */
+	cmpi.b		#DENORM,STAG(a6) /*  is input a DENORM? */
 	bne.w		A2_str		/*  no; input is a NORM */
 
 /*
  * Normalize the denorm
  */
 un_de_norm:
-	move.w		(%a0),%d0
-	andi.w		&0x7fff,%d0	/*  strip sign of normalized exp */
-	move.l		4(%a0),%d1
-	move.l		8(%a0),%d2
+	move.w		(a0),d0
+	andi.w		#0x7fff,d0	/*  strip sign of normalized exp */
+	move.l		4(a0),d1
+	move.l		8(a0),d2
 norm_loop:
-	subq.w		&1,%d0
-	lsl.l		&1,%d2
-	roxl.l		&1,%d1
-	tst.l		%d1
+	subq.w		#1,d0
+	lsl.l		#1,d2
+	roxl.l		#1,d1
+	tst.l		d1
 	bge.b		norm_loop
 /*
  * Test if the normalized input is denormalized
  */
-	tst.w		%d0
+	tst.w		d0
 	bgt.b		pos_exp		/*  if greater than zero, it is a norm */
-	st		BINDEC_FLG(%a6)	/*  set flag for denorm */
+	st		BINDEC_FLG(a6)	/*  set flag for denorm */
 pos_exp:
-	andi.w		&0x7fff,%d0	/*  strip sign of normalized exp */
-	move.w		%d0,(%a0)
-	move.l		%d1,4(%a0)
-	move.l		%d2,8(%a0)
+	andi.w		#0x7fff,d0	/*  strip sign of normalized exp */
+	move.w		d0,(a0)
+	move.l		d1,4(a0)
+	move.l		d2,8(a0)
 
 /*
  * A2. Set X = abs(input).
  */
 A2_str:
-	move.l		(%a0),FP_SCR1(%a6)	/*  move input to work space */
-	move.l		4(%a0),FP_SCR1+4(%a6)	/*  move input to work space */
-	move.l		8(%a0),FP_SCR1+8(%a6)	/*  move input to work space */
-	and.l		&0x7fffffff,FP_SCR1(%a6)	/*  create abs(X) */
+	move.l		(a0),FP_SCR1(a6)	/*  move input to work space */
+	move.l		4(a0),FP_SCR1+4(a6)	/*  move input to work space */
+	move.l		8(a0),FP_SCR1+8(a6)	/*  move input to work space */
+	and.l		#0x7fffffff,FP_SCR1(a6)	/*  create abs(X) */
 
 /*
  * A3. Compute ILOG.
@@ -236,24 +236,24 @@ A2_str:
  *	L_SCR2:first word of X packed/Unchanged
  */
 
-	tst.b		BINDEC_FLG(%a6)	/*  check for denorm */
+	tst.b		BINDEC_FLG(a6)	/*  check for denorm */
 	beq.b		A3_cont		/*  if clr, continue with norm */
-	move.l		&-4933,%d6	/*  force ILOG = -4933 */
+	move.l		#-4933,d6	/*  force ILOG = -4933 */
 	bra.b		A4_str
 A3_cont:
-	move.w		FP_SCR1(%a6),%d0	/*  move exp to d0 */
-	move.w		&0x3fff,FP_SCR1(%a6)	/*  replace exponent with 0x3fff */
-	fmove.x		FP_SCR1(%a6),%fp0	/*  now fp0 has 1.f */
-	subi.w		&0x3fff,%d0	/*  strip off bias */
-	fadd.w		%d0,%fp0	/*  add in exp */
-	fsub.s		FONE(%pc),%fp0	/*  subtract off 1.0 */
+	move.w		FP_SCR1(a6),d0	/*  move exp to d0 */
+	move.w		#0x3fff,FP_SCR1(a6)	/*  replace exponent with 0x3fff */
+	fmove.x		FP_SCR1(a6),fp0	/*  now fp0 has 1.f */
+	subi.w		#0x3fff,d0	/*  strip off bias */
+	fadd.w		d0,fp0	/*  add in exp */
+	fsub.s		FONE(pc),fp0	/*  subtract off 1.0 */
 	fbge		pos_res		/*  if pos, branch */
-	fmul.x		PLOG2UP1(%pc),%fp0	/*  if neg, mul by LOG2UP1 */
-	fmove.l		%fp0,%d6	/*  put ILOG in d6 as a lword */
+	fmul.x		PLOG2UP1(pc),fp0	/*  if neg, mul by LOG2UP1 */
+	fmove.l		fp0,d6	/*  put ILOG in d6 as a lword */
 	bra.b		A4_str		/*  go move out ILOG */
 pos_res:
-	fmul.x		PLOG2(%pc),%fp0	/*  if pos, mul by LOG2 */
-	fmove.l		%fp0,%d6	/*  put ILOG in d6 as a lword */
+	fmul.x		PLOG2(pc),fp0	/*  if pos, mul by LOG2 */
+	fmove.l		fp0,d6	/*  put ILOG in d6 as a lword */
 
 
 /*
@@ -261,7 +261,7 @@ pos_res:
  *     The operation in A3 above may have set INEX2.
  */
 A4_str:
-	fmove.l		&0,%fpsr	/*  zero all of fpsr - nothing needed */
+	fmove.l		#0,fpsr	/*  zero all of fpsr - nothing needed */
 
 
 /*
@@ -269,7 +269,7 @@ A4_str:
  *     ICTR is a flag used in A13.  It must be set before the
  *     loop entry A6. The lower word of d5 is used for ICTR.
  */
-	clr.w		%d5		/*  clear ICTR */
+	clr.w		d5		/*  clear ICTR */
 
 /*
  * A6. Calculate LEN.
@@ -302,26 +302,26 @@ A4_str:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A6_str:
-	tst.l		%d7		/*  branch on sign of k */
+	tst.l		d7		/*  branch on sign of k */
 	ble.b		k_neg		/*  if k <= 0, LEN = ILOG + 1 - k */
-	move.l		%d7,%d4		/*  if k > 0, LEN = k */
+	move.l		d7,d4		/*  if k > 0, LEN = k */
 	bra.b		len_ck		/*  skip to LEN check */
 k_neg:
-	move.l		%d6,%d4		/*  first load ILOG to d4 */
-	sub.l		%d7,%d4		/*  subtract off k */
-	addq.l		&1,%d4		/*  add in the 1 */
+	move.l		d6,d4		/*  first load ILOG to d4 */
+	sub.l		d7,d4		/*  subtract off k */
+	addq.l		#1,d4		/*  add in the 1 */
 len_ck:
-	tst.l		%d4		/*  LEN check: branch on sign of LEN */
+	tst.l		d4		/*  LEN check: branch on sign of LEN */
 	ble.b		LEN_ng		/*  if neg, set LEN = 1 */
-	cmpi.l		&17,%d4		/*  test if LEN > 17 */
+	cmpi.l		#17,d4		/*  test if LEN > 17 */
 	ble.b		A7_str		/*  if not, forget it */
-	moveq.l		&17,%d4		/*  set max LEN = 17 */
-	tst.l		%d7		/*  if negative, never set OPERR */
+	moveq.l		#17,d4		/*  set max LEN = 17 */
+	tst.l		d7		/*  if negative, never set OPERR */
 	ble.b		A7_str		/*  if positive, continue */
-	or.l		&opaop_mask,USER_FPSR(%a6)	/*  set OPERR & AIOP in USER_FPSR */
+	or.l		#opaop_mask,USER_FPSR(a6)	/*  set OPERR # AIOP in USER_FPSR */
 	bra.b		A7_str		/*  finished here */
 LEN_ng:
-	moveq.l		&1,%d4		/*  min LEN is 1 */
+	moveq.l		#1,d4		/*  min LEN is 1 */
 
 
 /*
@@ -361,7 +361,7 @@ LEN_ng:
  *	d3: x/scratch - offset ptr into PTENRM array
  *	d4: LEN/Unchanged
  *	d5: 0/ICTR:LAMBDA
- *	d6: ILOG/ILOG or k if ((k<=0)&(ILOG<k))
+ *	d6: ILOG/ILOG or k if ((k<=0)#(ILOG<k))
  *	d7: k-factor/Unchanged
  *	a0: ptr for original operand/final result
  *	a1: x/ptr to PTENRM array
@@ -375,62 +375,62 @@ LEN_ng:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A7_str:
-	tst.l		%d7		/*  test sign of k */
+	tst.l		d7		/*  test sign of k */
 	bgt.b		k_pos		/*  if pos and > 0, skip this */
-	cmp.l		%d6,%d7		/*  test k - ILOG */
+	cmp.l		d6,d7		/*  test k - ILOG */
 	blt.b		k_pos		/*  if ILOG >= k, skip this */
-	move.l		%d7,%d6		/*  if ((k<0) & (ILOG < k)) ILOG = k */
+	move.l		d7,d6		/*  if ((k<0) # (ILOG < k)) ILOG = k */
 k_pos:
-	move.l		%d6,%d0		/*  calc ILOG + 1 - LEN in d0 */
-	addq.l		&1,%d0		/*  add the 1 */
-	sub.l		%d4,%d0		/*  sub off LEN */
-	swap		%d5		/*  use upper word of d5 for LAMBDA */
-	clr.w		%d5		/*  set it zero initially */
-	clr.w		%d2		/*  set up d2 for very small case */
-	tst.l		%d0		/*  test sign of ISCALE */
+	move.l		d6,d0		/*  calc ILOG + 1 - LEN in d0 */
+	addq.l		#1,d0		/*  add the 1 */
+	sub.l		d4,d0		/*  sub off LEN */
+	swap		d5		/*  use upper word of d5 for LAMBDA */
+	clr.w		d5		/*  set it zero initially */
+	clr.w		d2		/*  set up d2 for very small case */
+	tst.l		d0		/*  test sign of ISCALE */
 	bge.b		iscale		/*  if pos, skip next inst */
-	addq.w		&1,%d5		/*  if neg, set LAMBDA true */
-	cmpi.l		&0xffffecd4,%d0	/*  test iscale <= -4908 */
+	addq.w		#1,d5		/*  if neg, set LAMBDA true */
+	cmpi.l		#0xffffecd4,d0	/*  test iscale <= -4908 */
 	bgt.b		no_inf		/*  if false, skip rest */
-	addi.l		&24,%d0		/*  add in 24 to iscale */
-	moveq.l		&24,%d2		/*  put 24 in d2 for A9 */
+	addi.l		#24,d0		/*  add in 24 to iscale */
+	moveq.l		#24,d2		/*  put 24 in d2 for A9 */
 no_inf:
-	neg.l		%d0		/*  and take abs of ISCALE */
+	neg.l		d0		/*  and take abs of ISCALE */
 iscale:
-	fmove.s		FONE(%pc),%fp1	/*  init fp1 to 1 */
-	bfextu		USER_FPCR(%a6){&26:&2},%d1	/*  get initial rmode bits */
-	lsl.w		&1,%d1		/*  put them in bits 2:1 */
-	add.w		%d5,%d1		/*  add in LAMBDA */
-	lsl.w		&1,%d1		/*  put them in bits 3:1 */
-	tst.l		L_SCR2(%a6)	/*  test sign of original x */
+	fmove.s		FONE(pc),fp1	/*  init fp1 to 1 */
+	bfextu		USER_FPCR(a6){26:2},d1	/*  get initial rmode bits */
+	lsl.w		#1,d1		/*  put them in bits 2:1 */
+	add.w		d5,d1		/*  add in LAMBDA */
+	lsl.w		#1,d1		/*  put them in bits 3:1 */
+	tst.l		L_SCR2(a6)	/*  test sign of original x */
 	bge.b		x_pos		/*  if pos, don't set bit 0 */
-	addq.l		&1,%d1		/*  if neg, set bit 0 */
+	addq.l		#1,d1		/*  if neg, set bit 0 */
 x_pos:
-	lea.l		RBDTBL(%pc),%a2	/*  load rbdtbl base */
-	move.b		(%a2,%d1.l),%d3	/*  load d3 with new rmode */
-	lsl.l		&4,%d3		/*  put bits in proper position */
-	fmove.l		%d3,%fpcr	/*  load bits into fpu */
-	lsr.l		&4,%d3		/*  put bits in proper position */
-	tst.b		%d3		/*  decode new rmode for pten table */
+	lea.l		RBDTBL(pc),a2	/*  load rbdtbl base */
+	move.b		(a2,d1.l),d3	/*  load d3 with new rmode */
+	lsl.l		#4,d3		/*  put bits in proper position */
+	fmove.l		d3,fpcr	/*  load bits into fpu */
+	lsr.l		#4,d3		/*  put bits in proper position */
+	tst.b		d3		/*  decode new rmode for pten table */
 	bne.b		not_rn		/*  if zero, it is RN */
-	lea.l		(PTENRN).l(%pc),%a1	/*  load a1 with RN table base */
+	lea.l		(PTENRN).l(pc),a1	/*  load a1 with RN table base */
 	bra.b		rmode		/*  exit decode */
 not_rn:
-	lsr.b		&1,%d3		/*  get lsb in carry */
+	lsr.b		#1,d3		/*  get lsb in carry */
 	bcc.b		not_rp2		/*  if carry clear, it is RM */
-	lea.l		(PTENRP).l(%pc),%a1	/*  load a1 with RP table base */
+	lea.l		(PTENRP).l(pc),a1	/*  load a1 with RP table base */
 	bra.b		rmode		/*  exit decode */
 not_rp2:
-	lea.l		(PTENRM).l(%pc),%a1	/*  load a1 with RM table base */
+	lea.l		(PTENRM).l(pc),a1	/*  load a1 with RM table base */
 rmode:
-	clr.l		%d3		/*  clr table index */
+	clr.l		d3		/*  clr table index */
 e_loop2:
-	lsr.l		&1,%d0		/*  shift next bit into carry */
+	lsr.l		#1,d0		/*  shift next bit into carry */
 	bcc.b		e_next2		/*  if zero, skip the mul */
-	fmul.x		(%a1,%d3.l),%fp1	/*  mul by 10**(d3_bit_no) */
+	fmul.x		(a1,d3.l),fp1	/*  mul by 10**(d3_bit_no) */
 e_next2:
-	addi.l		&12,%d3		/*  inc d3 to next pwrten table entry */
-	tst.l		%d0		/*  test if ISCALE is zero */
+	addi.l		#12,d3		/*  inc d3 to next pwrten table entry */
+	tst.l		d0		/*  test if ISCALE is zero */
 	bne.b		e_loop2		/*  if not, loop */
 
 /*
@@ -443,8 +443,8 @@ e_next2:
  * Register usage:
  *	Input/Output
  */
-	fmove.l		&0,%fpsr	/*  clr INEX */
-	fmove.l		&rz_mode*0x10,%fpcr	/*  set RZ rounding mode */
+	fmove.l		#0,fpsr	/*  clr INEX */
+	fmove.l		#rz_mode*0x10,fpcr	/*  set RZ rounding mode */
 
 /*
  * A9. Scale X -> Y.
@@ -480,15 +480,15 @@ e_next2:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A9_str:
-	fmove.x		(%a0),%fp0	/*  load X from memory */
-	fabs.x		%fp0		/*  use abs(X) */
-	tst.w		%d5		/*  LAMBDA is in lower word of d5 */
+	fmove.x		(a0),fp0	/*  load X from memory */
+	fabs.x		fp0		/*  use abs(X) */
+	tst.w		d5		/*  LAMBDA is in lower word of d5 */
 	bne.b		sc_mul		/*  if neg (LAMBDA = 1), scale by mul */
-	fdiv.x		%fp1,%fp0	/*  calculate X / SCALE -> Y to fp0 */
+	fdiv.x		fp1,fp0	/*  calculate X / SCALE -> Y to fp0 */
 	bra.w		A10_st		/*  branch to A10 */
 
 sc_mul:
-	tst.b		BINDEC_FLG(%a6)	/*  check for denorm */
+	tst.b		BINDEC_FLG(a6)	/*  check for denorm */
 	beq.w		A9_norm		/*  if norm, continue with mul */
 
 /*  for DENORM, we must calculate: */
@@ -497,51 +497,51 @@ sc_mul:
 /*  so, we do the multiplication of the exponents and mantissas separately. */
 /*  in this way, we avoid underflow on intermediate stages of the */
 /*  multiplication and guarantee a result without exception. */
-	fmovem.x		%fp1,-(%sp)	/*  save 10^ISCALE to stack */
+	fmovem.x		fp1,-(sp)	/*  save 10^ISCALE to stack */
 
-	move.w		(%sp),%d3	/*  grab exponent */
-	andi.w		&0x7fff,%d3	/*  clear sign */
-	ori.w		&0x8000,(%a0)	/*  make DENORM exp negative */
-	add.w		(%a0),%d3	/*  add DENORM exp to 10^ISCALE exp */
-	subi.w		&0x3fff,%d3	/*  subtract BIAS */
-	add.w		36(%a1),%d3
-	subi.w		&0x3fff,%d3	/*  subtract BIAS */
-	add.w		48(%a1),%d3
-	subi.w		&0x3fff,%d3	/*  subtract BIAS */
+	move.w		(sp),d3	/*  grab exponent */
+	andi.w		#0x7fff,d3	/*  clear sign */
+	ori.w		#0x8000,(a0)	/*  make DENORM exp negative */
+	add.w		(a0),d3	/*  add DENORM exp to 10^ISCALE exp */
+	subi.w		#0x3fff,d3	/*  subtract BIAS */
+	add.w		36(a1),d3
+	subi.w		#0x3fff,d3	/*  subtract BIAS */
+	add.w		48(a1),d3
+	subi.w		#0x3fff,d3	/*  subtract BIAS */
 
 	bmi.w		sc_mul_err	/*  is result is DENORM, punt!!! */
 
-	andi.w		&0x8000,(%sp)	/*  keep sign */
-	or.w		%d3,(%sp)	/*  insert new exponent */
-	andi.w		&0x7fff,(%a0)	/*  clear sign bit on DENORM again */
-	move.l		0x8(%a0),-(%sp) /*  put input op mantissa on stk */
-	move.l		0x4(%a0),-(%sp)
-	move.l		&0x3fff0000,-(%sp) /*  force exp to zero */
-	fmovem.x		(%sp)+,%fp0	/*  load normalized DENORM into fp0 */
-	fmul.x		(%sp)+,%fp0
+	andi.w		#0x8000,(sp)	/*  keep sign */
+	or.w		d3,(sp)	/*  insert new exponent */
+	andi.w		#0x7fff,(a0)	/*  clear sign bit on DENORM again */
+	move.l		0x8(a0),-(sp) /*  put input op mantissa on stk */
+	move.l		0x4(a0),-(sp)
+	move.l		#0x3fff0000,-(sp) /*  force exp to zero */
+	fmovem.x		(sp)+,fp0	/*  load normalized DENORM into fp0 */
+	fmul.x		(sp)+,fp0
 
-/* 	fmul.x	36(%a1),%fp0	; multiply fp0 by 10^8 */
-/* 	fmul.x	48(%a1),%fp0	; multiply fp0 by 10^16 */
-	move.l		36+8(%a1),-(%sp) /*  get 10^8 mantissa */
-	move.l		36+4(%a1),-(%sp)
-	move.l		&0x3fff0000,-(%sp) /*  force exp to zero */
-	move.l		48+8(%a1),-(%sp) /*  get 10^16 mantissa */
-	move.l		48+4(%a1),-(%sp)
-	move.l		&0x3fff0000,-(%sp)/*  force exp to zero */
-	fmul.x		(%sp)+,%fp0	/*  multiply fp0 by 10^8 */
-	fmul.x		(%sp)+,%fp0	/*  multiply fp0 by 10^16 */
+/* 	fmul.x	36(a1),fp0	; multiply fp0 by 10^8 */
+/* 	fmul.x	48(a1),fp0	; multiply fp0 by 10^16 */
+	move.l		36+8(a1),-(sp) /*  get 10^8 mantissa */
+	move.l		36+4(a1),-(sp)
+	move.l		#0x3fff0000,-(sp) /*  force exp to zero */
+	move.l		48+8(a1),-(sp) /*  get 10^16 mantissa */
+	move.l		48+4(a1),-(sp)
+	move.l		#0x3fff0000,-(sp)/*  force exp to zero */
+	fmul.x		(sp)+,fp0	/*  multiply fp0 by 10^8 */
+	fmul.x		(sp)+,fp0	/*  multiply fp0 by 10^16 */
 	bra.b		A10_st
 
 sc_mul_err:
 	bra.b		sc_mul_err
 
 A9_norm:
-	tst.w		%d2		/*  test for small exp case */
+	tst.w		d2		/*  test for small exp case */
 	beq.b		A9_con		/*  if zero, continue as normal */
-	fmul.x		36(%a1),%fp0	/*  multiply fp0 by 10^8 */
-	fmul.x		48(%a1),%fp0	/*  multiply fp0 by 10^16 */
+	fmul.x		36(a1),fp0	/*  multiply fp0 by 10^8 */
+	fmul.x		48(a1),fp0	/*  multiply fp0 by 10^16 */
 A9_con:
-	fmul.x		%fp1,%fp0	/*  calculate X * SCALE -> Y to fp0 */
+	fmul.x		fp1,fp0	/*  calculate X * SCALE -> Y to fp0 */
 
 /*
  * A10. Or in INEX.
@@ -565,13 +565,13 @@ A9_con:
  *	fp2: x/x
  */
 A10_st:
-	fmove.l		%fpsr,%d0	/*  get FPSR */
-	fmove.x		%fp0,FP_SCR1(%a6)	/*  move Y to memory */
-	lea.l		FP_SCR1(%a6),%a2	/*  load a2 with ptr to FP_SCR1 */
-	btst		&9,%d0		/*  check if INEX2 set */
+	fmove.l		fpsr,d0	/*  get FPSR */
+	fmove.x		fp0,FP_SCR1(a6)	/*  move Y to memory */
+	lea.l		FP_SCR1(a6),a2	/*  load a2 with ptr to FP_SCR1 */
+	btst		#9,d0		/*  check if INEX2 set */
 	beq.b		A11_st		/*  if clear, skip rest */
-	or.l		&1,8(%a2)	/*  or in 1 to lsb of mantissa */
-	fmove.x		FP_SCR1(%a6),%fp0	/*  write adjusted Y back to fpu */
+	or.l		#1,8(a2)	/*  or in 1 to lsb of mantissa */
+	fmove.x		FP_SCR1(a6),fp0	/*  write adjusted Y back to fpu */
 
 
 /*
@@ -582,8 +582,8 @@ A10_st:
  *      mode and precision.  The original FPCR is saved in L_SCR1.
  */
 A11_st:
-	move.l		USER_FPCR(%a6),L_SCR1(%a6)	/*  save it for later */
-	and.l		&0x00000030,USER_FPCR(%a6)	/*  set size to ext, */
+	move.l		USER_FPCR(a6),L_SCR1(a6)	/*  save it for later */
+	and.l		#0x00000030,USER_FPCR(a6)	/*  set size to ext, */
 /* 					;block exceptions */
 
 
@@ -613,40 +613,40 @@ A11_st:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A12_st:
-	movem.l	%d0-%d1/%a0-%a1,-(%sp)	/*  save regs used by sintd0	{%d0-%d1/%a0-%a1} */
-	move.l	L_SCR1(%a6),-(%sp)
-	move.l	L_SCR2(%a6),-(%sp)
+	movem.l	d0-d1/a0-a1,-(sp)	/*  save regs used by sintd0	{d0-d1/a0-a1} */
+	move.l	L_SCR1(a6),-(sp)
+	move.l	L_SCR2(a6),-(sp)
 
-	lea.l		FP_SCR1(%a6),%a0	/*  a0 is ptr to FP_SCR1(a6) */
-	fmove.x		%fp0,(%a0)	/*  move Y to memory at FP_SCR1(a6) */
-	tst.l		L_SCR2(%a6)	/*  test sign of original operand */
+	lea.l		FP_SCR1(a6),a0	/*  a0 is ptr to FP_SCR1(a6) */
+	fmove.x		fp0,(a0)	/*  move Y to memory at FP_SCR1(a6) */
+	tst.l		L_SCR2(a6)	/*  test sign of original operand */
 	bge.b		do_fint12		/*  if pos, use Y */
-	ori.l		&0x80000000,(%a0)	/*  if neg, use -Y */
+	ori.l		#0x80000000,(a0)	/*  if neg, use -Y */
 do_fint12:
-	move.l	USER_FPSR(%a6),-(%sp)
+	move.l	USER_FPSR(a6),-(sp)
 /* 	bsr.l	sintdo		; sint routine returns int in fp0 */
 
-	fmove.l	USER_FPCR(%a6),%fpcr
-	fmove.l	&0x0,%fpsr			/*  clear the AEXC bits!!! */
-/* ;	move.l		USER_FPCR(%a6),%d0	; ext prec/keep rnd mode */
-/* ;	andi.l		&0x00000030,%d0 */
-/* ;	fmove.l		%d0,%fpcr */
-	fint.x		FP_SCR1(%a6),%fp0	/*  do fint() */
-	fmove.l	%fpsr,%d0
-	or.w	%d0,FPSR_EXCEPT(%a6)
-/* ;	fmove.l		&0x0,%fpcr */
-/* ;	fmove.l		%fpsr,%d0		; don't keep ccodes */
-/* ;	or.w		%d0,FPSR_EXCEPT(%a6) */
+	fmove.l	USER_FPCR(a6),fpcr
+	fmove.l	#0x0,fpsr			/*  clear the AEXC bits!!! */
+/* ;	move.l		USER_FPCR(a6),d0	; ext prec/keep rnd mode */
+/* ;	andi.l		#0x00000030,d0 */
+/* ;	fmove.l		d0,fpcr */
+	fint.x		FP_SCR1(a6),fp0	/*  do fint() */
+	fmove.l	fpsr,d0
+	or.w	d0,FPSR_EXCEPT(a6)
+/* ;	fmove.l		#0x0,fpcr */
+/* ;	fmove.l		fpsr,d0		; don't keep ccodes */
+/* ;	or.w		d0,FPSR_EXCEPT(a6) */
 
-	move.b	(%sp),USER_FPSR(%a6)
-	addq.l	&4,%sp
+	move.b	(sp),USER_FPSR(a6)
+	addq.l	#4,sp
 
-	move.l	(%sp)+,L_SCR2(%a6)
-	move.l	(%sp)+,L_SCR1(%a6)
-	movem.l	(%sp)+,%d0-%d1/%a0-%a1	/*  restore regs used by sint	{%d0-%d1/%a0-%a1} */
+	move.l	(sp)+,L_SCR2(a6)
+	move.l	(sp)+,L_SCR1(a6)
+	movem.l	(sp)+,d0-d1/a0-a1	/*  restore regs used by sint	{d0-d1/a0-a1} */
 
-	move.l	L_SCR2(%a6),FP_SCR1(%a6)	/*  restore original exponent */
-	move.l	L_SCR1(%a6),USER_FPCR(%a6)	/*  restore user's FPCR */
+	move.l	L_SCR2(a6),FP_SCR1(a6)	/*  restore original exponent */
+	move.l	L_SCR1(a6),USER_FPCR(a6)	/*  restore user's FPCR */
 
 /*
  * A13. Check for LEN digits.
@@ -681,56 +681,56 @@ do_fint12:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A13_st:
-	swap		%d5		/*  put ICTR in lower word of d5 */
-	tst.w		%d5		/*  check if ICTR = 0 */
+	swap		d5		/*  put ICTR in lower word of d5 */
+	tst.w		d5		/*  check if ICTR = 0 */
 	bne.l		not_zr		/*  if non-zero, go to second test */
 /*
  * Compute 10^(LEN-1)
  */
-	fmove.s		FONE(%pc),%fp2	/*  init fp2 to 1.0 */
-	move.l		%d4,%d0		/*  put LEN in d0 */
-	subq.l		&1,%d0		/*  d0 = LEN -1 */
-	clr.l		%d3		/*  clr table index */
+	fmove.s		FONE(pc),fp2	/*  init fp2 to 1.0 */
+	move.l		d4,d0		/*  put LEN in d0 */
+	subq.l		#1,d0		/*  d0 = LEN -1 */
+	clr.l		d3		/*  clr table index */
 l_loop:
-	lsr.l		&1,%d0		/*  shift next bit into carry */
+	lsr.l		#1,d0		/*  shift next bit into carry */
 	bcc.b		l_next		/*  if zero, skip the mul */
-	fmul.x		(%a1,%d3.l),%fp2	/*  mul by 10**(d3_bit_no) */
+	fmul.x		(a1,d3.l),fp2	/*  mul by 10**(d3_bit_no) */
 l_next:
-	addi.l		&12,%d3		/*  inc d3 to next pwrten table entry */
-	tst.l		%d0		/*  test if LEN is zero */
+	addi.l		#12,d3		/*  inc d3 to next pwrten table entry */
+	tst.l		d0		/*  test if LEN is zero */
 	bne.b		l_loop		/*  if not, loop */
 /*
  * 10^LEN-1 is computed for this test and A14.  If the input was
  * denormalized, check only the case in which YINT > 10^LEN.
  */
-	tst.b		BINDEC_FLG(%a6)	/*  check if input was norm */
+	tst.b		BINDEC_FLG(a6)	/*  check if input was norm */
 	beq.b		A13_con		/*  if norm, continue with checking */
-	fabs.x		%fp0		/*  take abs of YINT */
+	fabs.x		fp0		/*  take abs of YINT */
 	bra.l		test_2
 /*
  * Compare abs(YINT) to 10^(LEN-1) and 10^LEN
  */
 A13_con:
-	fabs.x		%fp0		/*  take abs of YINT */
-	fcmp.x		%fp2,%fp0	/*  compare abs(YINT) with 10^(LEN-1) */
+	fabs.x		fp0		/*  take abs of YINT */
+	fcmp.x		fp2,fp0	/*  compare abs(YINT) with 10^(LEN-1) */
 	fbge		test_2		/*  if greater, do next test */
-	subq.l		&1,%d6		/*  subtract 1 from ILOG */
-	move.w		&1,%d5		/*  set ICTR */
-	fmove.l		&rm_mode*0x10,%fpcr	/*  set rmode to RM */
-	fmul.s		FTEN(%pc),%fp2	/*  compute 10^LEN */
+	subq.l		#1,d6		/*  subtract 1 from ILOG */
+	move.w		#1,d5		/*  set ICTR */
+	fmove.l		#rm_mode*0x10,fpcr	/*  set rmode to RM */
+	fmul.s		FTEN(pc),fp2	/*  compute 10^LEN */
 	bra.w		A6_str		/*  return to A6 and recompute YINT */
 test_2:
-	fmul.s		FTEN(%pc),%fp2	/*  compute 10^LEN */
-	fcmp.x		%fp2,%fp0	/*  compare abs(YINT) with 10^LEN */
+	fmul.s		FTEN(pc),fp2	/*  compute 10^LEN */
+	fcmp.x		fp2,fp0	/*  compare abs(YINT) with 10^LEN */
 	fblt		A14_st		/*  if less, all is ok, go to A14 */
 	fbgt		fix_ex		/*  if greater, fix and redo */
-	fdiv.s		FTEN(%pc),%fp0	/*  if equal, divide by 10 */
-	addq.l		&1,%d6		/*  and inc ILOG */
+	fdiv.s		FTEN(pc),fp0	/*  if equal, divide by 10 */
+	addq.l		#1,d6		/*  and inc ILOG */
 	bra.b		A14_st		/*  and continue elsewhere */
 fix_ex:
-	addq.l		&1,%d6		/*  increment ILOG by 1 */
-	move.w		&1,%d5		/*  set ICTR */
-	fmove.l		&rm_mode*0x10,%fpcr	/*  set rmode to RM */
+	addq.l		#1,d6		/*  increment ILOG by 1 */
+	move.w		#1,d5		/*  set ICTR */
+	fmove.l		#rm_mode*0x10,fpcr	/*  set rmode to RM */
 	bra.w		A6_str		/*  return to A6 and recompute YINT */
 /*
  * Since ICTR <> 0, we have already been through one adjustment,
@@ -739,24 +739,24 @@ fix_ex:
  * value calculated cannot be inexact.
  */
 not_zr:
-	fmove.s		FONE(%pc),%fp2	/*  init fp2 to 1.0 */
-	move.l		%d4,%d0		/*  put LEN in d0 */
-	clr.l		%d3		/*  clr table index */
+	fmove.s		FONE(pc),fp2	/*  init fp2 to 1.0 */
+	move.l		d4,d0		/*  put LEN in d0 */
+	clr.l		d3		/*  clr table index */
 z_loop:
-	lsr.l		&1,%d0		/*  shift next bit into carry */
+	lsr.l		#1,d0		/*  shift next bit into carry */
 	bcc.b		z_next		/*  if zero, skip the mul */
-	fmul.x		(%a1,%d3.l),%fp2	/*  mul by 10**(d3_bit_no) */
+	fmul.x		(a1,d3.l),fp2	/*  mul by 10**(d3_bit_no) */
 z_next:
-	addi.l		&12,%d3		/*  inc d3 to next pwrten table entry */
-	tst.l		%d0		/*  test if LEN is zero */
+	addi.l		#12,d3		/*  inc d3 to next pwrten table entry */
+	tst.l		d0		/*  test if LEN is zero */
 	bne.b		z_loop		/*  if not, loop */
-	fabs.x		%fp0		/*  get abs(YINT) */
-	fcmp.x		%fp2,%fp0	/*  check if abs(YINT) = 10^LEN */
+	fabs.x		fp0		/*  get abs(YINT) */
+	fcmp.x		fp2,fp0	/*  check if abs(YINT) = 10^LEN */
 	fbne		A14_st		/*  if not, skip this */
-	fdiv.s		FTEN(%pc),%fp0	/*  divide abs(YINT) by 10 */
-	addq.l		&1,%d6		/*  and inc ILOG by 1 */
-	addq.l		&1,%d4		/*  and inc LEN */
-	fmul.s		FTEN(%pc),%fp2	/*  if LEN++, the get 10^^LEN */
+	fdiv.s		FTEN(pc),fp0	/*  divide abs(YINT) by 10 */
+	addq.l		#1,d6		/*  and inc ILOG by 1 */
+	addq.l		#1,d4		/*  and inc LEN */
+	fmul.s		FTEN(pc),fp2	/*  if LEN++, the get 10^^LEN */
 
 /*
  * A14. Convert the mantissa to bcd.
@@ -791,38 +791,38 @@ z_next:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A14_st:
-	fmove.l		&rz_mode*0x10,%fpcr	/*  force rz for conversion */
-	fdiv.x		%fp2,%fp0	/*  divide abs(YINT) by 10^LEN */
-	lea.l		FP_SCR0(%a6),%a0
-	fmove.x		%fp0,(%a0)	/*  move abs(YINT)/10^LEN to memory */
-	move.l		4(%a0),%d2	/*  move 2nd word of FP_RES to d2 */
-	move.l		8(%a0),%d3	/*  move 3rd word of FP_RES to d3 */
-	clr.l		4(%a0)		/*  zero word 2 of FP_RES */
-	clr.l		8(%a0)		/*  zero word 3 of FP_RES */
-	move.l		(%a0),%d0	/*  move exponent to d0 */
-	swap		%d0		/*  put exponent in lower word */
+	fmove.l		#rz_mode*0x10,fpcr	/*  force rz for conversion */
+	fdiv.x		fp2,fp0	/*  divide abs(YINT) by 10^LEN */
+	lea.l		FP_SCR0(a6),a0
+	fmove.x		fp0,(a0)	/*  move abs(YINT)/10^LEN to memory */
+	move.l		4(a0),d2	/*  move 2nd word of FP_RES to d2 */
+	move.l		8(a0),d3	/*  move 3rd word of FP_RES to d3 */
+	clr.l		4(a0)		/*  zero word 2 of FP_RES */
+	clr.l		8(a0)		/*  zero word 3 of FP_RES */
+	move.l		(a0),d0	/*  move exponent to d0 */
+	swap		d0		/*  put exponent in lower word */
 	beq.b		no_sft		/*  if zero, don't shift */
-	subi.l		&0x3ffd,%d0	/*  sub bias less 2 to make fract */
-	tst.l		%d0		/*  check if > 1 */
+	subi.l		#0x3ffd,d0	/*  sub bias less 2 to make fract */
+	tst.l		d0		/*  check if > 1 */
 	bgt.b		no_sft		/*  if so, don't shift */
-	neg.l		%d0		/*  make exp positive */
+	neg.l		d0		/*  make exp positive */
 m_loop:
-	lsr.l		&1,%d2		/*  shift d2:d3 right, add 0s */
-	roxr.l		&1,%d3		/*  the number of places */
-	dbf.w		%d0,m_loop	/*  given in d0 */
+	lsr.l		#1,d2		/*  shift d2:d3 right, add 0s */
+	roxr.l		#1,d3		/*  the number of places */
+	dbf.w		d0,m_loop	/*  given in d0 */
 no_sft:
-	tst.l		%d2		/*  check for mantissa of zero */
+	tst.l		d2		/*  check for mantissa of zero */
 	bne.b		no_zr		/*  if not, go on */
-	tst.l		%d3		/*  continue zero check */
+	tst.l		d3		/*  continue zero check */
 	beq.b		zer_m		/*  if zero, go directly to binstr */
 no_zr:
-	clr.l		%d1		/*  put zero in d1 for addx */
-	addi.l		&0x00000080,%d3	/*  inc at bit 7 */
-	addx.l		%d1,%d2		/*  continue inc */
-	andi.l		&0xffffff80,%d3	/*  strip off lsb not used by 882 */
+	clr.l		d1		/*  put zero in d1 for addx */
+	addi.l		#0x00000080,d3	/*  inc at bit 7 */
+	addx.l		d1,d2		/*  continue inc */
+	andi.l		#0xffffff80,d3	/*  strip off lsb not used by 882 */
 zer_m:
-	move.l		%d4,%d0		/*  put LEN in d0 for binstr call */
-	addq.l		&3,%a0		/*  a0 points to M16 byte in result */
+	move.l		d4,d0		/*  put LEN in d0 for binstr call */
+	addq.l		#3,a0		/*  a0 points to M16 byte in result */
 	bsr.l		binstr		/*  call binstr to convert mant */
 
 
@@ -864,60 +864,60 @@ zer_m:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A15_st:
-	tst.b		BINDEC_FLG(%a6)	/*  check for denorm */
+	tst.b		BINDEC_FLG(a6)	/*  check for denorm */
 	beq.b		not_denorm
-	ftst.x		%fp0		/*  test for zero */
+	ftst.x		fp0		/*  test for zero */
 	fbeq		den_zero	/*  if zero, use k-factor or 4933 */
-	fmove.l		%d6,%fp0	/*  float ILOG */
-	fabs.x		%fp0		/*  get abs of ILOG */
+	fmove.l		d6,fp0	/*  float ILOG */
+	fabs.x		fp0		/*  get abs of ILOG */
 	bra.b		convrt
 den_zero:
-	tst.l		%d7		/*  check sign of the k-factor */
+	tst.l		d7		/*  check sign of the k-factor */
 	blt.b		use_ilog	/*  if negative, use ILOG */
-	fmove.s		F4933(%pc),%fp0	/*  force exponent to 4933 */
+	fmove.s		F4933(pc),fp0	/*  force exponent to 4933 */
 	bra.b		convrt		/*  do it */
 use_ilog:
-	fmove.l		%d6,%fp0	/*  float ILOG */
-	fabs.x		%fp0		/*  get abs of ILOG */
+	fmove.l		d6,fp0	/*  float ILOG */
+	fabs.x		fp0		/*  get abs of ILOG */
 	bra.b		convrt
 not_denorm:
-	ftst.x		%fp0		/*  test for zero */
+	ftst.x		fp0		/*  test for zero */
 	fbne		not_zero	/*  if zero, force exponent */
-	fmove.s		FONE(%pc),%fp0	/*  force exponent to 1 */
+	fmove.s		FONE(pc),fp0	/*  force exponent to 1 */
 	bra.b		convrt		/*  do it */
 not_zero:
-	fmove.l		%d6,%fp0	/*  float ILOG */
-	fabs.x		%fp0		/*  get abs of ILOG */
+	fmove.l		d6,fp0	/*  float ILOG */
+	fabs.x		fp0		/*  get abs of ILOG */
 convrt:
-	fdiv.x		24(%a1),%fp0	/*  compute ILOG/10^4 */
-	fmove.x		%fp0,FP_SCR1(%a6)	/*  store fp0 in memory */
-	move.l		4(%a2),%d2	/*  move word 2 to d2 */
-	move.l		8(%a2),%d3	/*  move word 3 to d3 */
-	move.w		(%a2),%d0	/*  move exp to d0 */
+	fdiv.x		24(a1),fp0	/*  compute ILOG/10^4 */
+	fmove.x		fp0,FP_SCR1(a6)	/*  store fp0 in memory */
+	move.l		4(a2),d2	/*  move word 2 to d2 */
+	move.l		8(a2),d3	/*  move word 3 to d3 */
+	move.w		(a2),d0	/*  move exp to d0 */
 	beq.b		x_loop_fin	/*  if zero, skip the shift */
-	subi.w		&0x3ffd,%d0	/*  subtract off bias */
-	neg.w		%d0		/*  make exp positive */
+	subi.w		#0x3ffd,d0	/*  subtract off bias */
+	neg.w		d0		/*  make exp positive */
 x_loop:
-	lsr.l		&1,%d2		/*  shift d2:d3 right */
-	roxr.l		&1,%d3		/*  the number of places */
-	dbf.w		%d0,x_loop	/*  given in d0 */
+	lsr.l		#1,d2		/*  shift d2:d3 right */
+	roxr.l		#1,d3		/*  the number of places */
+	dbf.w		d0,x_loop	/*  given in d0 */
 x_loop_fin:
-	clr.l		%d1		/*  put zero in d1 for addx */
-	addi.l		&0x00000080,%d3	/*  inc at bit 6 */
-	addx.l		%d1,%d2		/*  continue inc */
-	andi.l		&0xffffff80,%d3	/*  strip off lsb not used by 882 */
-	moveq.l		&4,%d0		/*  put 4 in d0 for binstr call */
-	lea.l		L_SCR1(%a6),%a0	/*  a0 is ptr to L_SCR1 for exp digits */
+	clr.l		d1		/*  put zero in d1 for addx */
+	addi.l		#0x00000080,d3	/*  inc at bit 6 */
+	addx.l		d1,d2		/*  continue inc */
+	andi.l		#0xffffff80,d3	/*  strip off lsb not used by 882 */
+	moveq.l		#4,d0		/*  put 4 in d0 for binstr call */
+	lea.l		L_SCR1(a6),a0	/*  a0 is ptr to L_SCR1 for exp digits */
 	bsr.l		binstr		/*  call binstr to convert exp */
-	move.l		L_SCR1(%a6),%d0	/*  load L_SCR1 lword to d0 */
-	moveq.l		&12,%d1		/*  use d1 for shift count */
-	lsr.l		%d1,%d0		/*  shift d0 right by 12 */
-	bfins		%d0,FP_SCR0(%a6){&4:&12}	/*  put e3:e2:e1 in FP_SCR0 */
-	lsr.l		%d1,%d0		/*  shift d0 right by 12 */
-	bfins		%d0,FP_SCR0(%a6){&16:&4}	/*  put e4 in FP_SCR0 */
-	tst.b		%d0		/*  check if e4 is zero */
+	move.l		L_SCR1(a6),d0	/*  load L_SCR1 lword to d0 */
+	moveq.l		#12,d1		/*  use d1 for shift count */
+	lsr.l		d1,d0		/*  shift d0 right by 12 */
+	bfins		d0,FP_SCR0(a6){4:12}	/*  put e3:e2:e1 in FP_SCR0 */
+	lsr.l		d1,d0		/*  shift d0 right by 12 */
+	bfins		d0,FP_SCR0(a6){16:4}	/*  put e4 in FP_SCR0 */
+	tst.b		d0		/*  check if e4 is zero */
 	beq.b		A16_st		/*  if zero, skip rest */
-	ori.l		&opaop_mask,USER_FPSR(%a6)	/*  set OPERR & AIOP in USER_FPSR */
+	ori.l		#opaop_mask,USER_FPSR(a6)	/*  set OPERR # AIOP in USER_FPSR */
 
 
 /*
@@ -945,23 +945,23 @@ x_loop_fin:
  *	L_SCR2:first word of X packed/Unchanged
  */
 A16_st:
-	clr.l		%d0		/*  clr d0 for collection of signs */
-	and.b		&0x0f,FP_SCR0(%a6)	/*  clear first nibble of FP_SCR0 */
-	tst.l		L_SCR2(%a6)	/*  check sign of original mantissa */
+	clr.l		d0		/*  clr d0 for collection of signs */
+	and.b		#0x0f,FP_SCR0(a6)	/*  clear first nibble of FP_SCR0 */
+	tst.l		L_SCR2(a6)	/*  check sign of original mantissa */
 	bge.b		mant_p		/*  if pos, don't set SM */
-	moveq.l		&2,%d0		/*  move 2 in to d0 for SM */
+	moveq.l		#2,d0		/*  move 2 in to d0 for SM */
 mant_p:
-	tst.l		%d6		/*  check sign of ILOG */
+	tst.l		d6		/*  check sign of ILOG */
 	bge.b		wr_sgn		/*  if pos, don't set SE */
-	addq.l		&1,%d0		/*  set bit 0 in d0 for SE */
+	addq.l		#1,d0		/*  set bit 0 in d0 for SE */
 wr_sgn:
-	bfins		%d0,FP_SCR0(%a6){&0:&2}	/*  insert SM and SE into FP_SCR0 */
+	bfins		d0,FP_SCR0(a6){0:2}	/*  insert SM and SE into FP_SCR0 */
 
 /*  Clean up and restore all registers used. */
 
-	fmove.l		&0,%fpsr	/*  clear possible inex2/ainex bits */
-	fmovem.x		(%sp)+,%fp0-%fp2	/*   {%fp0-%fp2} */
-	movem.l		(%sp)+,%d2-%d7/%a2	/*   {%d2-%d7/%a2} */
+	fmove.l		#0,fpsr	/*  clear possible inex2/ainex bits */
+	fmovem.x		(sp)+,fp0-fp2	/*   {fp0-fp2} */
+	movem.l		(sp)+,d2-d7/a2	/*   {d2-d7/a2} */
 	rts
 
 	.globl		PTENRN

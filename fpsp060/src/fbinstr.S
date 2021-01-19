@@ -65,70 +65,70 @@
 
 	.globl		binstr
 binstr:
-	movem.l		%d0-%d7,-(%sp)	/*   {%d0-%d7} */
+	movem.l		d0-d7,-(sp)	/*   {d0-d7} */
 
 /*
  * A1: Init d7
  */
-	moveq.l		&1,%d7		/*  init d7 for second digit */
-	subq.l		&1,%d0		/*  for dbf d0 would have LEN+1 passes */
+	moveq.l		#1,d7		/*  init d7 for second digit */
+	subq.l		#1,d0		/*  for dbf d0 would have LEN+1 passes */
 /*
  * A2. Copy d2:d3 to d4:d5.  Start loop.
  */
 loop:
-	move.l		%d2,%d4		/*  copy the fraction before muls */
-	move.l		%d3,%d5		/*  to d4:d5 */
+	move.l		d2,d4		/*  copy the fraction before muls */
+	move.l		d3,d5		/*  to d4:d5 */
 /*
  * A3. Multiply d2:d3 by 8; extract msbs into d1.
  */
-	bfextu		%d2{&0:&3},%d1	/*  copy 3 msbs of d2 into d1 */
-	asl.l		&3,%d2		/*  shift d2 left by 3 places */
-	bfextu		%d3{&0:&3},%d6	/*  copy 3 msbs of d3 into d6 */
-	asl.l		&3,%d3		/*  shift d3 left by 3 places */
-	or.l		%d6,%d2		/*  or in msbs from d3 into d2 */
+	bfextu		d2{0:3},d1	/*  copy 3 msbs of d2 into d1 */
+	asl.l		#3,d2		/*  shift d2 left by 3 places */
+	bfextu		d3{0:3},d6	/*  copy 3 msbs of d3 into d6 */
+	asl.l		#3,d3		/*  shift d3 left by 3 places */
+	or.l		d6,d2		/*  or in msbs from d3 into d2 */
 /*
  * A4. Multiply d4:d5 by 2; add carry out to d1.
  */
-	asl.l		&1,%d5		/*  mul d5 by 2 */
-	roxl.l		&1,%d4		/*  mul d4 by 2 */
-	swap		%d6		/*  put 0 in d6 lower word */
-	addx.w		%d6,%d1		/*  add in extend from mul by 2 */
+	asl.l		#1,d5		/*  mul d5 by 2 */
+	roxl.l		#1,d4		/*  mul d4 by 2 */
+	swap		d6		/*  put 0 in d6 lower word */
+	addx.w		d6,d1		/*  add in extend from mul by 2 */
 /*
  * A5. Add mul by 8 to mul by 2.  D1 contains the digit formed.
  */
-	add.l		%d5,%d3		/*  add lower 32 bits */
+	add.l		d5,d3		/*  add lower 32 bits */
 	nop				/*  ERRATA FIX #13 (Rev. 1.2 6/6/90) */
-	addx.l		%d4,%d2		/*  add with extend upper 32 bits */
+	addx.l		d4,d2		/*  add with extend upper 32 bits */
 	nop				/*  ERRATA FIX #13 (Rev. 1.2 6/6/90) */
-	addx.w		%d6,%d1		/*  add in extend from add to d1 */
-	swap		%d6		/*  with d6 = 0; put 0 in upper word */
+	addx.w		d6,d1		/*  add in extend from add to d1 */
+	swap		d6		/*  with d6 = 0; put 0 in upper word */
 /*
  * A6. Test d7 and branch.
  */
-	tst.w		%d7		/*  if zero, store digit & to loop */
-	beq.b		first_d		/*  if non-zero, form byte & write */
+	tst.w		d7		/*  if zero, store digit # to loop */
+	beq.b		first_d		/*  if non-zero, form byte # write */
 sec_d:
-	swap		%d7		/*  bring first digit to word d7b */
-	asl.w		&4,%d7		/*  first digit in upper 4 bits d7b */
-	add.w		%d1,%d7		/*  add in ls digit to d7b */
-	move.b		%d7,(%a0)+	/*  store d7b byte in memory */
-	swap		%d7		/*  put LEN counter in word d7a */
-	clr.w		%d7		/*  set d7a to signal no digits done */
-	dbf.w		%d0,loop	/*  do loop some more! */
+	swap		d7		/*  bring first digit to word d7b */
+	asl.w		#4,d7		/*  first digit in upper 4 bits d7b */
+	add.w		d1,d7		/*  add in ls digit to d7b */
+	move.b		d7,(a0)+	/*  store d7b byte in memory */
+	swap		d7		/*  put LEN counter in word d7a */
+	clr.w		d7		/*  set d7a to signal no digits done */
+	dbf.w		d0,loop	/*  do loop some more! */
 	bra.b		end_bstr	/*  finished, so exit */
 first_d:
-	swap		%d7		/*  put digit word in d7b */
-	move.w		%d1,%d7		/*  put new digit in d7b */
-	swap		%d7		/*  put LEN counter in word d7a */
-	addq.w		&1,%d7		/*  set d7a to signal first digit done */
-	dbf.w		%d0,loop	/*  do loop some more! */
-	swap		%d7		/*  put last digit in string */
-	lsl.w		&4,%d7		/*  move it to upper 4 bits */
-	move.b		%d7,(%a0)+	/*  store it in memory string */
+	swap		d7		/*  put digit word in d7b */
+	move.w		d1,d7		/*  put new digit in d7b */
+	swap		d7		/*  put LEN counter in word d7a */
+	addq.w		#1,d7		/*  set d7a to signal first digit done */
+	dbf.w		d0,loop	/*  do loop some more! */
+	swap		d7		/*  put last digit in string */
+	lsl.w		#4,d7		/*  move it to upper 4 bits */
+	move.b		d7,(a0)+	/*  store it in memory string */
 /*
  * Clean up and return with result in fp0.
  */
 end_bstr:
-	movem.l		(%sp)+,%d0-%d7	/*   {%d0-%d7} */
+	movem.l		(sp)+,d0-d7	/*   {d0-d7} */
 	rts
 

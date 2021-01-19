@@ -11,10 +11,11 @@
 	.text
 
 	.globl tbl_unsupp
-	swbeg		&109
+	/* swbeg		#109 */
+	.dc.w 0x4afc,109
 tbl_unsupp:
-	.dc.l		fin-tbl_unsupp	/*  00: fmove */
-	.dc.l		fint-tbl_unsupp	/*  01: fint */
+	.dc.l		fin-tbl_unsupp		/*  00: fmove */
+	.dc.l		fint-tbl_unsupp		/*  01: fint */
 	.dc.l		fsinh-tbl_unsupp	/*  02: fsinh */
 	.dc.l		fintrz-tbl_unsupp	/*  03: fintrz */
 	.dc.l		fsqrt-tbl_unsupp	/*  04: fsqrt */
@@ -28,7 +29,7 @@ tbl_unsupp:
 	.dc.l		fasin-tbl_unsupp	/*  0c: fasin */
 	.dc.l		fatanh-tbl_unsupp	/*  0d: fatanh */
 	.dc.l		fsine-tbl_unsupp	/*  0e: fsin */
-	.dc.l		ftan-tbl_unsupp	/*  0f: ftan */
+	.dc.l		ftan-tbl_unsupp		/*  0f: ftan */
 	.dc.l		fetox-tbl_unsupp	/*  10: fetox */
 	.dc.l		ftwotox-tbl_unsupp	/*  11: ftwotox */
 	.dc.l		ftentox-tbl_unsupp	/*  12: ftentox */
@@ -37,23 +38,23 @@ tbl_unsupp:
 	.dc.l		flog10-tbl_unsupp	/*  15: flog10 */
 	.dc.l		flog2-tbl_unsupp	/*  16: flog2 */
 	.dc.l		tbl_unsupp-tbl_unsupp
-	.dc.l		fabs-tbl_unsupp	/*  18: fabs */
+	.dc.l		fabs-tbl_unsupp		/*  18: fabs */
 	.dc.l		fcosh-tbl_unsupp	/*  19: fcosh */
-	.dc.l		fneg-tbl_unsupp	/*  1a: fneg */
+	.dc.l		fneg-tbl_unsupp		/*  1a: fneg */
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		facos-tbl_unsupp	/*  1c: facos */
-	.dc.l		fcos-tbl_unsupp	/*  1d: fcos */
+	.dc.l		fcos-tbl_unsupp		/*  1d: fcos */
 	.dc.l		fgetexp-tbl_unsupp	/*  1e: fgetexp */
 	.dc.l		fgetman-tbl_unsupp	/*  1f: fgetman */
-	.dc.l		fdiv-tbl_unsupp	/*  20: fdiv */
-	.dc.l		fmod-tbl_unsupp	/*  21: fmod */
-	.dc.l		fadd-tbl_unsupp	/*  22: fadd */
-	.dc.l		fmul-tbl_unsupp	/*  23: fmul */
+	.dc.l		fdiv-tbl_unsupp		/*  20: fdiv */
+	.dc.l		fmod-tbl_unsupp		/*  21: fmod */
+	.dc.l		fadd-tbl_unsupp		/*  22: fadd */
+	.dc.l		fmul-tbl_unsupp		/*  23: fmul */
 	.dc.l		fsgldiv-tbl_unsupp	/*  24: fsgldiv */
-	.dc.l		frem-tbl_unsupp	/*  25: frem */
+	.dc.l		frem-tbl_unsupp		/*  25: frem */
 	.dc.l		fscale-tbl_unsupp	/*  26: fscale */
 	.dc.l		fsglmul-tbl_unsupp	/*  27: fsglmul */
-	.dc.l		fsub-tbl_unsupp	/*  28: fsub */
+	.dc.l		fsub-tbl_unsupp		/*  28: fsub */
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		tbl_unsupp-tbl_unsupp
@@ -69,19 +70,19 @@ tbl_unsupp:
 	.dc.l		fsincos-tbl_unsupp	/*  35: fsincos */
 	.dc.l		fsincos-tbl_unsupp	/*  36: fsincos */
 	.dc.l		fsincos-tbl_unsupp	/*  37: fsincos */
-	.dc.l		fcmp-tbl_unsupp	/*  38: fcmp */
+	.dc.l		fcmp-tbl_unsupp		/*  38: fcmp */
 	.dc.l		tbl_unsupp-tbl_unsupp
-	.dc.l		ftst-tbl_unsupp	/*  3a: ftst */
-	.dc.l		tbl_unsupp-tbl_unsupp
-	.dc.l		tbl_unsupp-tbl_unsupp
+	.dc.l		ftst-tbl_unsupp		/*  3a: ftst */
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		tbl_unsupp-tbl_unsupp
-	.dc.l		fsin-tbl_unsupp	/*  40: fsmove */
+	.dc.l		tbl_unsupp-tbl_unsupp
+	.dc.l		tbl_unsupp-tbl_unsupp
+	.dc.l		fsin-tbl_unsupp		/*  40: fsmove */
 	.dc.l		fssqrt-tbl_unsupp	/*  41: fssqrt */
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		tbl_unsupp-tbl_unsupp
-	.dc.l		fdin-tbl_unsupp	/*  44: fdmove */
+	.dc.l		fdin-tbl_unsupp		/*  44: fdmove */
 	.dc.l		fdsqrt-tbl_unsupp	/*  45: fdsqrt */
 	.dc.l		tbl_unsupp-tbl_unsupp
 	.dc.l		tbl_unsupp-tbl_unsupp

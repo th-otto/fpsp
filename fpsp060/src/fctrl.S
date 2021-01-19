@@ -23,7 +23,7 @@
  * 									
  *  Instruction word decoding:						
  * 									
- * 	fmovem.l #<data>, {FPIAR&|FPCR&|FPSR}				
+ * 	fmovem.l #<data>, {FPIAR#|FPCR#|FPSR}				
  * 									
  * 		WORD1			WORD2				
  * 	1111 0010 00 111100	100$ $$00 0000 0000			
@@ -41,99 +41,99 @@
 
 	.globl		fmovem_ctrl
 fmovem_ctrl:
-	move.b		EXC_EXTWORD(%a6),%d0	/*  fetch reg select bits */
-	cmpi.b		&0x9c,%d0		/*  fpcr & fpsr & fpiar ? */
+	move.b		EXC_EXTWORD(a6),d0	/*  fetch reg select bits */
+	cmpi.b		#0x9c,d0		/*  fpcr # fpsr # fpiar ? */
 	beq.w		fctrl_in_7		/*  yes */
-	cmpi.b		&0x98,%d0		/*  fpcr & fpsr ? */
+	cmpi.b		#0x98,d0		/*  fpcr # fpsr ? */
 	beq.w		fctrl_in_6		/*  yes */
-	cmpi.b		&0x94,%d0		/*  fpcr & fpiar ? */
+	cmpi.b		#0x94,d0		/*  fpcr # fpiar ? */
 	beq.b		fctrl_in_5		/*  yes */
 
 /*  fmovem.l #<data>, fpsr/fpiar */
 fctrl_in_3:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPSR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPSR(%a6)	/*  store new FPSR to stack */
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		d0,USER_FPSR(a6)	/*  store new FPSR to stack */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPIAR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPIAR(%a6)	/*  store new FPIAR to stack */
+	move.l		d0,USER_FPIAR(a6)	/*  store new FPIAR to stack */
 	rts
 
 /*  fmovem.l #<data>, fpcr/fpiar */
 fctrl_in_5:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPCR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPCR(%a6)	/*  store new FPCR to stack */
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		d0,USER_FPCR(a6)	/*  store new FPCR to stack */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPIAR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPIAR(%a6)	/*  store new FPIAR to stack */
+	move.l		d0,USER_FPIAR(a6)	/*  store new FPIAR to stack */
 	rts
 
 /*  fmovem.l #<data>, fpcr/fpsr */
 fctrl_in_6:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPCR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPCR(%a6)	/*  store new FPCR to mem */
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		d0,USER_FPCR(a6)	/*  store new FPCR to mem */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPSR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPSR(%a6)	/*  store new FPSR to mem */
+	move.l		d0,USER_FPSR(a6)	/*  store new FPSR to mem */
 	rts
 
 /*  fmovem.l #<data>, fpcr/fpsr/fpiar */
 fctrl_in_7:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPCR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPCR(%a6)	/*  store new FPCR to mem */
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		d0,USER_FPCR(a6)	/*  store new FPCR to mem */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPSR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPSR(%a6)	/*  store new FPSR to mem */
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		d0,USER_FPSR(a6)	/*  store new FPSR to mem */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch FPIAR from mem */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,USER_FPIAR(%a6)	/*  store new FPIAR to mem */
+	move.l		d0,USER_FPIAR(a6)	/*  store new FPIAR to mem */
 	rts
 

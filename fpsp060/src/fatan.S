@@ -41,6 +41,13 @@
 
 	.include "hdr.fpu"
 
+	.xref t_extdnrm
+	.xref t_inx2
+	.xref t_catch
+	.xref t_pinx2
+	.xref t_minx2
+	.xref TWOBYPI
+
 	.text
 
 ATANA3:	.dc.l		0xBFF6687E,0x314987D8
@@ -208,19 +215,19 @@ ATANTBL:
 	.globl		satan
 /* --ENTRY POINT FOR ATAN(X), HERE X IS FINITE, NON-ZERO, AND NOT NAN'S */
 satan:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
-	fmove.x		%fp0,X(%a6)
-	andi.l		&0x7FFFFFFF,%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
+	fmove.x		fp0,X(a6)
+	andi.l		#0x7FFFFFFF,d1
 
-	cmpi.l		&0x3FFB8000,%d1		/*  |X| >= 1/16? */
+	cmpi.l		#0x3FFB8000,d1		/*  |X| >= 1/16? */
 	bge.b		ATANOK1
 	bra.w		ATANSM
 
 ATANOK1:
-	cmpi.l		&0x4002FFFF,%d1		/*  |X| < 16 ? */
+	cmpi.l		#0x4002FFFF,d1		/*  |X| < 16 ? */
 	ble.b		ATANMAIN
 	bra.w		ATANBIG
 
@@ -247,37 +254,37 @@ ATANOK1:
 
 ATANMAIN:
 
-	andi.l		&0xF8000000,XFRAC(%a6)	/*  FIRST 5 BITS */
-	ori.l		&0x04000000,XFRAC(%a6)	/*  SET 6-TH BIT TO 1 */
-	move.l		&0x00000000,XFRACLO(%a6) /*  LOCATION OF X IS NOW F */
+	andi.l		#0xF8000000,XFRAC(a6)	/*  FIRST 5 BITS */
+	ori.l		#0x04000000,XFRAC(a6)	/*  SET 6-TH BIT TO 1 */
+	move.l		#0x00000000,XFRACLO(a6) /*  LOCATION OF X IS NOW F */
 
-	fmove.x		%fp0,%fp1		/*  FP1 IS X */
-	fmul.x		X(%a6),%fp1		/*  FP1 IS X*F, NOTE THAT X*F > 0 */
-	fsub.x		X(%a6),%fp0		/*  FP0 IS X-F */
-	fadd.s		&0x3F800000,%fp1	/*  FP1 IS 1 + X*F */
-	fdiv.x		%fp1,%fp0		/*  FP0 IS U = (X-F)/(1+X*F) */
+	fmove.x		fp0,fp1		/*  FP1 IS X */
+	fmul.x		X(a6),fp1		/*  FP1 IS X*F, NOTE THAT X*F > 0 */
+	fsub.x		X(a6),fp0		/*  FP0 IS X-F */
+	fadd.s		#0x3F800000,fp1	/*  FP1 IS 1 + X*F */
+	fdiv.x		fp1,fp0		/*  FP0 IS U = (X-F)/(1+X*F) */
 
 /* --WHILE THE DIVISION IS TAKING ITS TIME, WE FETCH ATAN(|F|) */
 /* --CREATE ATAN(F) AND STORE IT IN ATANF, AND */
 /* --SAVE REGISTERS FP2. */
 
-	move.l		%d2,-(%sp)		/*  SAVE d2 TEMPORARILY */
-	move.l		%d1,%d2			/*  THE EXP AND 16 BITS OF X */
-	andi.l		&0x00007800,%d1		/*  4 VARYING BITS OF F'S FRACTION */
-	andi.l		&0x7FFF0000,%d2		/*  EXPONENT OF F */
-	subi.l		&0x3FFB0000,%d2		/*  K+4 */
-	asr.l		&1,%d2
-	add.l		%d2,%d1			/*  THE 7 BITS IDENTIFYING F */
-	asr.l		&7,%d1			/*  INDEX INTO TBL OF ATAN(|F|) */
-	lea		ATANTBL(%pc),%a1
-	add.l		%d1,%a1			/*  ADDRESS OF ATAN(|F|) */
-	move.l		(%a1)+,ATANF(%a6)
-	move.l		(%a1)+,ATANFHI(%a6)
-	move.l		(%a1)+,ATANFLO(%a6)	/*  ATANF IS NOW ATAN(|F|) */
-	move.l		X(%a6),%d1		/*  LOAD SIGN AND EXPO. AGAIN */
-	andi.l		&0x80000000,%d1		/*  SIGN(F) */
-	or.l		%d1,ATANF(%a6)		/*  ATANF IS NOW SIGN(F)*ATAN(|F|) */
-	move.l		(%sp)+,%d2		/*  RESTORE d2 */
+	move.l		d2,-(sp)		/*  SAVE d2 TEMPORARILY */
+	move.l		d1,d2			/*  THE EXP AND 16 BITS OF X */
+	andi.l		#0x00007800,d1		/*  4 VARYING BITS OF F'S FRACTION */
+	andi.l		#0x7FFF0000,d2		/*  EXPONENT OF F */
+	subi.l		#0x3FFB0000,d2		/*  K+4 */
+	asr.l		#1,d2
+	add.l		d2,d1			/*  THE 7 BITS IDENTIFYING F */
+	asr.l		#7,d1			/*  INDEX INTO TBL OF ATAN(|F|) */
+	lea		ATANTBL(pc),a1
+	add.l		d1,a1			/*  ADDRESS OF ATAN(|F|) */
+	move.l		(a1)+,ATANF(a6)
+	move.l		(a1)+,ATANFHI(a6)
+	move.l		(a1)+,ATANFLO(a6)	/*  ATANF IS NOW ATAN(|F|) */
+	move.l		X(a6),d1		/*  LOAD SIGN AND EXPO. AGAIN */
+	andi.l		#0x80000000,d1		/*  SIGN(F) */
+	or.l		d1,ATANF(a6)		/*  ATANF IS NOW SIGN(F)*ATAN(|F|) */
+	move.l		(sp)+,d2		/*  RESTORE d2 */
 
 /* --THAT'S ALL I HAVE TO DO FOR NOW, */
 /* --BUT ALAS, THE DIVIDE IS STILL CRANKING! */
@@ -290,29 +297,29 @@ ATANMAIN:
 /* --THE REASON FOR THIS REARRANGEMENT IS TO MAKE THE INDEPENDENT */
 /* --PARTS A1*U*V AND (A2 + ... STUFF) MORE LOAD-BALANCED */
 
-	fmovem.x		%fp2,-(%sp)		/*  save fp2 */
+	fmovem.x		fp2,-(sp)		/*  save fp2 */
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1
-	fmove.d		ATANA3(%pc),%fp2
-	fadd.x		%fp1,%fp2		/*  A3+V */
-	fmul.x		%fp1,%fp2		/*  V*(A3+V) */
-	fmul.x		%fp0,%fp1		/*  U*V */
-	fadd.d		ATANA2(%pc),%fp2	/*  A2+V*(A3+V) */
-	fmul.d		ATANA1(%pc),%fp1	/*  A1*U*V */
-	fmul.x		%fp2,%fp1		/*  A1*U*V*(A2+V*(A3+V)) */
-	fadd.x		%fp1,%fp0		/*  ATAN(U), FP1 RELEASED */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1
+	fmove.d		ATANA3(pc),fp2
+	fadd.x		fp1,fp2		/*  A3+V */
+	fmul.x		fp1,fp2		/*  V*(A3+V) */
+	fmul.x		fp0,fp1		/*  U*V */
+	fadd.d		ATANA2(pc),fp2	/*  A2+V*(A3+V) */
+	fmul.d		ATANA1(pc),fp1	/*  A1*U*V */
+	fmul.x		fp2,fp1		/*  A1*U*V*(A2+V*(A3+V)) */
+	fadd.x		fp1,fp0		/*  ATAN(U), FP1 RELEASED */
 
-	fmovem.x		(%sp)+,%fp2		/*  restore fp2 */
+	fmovem.x		(sp)+,fp2		/*  restore fp2 */
 
-	fmove.l		%d0,%fpcr		/*  restore users rnd mode,prec */
-	fadd.x		ATANF(%a6),%fp0		/*  ATAN(X) */
+	fmove.l		d0,fpcr		/*  restore users rnd mode,prec */
+	fadd.x		ATANF(a6),fp0		/*  ATAN(X) */
 	bra.l		t_inx2
 
 ATANBORS:
 /* --|X| IS IN d0 IN COMPACT FORM. FP1, d0 SAVED. */
 /* --FP0 IS X AND |X| <= 1/16 OR |X| >= 16. */
-	cmpi.l		&0x3FFF8000,%d1
+	cmpi.l		#0x3FFF8000,d1
 	bgt.w		ATANBIG			/*  I.E. |X| >= 16 */
 
 ATANSM:
@@ -322,58 +329,58 @@ ATANSM:
 /* --WHICH IS X + X*Y*( [B1+Z*(B3+Z*B5)] + [Y*(B2+Z*(B4+Z*B6)] ) */
 /* --WHERE Y = X*X, AND Z = Y*Y. */
 
-	cmpi.l		&0x3FD78000,%d1
+	cmpi.l		#0x3FD78000,d1
 	blt.w		ATANTINY
 
 /* --COMPUTE POLYNOMIAL */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2/fp3 */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2/fp3 */
 
-	fmul.x		%fp0,%fp0		/*  FPO IS Y = X*X */
+	fmul.x		fp0,fp0		/*  FPO IS Y = X*X */
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  FP1 IS Z = Y*Y */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  FP1 IS Z = Y*Y */
 
-	fmove.d		ATANB6(%pc),%fp2
-	fmove.d		ATANB5(%pc),%fp3
+	fmove.d		ATANB6(pc),fp2
+	fmove.d		ATANB5(pc),fp3
 
-	fmul.x		%fp1,%fp2		/*  Z*B6 */
-	fmul.x		%fp1,%fp3		/*  Z*B5 */
+	fmul.x		fp1,fp2		/*  Z*B6 */
+	fmul.x		fp1,fp3		/*  Z*B5 */
 
-	fadd.d		ATANB4(%pc),%fp2	/*  B4+Z*B6 */
-	fadd.d		ATANB3(%pc),%fp3	/*  B3+Z*B5 */
+	fadd.d		ATANB4(pc),fp2	/*  B4+Z*B6 */
+	fadd.d		ATANB3(pc),fp3	/*  B3+Z*B5 */
 
-	fmul.x		%fp1,%fp2		/*  Z*(B4+Z*B6) */
-	fmul.x		%fp3,%fp1		/*  Z*(B3+Z*B5) */
+	fmul.x		fp1,fp2		/*  Z*(B4+Z*B6) */
+	fmul.x		fp3,fp1		/*  Z*(B3+Z*B5) */
 
-	fadd.d		ATANB2(%pc),%fp2	/*  B2+Z*(B4+Z*B6) */
-	fadd.d		ATANB1(%pc),%fp1	/*  B1+Z*(B3+Z*B5) */
+	fadd.d		ATANB2(pc),fp2	/*  B2+Z*(B4+Z*B6) */
+	fadd.d		ATANB1(pc),fp1	/*  B1+Z*(B3+Z*B5) */
 
-	fmul.x		%fp0,%fp2		/*  Y*(B2+Z*(B4+Z*B6)) */
-	fmul.x		X(%a6),%fp0		/*  X*Y */
+	fmul.x		fp0,fp2		/*  Y*(B2+Z*(B4+Z*B6)) */
+	fmul.x		X(a6),fp0		/*  X*Y */
 
-	fadd.x		%fp2,%fp1		/*  [B1+Z*(B3+Z*B5)]+[Y*(B2+Z*(B4+Z*B6))] */
+	fadd.x		fp2,fp1		/*  [B1+Z*(B3+Z*B5)]+[Y*(B2+Z*(B4+Z*B6))] */
 
-	fmul.x		%fp1,%fp0		/*  X*Y*([B1+Z*(B3+Z*B5)]+[Y*(B2+Z*(B4+Z*B6))]) */
+	fmul.x		fp1,fp0		/*  X*Y*([B1+Z*(B3+Z*B5)]+[Y*(B2+Z*(B4+Z*B6))]) */
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  restore fp2/fp3 */
+	fmovem.x		(sp)+,fp2-fp3		/*  restore fp2/fp3 */
 
-	fmove.l		%d0,%fpcr		/*  restore users rnd mode,prec */
-	fadd.x		X(%a6),%fp0
+	fmove.l		d0,fpcr		/*  restore users rnd mode,prec */
+	fadd.x		X(a6),fp0
 	bra.l		t_inx2
 
 ATANTINY:
 /* --|X| < 2^(-40), ATAN(X) = X */
 
-	fmove.l		%d0,%fpcr		/*  restore users rnd mode,prec */
-	move.b		&FMOV_OP,%d1		/*  last inst is MOVE */
-	fmove.x		X(%a6),%fp0		/*  last inst - possible exception set */
+	fmove.l		d0,fpcr		/*  restore users rnd mode,prec */
+	move.b		#FMOV_OP,d1		/*  last inst is MOVE */
+	fmove.x		X(a6),fp0		/*  last inst - possible exception set */
 
 	bra.l		t_catch
 
 ATANBIG:
 /* --IF |X| > 2^(100), RETURN	SIGN(X)*(PI/2 - TINY). OTHERWISE, */
 /* --RETURN SIGN(X)*PI/2 + ATAN(-1/X). */
-	cmpi.l		&0x40638000,%d1
+	cmpi.l		#0x40638000,d1
 	bgt.w		ATANHUGE
 
 /* --APPROXIMATE ATAN(-1/X) BY */
@@ -381,70 +388,70 @@ ATANBIG:
 /* --THIS CAN BE RE-WRITTEN AS */
 /* --X'+X'*Y*( [C1+Z*(C3+Z*C5)] + [Y*(C2+Z*C4)] ), Z = Y*Y. */
 
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2/fp3 */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2/fp3 */
 
-	fmove.s		&0xBF800000,%fp1	/*  LOAD -1 */
-	fdiv.x		%fp0,%fp1		/*  FP1 IS -1/X */
+	fmove.s		#0xBF800000,fp1	/*  LOAD -1 */
+	fdiv.x		fp0,fp1		/*  FP1 IS -1/X */
 
 /* --DIVIDE IS STILL CRANKING */
 
-	fmove.x		%fp1,%fp0		/*  FP0 IS X' */
-	fmul.x		%fp0,%fp0		/*  FP0 IS Y = X'*X' */
-	fmove.x		%fp1,X(%a6)		/*  X IS REALLY X' */
+	fmove.x		fp1,fp0		/*  FP0 IS X' */
+	fmul.x		fp0,fp0		/*  FP0 IS Y = X'*X' */
+	fmove.x		fp1,X(a6)		/*  X IS REALLY X' */
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  FP1 IS Z = Y*Y */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  FP1 IS Z = Y*Y */
 
-	fmove.d		ATANC5(%pc),%fp3
-	fmove.d		ATANC4(%pc),%fp2
+	fmove.d		ATANC5(pc),fp3
+	fmove.d		ATANC4(pc),fp2
 
-	fmul.x		%fp1,%fp3		/*  Z*C5 */
-	fmul.x		%fp1,%fp2		/*  Z*B4 */
+	fmul.x		fp1,fp3		/*  Z*C5 */
+	fmul.x		fp1,fp2		/*  Z*B4 */
 
-	fadd.d		ATANC3(%pc),%fp3	/*  C3+Z*C5 */
-	fadd.d		ATANC2(%pc),%fp2	/*  C2+Z*C4 */
+	fadd.d		ATANC3(pc),fp3	/*  C3+Z*C5 */
+	fadd.d		ATANC2(pc),fp2	/*  C2+Z*C4 */
 
-	fmul.x		%fp3,%fp1		/*  Z*(C3+Z*C5), FP3 RELEASED */
-	fmul.x		%fp0,%fp2		/*  Y*(C2+Z*C4) */
+	fmul.x		fp3,fp1		/*  Z*(C3+Z*C5), FP3 RELEASED */
+	fmul.x		fp0,fp2		/*  Y*(C2+Z*C4) */
 
-	fadd.d		ATANC1(%pc),%fp1	/*  C1+Z*(C3+Z*C5) */
-	fmul.x		X(%a6),%fp0		/*  X'*Y */
+	fadd.d		ATANC1(pc),fp1	/*  C1+Z*(C3+Z*C5) */
+	fmul.x		X(a6),fp0		/*  X'*Y */
 
-	fadd.x		%fp2,%fp1		/*  [Y*(C2+Z*C4)]+[C1+Z*(C3+Z*C5)] */
+	fadd.x		fp2,fp1		/*  [Y*(C2+Z*C4)]+[C1+Z*(C3+Z*C5)] */
 
-	fmul.x		%fp1,%fp0		/*  X'*Y*([B1+Z*(B3+Z*B5)] */
+	fmul.x		fp1,fp0		/*  X'*Y*([B1+Z*(B3+Z*B5)] */
 /* 					...	+[Y*(B2+Z*(B4+Z*B6))]) */
-	fadd.x		X(%a6),%fp0
+	fadd.x		X(a6),fp0
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  restore fp2/fp3 */
+	fmovem.x		(sp)+,fp2-fp3		/*  restore fp2/fp3 */
 
-	fmove.l		%d0,%fpcr		/*  restore users rnd mode,prec */
-	tst.b		(%a0)
+	fmove.l		d0,fpcr		/*  restore users rnd mode,prec */
+	tst.b		(a0)
 	bpl.b		pos_big
 
 neg_big:
-	fadd.x		NPIBY2(%pc),%fp0
+	fadd.x		NPIBY2(pc),fp0
 	bra.l		t_minx2
 
 pos_big:
-	fadd.x		PPIBY2(%pc),%fp0
+	fadd.x		PPIBY2(pc),fp0
 	bra.l		t_pinx2
 
 ATANHUGE:
 /* --RETURN SIGN(X)*(PIBY2 - TINY) = SIGN(X)*PIBY2 - SIGN(X)*TINY */
-	tst.b		(%a0)
+	tst.b		(a0)
 	bpl.b		pos_huge
 
 neg_huge:
-	fmove.x		NPIBY2(%pc),%fp0
-	fmove.l		%d0,%fpcr
-	fadd.x		PTINY(%pc),%fp0
+	fmove.x		NPIBY2(pc),fp0
+	fmove.l		d0,fpcr
+	fadd.x		PTINY(pc),fp0
 	bra.l		t_minx2
 
 pos_huge:
-	fmove.x		PPIBY2(%pc),%fp0
-	fmove.l		%d0,%fpcr
-	fadd.x		NTINY(%pc),%fp0
+	fmove.x		PPIBY2(pc),fp0
+	fmove.l		d0,fpcr
+	fadd.x		NTINY(pc),fp0
 	bra.l		t_pinx2
 
 	.globl		satand

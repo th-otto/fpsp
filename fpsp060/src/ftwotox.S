@@ -179,82 +179,82 @@ TEXPTBL:
 	.globl		stwotox
 /* --ENTRY POINT FOR 2**(X), HERE X IS FINITE, NON-ZERO, AND NOT NAN'S */
 stwotox:
-	fmovem.x	(%a0),%fp0		/*  LOAD INPUT */
+	fmovem.x	(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
-	fmove.x		%fp0,X(%a6)
-	andi.l		&0x7FFFFFFF,%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
+	fmove.x		fp0,X(a6)
+	andi.l		#0x7FFFFFFF,d1
 
-	cmpi.l		&0x3FB98000,%d1		/*  |X| >= 2**(-70)? */
+	cmpi.l		#0x3FB98000,d1		/*  |X| >= 2**(-70)? */
 	bge.b		TWOOK1
 	bra.w		EXPBORS
 
 TWOOK1:
-	cmpi.l		&0x400D80C0,%d1		/*  |X| > 16480? */
+	cmpi.l		#0x400D80C0,d1		/*  |X| > 16480? */
 	ble.b		TWOMAIN
 	bra.w		EXPBORS
 
 TWOMAIN:
 /* --USUAL CASE, 2^(-70) <= |X| <= 16480 */
 
-	fmove.x		%fp0,%fp1
-	fmul.s		&0x42800000,%fp1	/*  64 * X */
-	fmove.l		%fp1,INT(%a6)		/*  N = ROUND-TO-INT(64 X) */
-	move.l		%d2,-(%sp)
-	lea		TEXPTBL(%pc),%a1	/*  LOAD ADDRESS OF TABLE OF 2^(J/64) */
-	fmove.l		INT(%a6),%fp1		/*  N --> FLOATING FMT */
-	move.l		INT(%a6),%d1
-	move.l		%d1,%d2
-	andi.l		&0x3F,%d1		/*  D0 IS J */
-	asl.l		&4,%d1			/*  DISPLACEMENT FOR 2^(J/64) */
-	add.l		%d1,%a1			/*  ADDRESS FOR 2^(J/64) */
-	asr.l		&6,%d2			/*  d2 IS L, N = 64L + J */
-	move.l		%d2,%d1
-	asr.l		&1,%d1			/*  D0 IS M */
-	sub.l		%d1,%d2			/*  d2 IS M', N = 64(M+M') + J */
-	addi.l		&0x3FFF,%d2
+	fmove.x		fp0,fp1
+	fmul.s		#0x42800000,fp1	/*  64 * X */
+	fmove.l		fp1,INT(a6)		/*  N = ROUND-TO-INT(64 X) */
+	move.l		d2,-(sp)
+	lea		TEXPTBL(pc),a1	/*  LOAD ADDRESS OF TABLE OF 2^(J/64) */
+	fmove.l		INT(a6),fp1		/*  N --> FLOATING FMT */
+	move.l		INT(a6),d1
+	move.l		d1,d2
+	andi.l		#0x3F,d1		/*  D0 IS J */
+	asl.l		#4,d1			/*  DISPLACEMENT FOR 2^(J/64) */
+	add.l		d1,a1			/*  ADDRESS FOR 2^(J/64) */
+	asr.l		#6,d2			/*  d2 IS L, N = 64L + J */
+	move.l		d2,d1
+	asr.l		#1,d1			/*  D0 IS M */
+	sub.l		d1,d2			/*  d2 IS M', N = 64(M+M') + J */
+	addi.l		#0x3FFF,d2
 
 /* --SUMMARY: a1 IS ADDRESS FOR THE LEADING PORTION OF 2^(J/64), */
 /* --D0 IS M WHERE N = 64(M+M') + J. NOTE THAT |M| <= 16140 BY DESIGN. */
 /* --ADJFACT = 2^(M'). */
 /* --REGISTERS SAVED SO FAR ARE (IN ORDER) FPCR, D0, FP1, a1, AND FP2. */
 
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2/fp3 */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2/fp3 */
 
-	fmul.s		&0x3C800000,%fp1	/*  (1/64)*N */
-	move.l		(%a1)+,FACT1(%a6)
-	move.l		(%a1)+,FACT1HI(%a6)
-	move.l		(%a1)+,FACT1LOW(%a6)
-	move.w		(%a1)+,FACT2(%a6)
+	fmul.s		#0x3C800000,fp1	/*  (1/64)*N */
+	move.l		(a1)+,FACT1(a6)
+	move.l		(a1)+,FACT1HI(a6)
+	move.l		(a1)+,FACT1LOW(a6)
+	move.w		(a1)+,FACT2(a6)
 
-	fsub.x		%fp1,%fp0		/*  X - (1/64)*INT(64 X) */
+	fsub.x		fp1,fp0		/*  X - (1/64)*INT(64 X) */
 
-	move.w		(%a1)+,FACT2HI(%a6)
-	clr.w		FACT2HI+2(%a6)
-	clr.l		FACT2LOW(%a6)
-	add.w		%d1,FACT1(%a6)
-	fmul.x		LOG2(%pc),%fp0		/*  FP0 IS R */
-	add.w		%d1,FACT2(%a6)
+	move.w		(a1)+,FACT2HI(a6)
+	clr.w		FACT2HI+2(a6)
+	clr.l		FACT2LOW(a6)
+	add.w		d1,FACT1(a6)
+	fmul.x		LOG2(pc),fp0		/*  FP0 IS R */
+	add.w		d1,FACT2(a6)
 
 	bra.w		expr
 
 EXPBORS:
 /* --FPCR, D0 SAVED */
-	cmpi.l		&0x3FFF8000,%d1
+	cmpi.l		#0x3FFF8000,d1
 	bgt.b		TEXPBIG
 
 /* --|X| IS SMALL, RETURN 1 + X */
 
-	fmove.l		%d0,%fpcr		/*  restore users round prec,mode */
-	fadd.s		&0x3F800000,%fp0	/*  RETURN 1 + X */
+	fmove.l		d0,fpcr		/*  restore users round prec,mode */
+	fadd.s		#0x3F800000,fp0	/*  RETURN 1 + X */
 	bra.l		t_pinx2
 
 TEXPBIG:
 /* --|X| IS LARGE, GENERATE OVERFLOW IF X > 0; ELSE GENERATE UNDERFLOW */
 /* --REGISTERS SAVE SO FAR ARE FPCR AND  D0 */
-	move.l		X(%a6),%d1
-	cmpi.l		&0,%d1
+	move.l		X(a6),d1
+	cmpi.l		#0,d1
 	blt.b		EXPNEG
 
 	bra.l		t_ovfl2			/*  t_ovfl expects positive value */
@@ -266,79 +266,79 @@ EXPNEG:
 stwotoxd:
 /* --ENTRY POINT FOR 2**(X) FOR DENORMALIZED ARGUMENT */
 
-	fmove.l		%d0,%fpcr		/*  set user's rounding mode/precision */
-	fmove.s		&0x3F800000,%fp0	/*  RETURN 1 + X */
-	move.l		(%a0),%d1
-	ori.l		&0x00800001,%d1
-	fadd.s		%d1,%fp0
+	fmove.l		d0,fpcr		/*  set user's rounding mode/precision */
+	fmove.s		#0x3F800000,fp0	/*  RETURN 1 + X */
+	move.l		(a0),d1
+	ori.l		#0x00800001,d1
+	fadd.s		d1,fp0
 	bra.l		t_pinx2
 
 	.globl		stentox
 /* --ENTRY POINT FOR 10**(X), HERE X IS FINITE, NON-ZERO, AND NOT NAN'S */
 stentox:
-	fmovem.x	(%a0),%fp0		/*  LOAD INPUT */
+	fmovem.x	(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
-	fmove.x		%fp0,X(%a6)
-	andi.l		&0x7FFFFFFF,%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
+	fmove.x		fp0,X(a6)
+	andi.l		#0x7FFFFFFF,d1
 
-	cmpi.l		&0x3FB98000,%d1		/*  |X| >= 2**(-70)? */
+	cmpi.l		#0x3FB98000,d1		/*  |X| >= 2**(-70)? */
 	bge.b		TENOK1
 	bra.w		EXPBORS
 
 TENOK1:
-	cmpi.l		&0x400B9B07,%d1		/*  |X| <= 16480*log2/log10 ? */
+	cmpi.l		#0x400B9B07,d1		/*  |X| <= 16480*log2/log10 ? */
 	ble.b		TENMAIN
 	bra.w		EXPBORS
 
 TENMAIN:
 /* --USUAL CASE, 2^(-70) <= |X| <= 16480 LOG 2 / LOG 10 */
 
-	fmove.x		%fp0,%fp1
-	fmul.d		L2TEN64(%pc),%fp1	/*  X*64*LOG10/LOG2 */
-	fmove.l		%fp1,INT(%a6)		/*  N=INT(X*64*LOG10/LOG2) */
-	move.l		%d2,-(%sp)
-	lea		TEXPTBL(%pc),%a1	/*  LOAD ADDRESS OF TABLE OF 2^(J/64) */
-	fmove.l		INT(%a6),%fp1		/*  N --> FLOATING FMT */
-	move.l		INT(%a6),%d1
-	move.l		%d1,%d2
-	andi.l		&0x3F,%d1		/*  D0 IS J */
-	asl.l		&4,%d1			/*  DISPLACEMENT FOR 2^(J/64) */
-	add.l		%d1,%a1			/*  ADDRESS FOR 2^(J/64) */
-	asr.l		&6,%d2			/*  d2 IS L, N = 64L + J */
-	move.l		%d2,%d1
-	asr.l		&1,%d1			/*  D0 IS M */
-	sub.l		%d1,%d2			/*  d2 IS M', N = 64(M+M') + J */
-	addi.l		&0x3FFF,%d2
+	fmove.x		fp0,fp1
+	fmul.d		L2TEN64(pc),fp1	/*  X*64*LOG10/LOG2 */
+	fmove.l		fp1,INT(a6)		/*  N=INT(X*64*LOG10/LOG2) */
+	move.l		d2,-(sp)
+	lea		TEXPTBL(pc),a1	/*  LOAD ADDRESS OF TABLE OF 2^(J/64) */
+	fmove.l		INT(a6),fp1		/*  N --> FLOATING FMT */
+	move.l		INT(a6),d1
+	move.l		d1,d2
+	andi.l		#0x3F,d1		/*  D0 IS J */
+	asl.l		#4,d1			/*  DISPLACEMENT FOR 2^(J/64) */
+	add.l		d1,a1			/*  ADDRESS FOR 2^(J/64) */
+	asr.l		#6,d2			/*  d2 IS L, N = 64L + J */
+	move.l		d2,d1
+	asr.l		#1,d1			/*  D0 IS M */
+	sub.l		d1,d2			/*  d2 IS M', N = 64(M+M') + J */
+	addi.l		#0x3FFF,d2
 
 /* --SUMMARY: a1 IS ADDRESS FOR THE LEADING PORTION OF 2^(J/64), */
 /* --D0 IS M WHERE N = 64(M+M') + J. NOTE THAT |M| <= 16140 BY DESIGN. */
 /* --ADJFACT = 2^(M'). */
 /* --REGISTERS SAVED SO FAR ARE (IN ORDER) FPCR, D0, FP1, a1, AND FP2. */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2/fp3 */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2/fp3 */
 
-	fmove.x		%fp1,%fp2
+	fmove.x		fp1,fp2
 
-	fmul.d		L10TWO1(%pc),%fp1	/*  N*(LOG2/64LOG10)_LEAD */
-	move.l		(%a1)+,FACT1(%a6)
+	fmul.d		L10TWO1(pc),fp1	/*  N*(LOG2/64LOG10)_LEAD */
+	move.l		(a1)+,FACT1(a6)
 
-	fmul.x		L10TWO2(%pc),%fp2	/*  N*(LOG2/64LOG10)_TRAIL */
+	fmul.x		L10TWO2(pc),fp2	/*  N*(LOG2/64LOG10)_TRAIL */
 
-	move.l		(%a1)+,FACT1HI(%a6)
-	move.l		(%a1)+,FACT1LOW(%a6)
-	fsub.x		%fp1,%fp0		/*  X - N L_LEAD */
-	move.w		(%a1)+,FACT2(%a6)
+	move.l		(a1)+,FACT1HI(a6)
+	move.l		(a1)+,FACT1LOW(a6)
+	fsub.x		fp1,fp0		/*  X - N L_LEAD */
+	move.w		(a1)+,FACT2(a6)
 
-	fsub.x		%fp2,%fp0		/*  X - N L_TRAIL */
+	fsub.x		fp2,fp0		/*  X - N L_TRAIL */
 
-	move.w		(%a1)+,FACT2HI(%a6)
-	clr.w		FACT2HI+2(%a6)
-	clr.l		FACT2LOW(%a6)
+	move.w		(a1)+,FACT2HI(a6)
+	clr.w		FACT2HI+2(a6)
+	clr.l		FACT2LOW(a6)
 
-	fmul.x		LOG10(%pc),%fp0		/*  FP0 IS R */
-	add.w		%d1,FACT1(%a6)
-	add.w		%d1,FACT2(%a6)
+	fmul.x		LOG10(pc),fp0		/*  FP0 IS R */
+	add.w		d1,FACT1(a6)
+	add.w		d1,FACT2(a6)
 
 expr:
 /* --FPCR, FP2, FP3 ARE SAVED IN ORDER AS SHOWN. */
@@ -346,54 +346,54 @@ expr:
 /* --FP0 IS R. THE FOLLOWING CODE COMPUTES */
 /* --	2**(M'+M) * 2**(J/64) * EXP(R) */
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  FP1 IS S = R*R */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  FP1 IS S = R*R */
 
-	fmove.d		EXPA5(%pc),%fp2		/*  FP2 IS A5 */
-	fmove.d		EXPA4(%pc),%fp3		/*  FP3 IS A4 */
+	fmove.d		EXPA5(pc),fp2		/*  FP2 IS A5 */
+	fmove.d		EXPA4(pc),fp3		/*  FP3 IS A4 */
 
-	fmul.x		%fp1,%fp2		/*  FP2 IS S*A5 */
-	fmul.x		%fp1,%fp3		/*  FP3 IS S*A4 */
+	fmul.x		fp1,fp2		/*  FP2 IS S*A5 */
+	fmul.x		fp1,fp3		/*  FP3 IS S*A4 */
 
-	fadd.d		EXPA3(%pc),%fp2		/*  FP2 IS A3+S*A5 */
-	fadd.d		EXPA2(%pc),%fp3		/*  FP3 IS A2+S*A4 */
+	fadd.d		EXPA3(pc),fp2		/*  FP2 IS A3+S*A5 */
+	fadd.d		EXPA2(pc),fp3		/*  FP3 IS A2+S*A4 */
 
-	fmul.x		%fp1,%fp2		/*  FP2 IS S*(A3+S*A5) */
-	fmul.x		%fp1,%fp3		/*  FP3 IS S*(A2+S*A4) */
+	fmul.x		fp1,fp2		/*  FP2 IS S*(A3+S*A5) */
+	fmul.x		fp1,fp3		/*  FP3 IS S*(A2+S*A4) */
 
-	fadd.d		EXPA1(%pc),%fp2		/*  FP2 IS A1+S*(A3+S*A5) */
-	fmul.x		%fp0,%fp3		/*  FP3 IS R*S*(A2+S*A4) */
+	fadd.d		EXPA1(pc),fp2		/*  FP2 IS A1+S*(A3+S*A5) */
+	fmul.x		fp0,fp3		/*  FP3 IS R*S*(A2+S*A4) */
 
-	fmul.x		%fp1,%fp2		/*  FP2 IS S*(A1+S*(A3+S*A5)) */
-	fadd.x		%fp3,%fp0		/*  FP0 IS R+R*S*(A2+S*A4) */
-	fadd.x		%fp2,%fp0		/*  FP0 IS EXP(R) - 1 */
+	fmul.x		fp1,fp2		/*  FP2 IS S*(A1+S*(A3+S*A5)) */
+	fadd.x		fp3,fp0		/*  FP0 IS R+R*S*(A2+S*A4) */
+	fadd.x		fp2,fp0		/*  FP0 IS EXP(R) - 1 */
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  restore fp2/fp3 */
+	fmovem.x		(sp)+,fp2-fp3		/*  restore fp2/fp3 */
 
 /* --FINAL RECONSTRUCTION PROCESS */
 /* --EXP(X) = 2^M*2^(J/64) + 2^M*2^(J/64)*(EXP(R)-1)  -  (1 OR 0) */
 
-	fmul.x		FACT1(%a6),%fp0
-	fadd.x		FACT2(%a6),%fp0
-	fadd.x		FACT1(%a6),%fp0
+	fmul.x		FACT1(a6),fp0
+	fadd.x		FACT2(a6),fp0
+	fadd.x		FACT1(a6),fp0
 
-	fmove.l		%d0,%fpcr		/*  restore users round prec,mode */
-	move.w		%d2,ADJFACT(%a6)	/*  INSERT EXPONENT */
-	move.l		(%sp)+,%d2
-	move.l		&0x80000000,ADJFACT+4(%a6)
-	clr.l		ADJFACT+8(%a6)
-	move.b		&FMUL_OP,%d1		/*  last inst is MUL */
-	fmul.x		ADJFACT(%a6),%fp0	/*  FINAL ADJUSTMENT */
+	fmove.l		d0,fpcr		/*  restore users round prec,mode */
+	move.w		d2,ADJFACT(a6)	/*  INSERT EXPONENT */
+	move.l		(sp)+,d2
+	move.l		#0x80000000,ADJFACT+4(a6)
+	clr.l		ADJFACT+8(a6)
+	move.b		#FMUL_OP,d1		/*  last inst is MUL */
+	fmul.x		ADJFACT(a6),fp0	/*  FINAL ADJUSTMENT */
 	bra.l		t_catch
 
 	.globl		stentoxd
 stentoxd:
 /* --ENTRY POINT FOR 10**(X) FOR DENORMALIZED ARGUMENT */
 
-	fmove.l		%d0,%fpcr		/*  set user's rounding mode/precision */
-	fmove.s		&0x3F800000,%fp0	/*  RETURN 1 + X */
-	move.l		(%a0),%d1
-	ori.l		&0x00800001,%d1
-	fadd.s		%d1,%fp0
+	fmove.l		d0,fpcr		/*  set user's rounding mode/precision */
+	fmove.s		#0x3F800000,fp0	/*  RETURN 1 + X */
+	move.l		(a0),d1
+	ori.l		#0x00800001,d1
+	fadd.s		d1,fp0
 	bra.l		t_pinx2
 

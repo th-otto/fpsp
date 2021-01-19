@@ -47,6 +47,12 @@
 
 	.include "hdr.fpu"
 
+	.xref t_extdnrm
+	.xref t_inx2
+	.xref t_catch
+	.xref t_pinx2
+	.xref TWOBYPI
+
 	.text
 
 TANQ4:
@@ -156,132 +162,132 @@ PITBL:
 
 	.globl		stan
 stan:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
-	andi.l		&0x7FFFFFFF,%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
+	andi.l		#0x7FFFFFFF,d1
 
-	cmpi.l		&0x3FD78000,%d1		/*  |X| >= 2**(-40)? */
+	cmpi.l		#0x3FD78000,d1		/*  |X| >= 2**(-40)? */
 	bge.b		TANOK1
 	bra.w		TANSM
 TANOK1:
-	cmpi.l		&0x4004BC7E,%d1		/*  |X| < 15 PI? */
+	cmpi.l		#0x4004BC7E,d1		/*  |X| < 15 PI? */
 	blt.b		TANMAIN
 	bra.w		REDUCEX
 
 TANMAIN:
 /* --THIS IS THE USUAL CASE, |X| <= 15 PI. */
 /* --THE ARGUMENT REDUCTION IS DONE BY TABLE LOOK UP. */
-	fmove.x		%fp0,%fp1
-	fmul.d		TWOBYPI(%pc),%fp1	/*  X*2/PI */
+	fmove.x		fp0,fp1
+	fmul.d		TWOBYPI(pc),fp1	/*  X*2/PI */
 
-	lea.l		PITBL+0x200(%pc),%a1	/*  TABLE OF N*PI/2, N = -32,...,32 */
+	lea.l		PITBL+0x200(pc),a1	/*  TABLE OF N*PI/2, N = -32,...,32 */
 
-	fmove.l		%fp1,%d1		/*  CONVERT TO INTEGER */
+	fmove.l		fp1,d1		/*  CONVERT TO INTEGER */
 
-	asl.l		&4,%d1
-	add.l		%d1,%a1			/*  ADDRESS N*PIBY2 IN Y1, Y2 */
+	asl.l		#4,d1
+	add.l		d1,a1			/*  ADDRESS N*PIBY2 IN Y1, Y2 */
 
-	fsub.x		(%a1)+,%fp0		/*  X-Y1 */
+	fsub.x		(a1)+,fp0		/*  X-Y1 */
 
-	fsub.s		(%a1),%fp0		/*  FP0 IS R = (X-Y1)-Y2 */
+	fsub.s		(a1),fp0		/*  FP0 IS R = (X-Y1)-Y2 */
 
-	ror.l		&5,%d1
-	andi.l		&0x80000000,%d1		/*  D0 WAS ODD IFF D0 < 0 */
+	ror.l		#5,d1
+	andi.l		#0x80000000,d1		/*  D0 WAS ODD IFF D0 < 0 */
 
 TANCONT:
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2,fp3 */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2,fp3 */
 
-	cmpi.l		&0,%d1
+	cmpi.l		#0,d1
 	blt.w		NODD
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  S = R*R */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  S = R*R */
 
-	fmove.d		TANQ4(%pc),%fp3
-	fmove.d		TANP3(%pc),%fp2
+	fmove.d		TANQ4(pc),fp3
+	fmove.d		TANP3(pc),fp2
 
-	fmul.x		%fp1,%fp3		/*  SQ4 */
-	fmul.x		%fp1,%fp2		/*  SP3 */
+	fmul.x		fp1,fp3		/*  SQ4 */
+	fmul.x		fp1,fp2		/*  SP3 */
 
-	fadd.d		TANQ3(%pc),%fp3		/*  Q3+SQ4 */
-	fadd.x		TANP2(%pc),%fp2		/*  P2+SP3 */
+	fadd.d		TANQ3(pc),fp3		/*  Q3+SQ4 */
+	fadd.x		TANP2(pc),fp2		/*  P2+SP3 */
 
-	fmul.x		%fp1,%fp3		/*  S(Q3+SQ4) */
-	fmul.x		%fp1,%fp2		/*  S(P2+SP3) */
+	fmul.x		fp1,fp3		/*  S(Q3+SQ4) */
+	fmul.x		fp1,fp2		/*  S(P2+SP3) */
 
-	fadd.x		TANQ2(%pc),%fp3		/*  Q2+S(Q3+SQ4) */
-	fadd.x		TANP1(%pc),%fp2		/*  P1+S(P2+SP3) */
+	fadd.x		TANQ2(pc),fp3		/*  Q2+S(Q3+SQ4) */
+	fadd.x		TANP1(pc),fp2		/*  P1+S(P2+SP3) */
 
-	fmul.x		%fp1,%fp3		/*  S(Q2+S(Q3+SQ4)) */
-	fmul.x		%fp1,%fp2		/*  S(P1+S(P2+SP3)) */
+	fmul.x		fp1,fp3		/*  S(Q2+S(Q3+SQ4)) */
+	fmul.x		fp1,fp2		/*  S(P1+S(P2+SP3)) */
 
-	fadd.x		TANQ1(%pc),%fp3		/*  Q1+S(Q2+S(Q3+SQ4)) */
-	fmul.x		%fp0,%fp2		/*  RS(P1+S(P2+SP3)) */
+	fadd.x		TANQ1(pc),fp3		/*  Q1+S(Q2+S(Q3+SQ4)) */
+	fmul.x		fp0,fp2		/*  RS(P1+S(P2+SP3)) */
 
-	fmul.x		%fp3,%fp1		/*  S(Q1+S(Q2+S(Q3+SQ4))) */
+	fmul.x		fp3,fp1		/*  S(Q1+S(Q2+S(Q3+SQ4))) */
 
-	fadd.x		%fp2,%fp0		/*  R+RS(P1+S(P2+SP3)) */
+	fadd.x		fp2,fp0		/*  R+RS(P1+S(P2+SP3)) */
 
-	fadd.s		&0x3F800000,%fp1	/*  1+S(Q1+...) */
+	fadd.s		#0x3F800000,fp1	/*  1+S(Q1+...) */
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  restore fp2,fp3 */
+	fmovem.x		(sp)+,fp2-fp3		/*  restore fp2,fp3 */
 
-	fmove.l		%d0,%fpcr		/*  restore users round mode,prec */
-	fdiv.x		%fp1,%fp0		/*  last inst - possible exception set */
+	fmove.l		d0,fpcr		/*  restore users round mode,prec */
+	fdiv.x		fp1,fp0		/*  last inst - possible exception set */
 	bra.l		t_inx2
 
 NODD:
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp0,%fp0		/*  S = R*R */
+	fmove.x		fp0,fp1
+	fmul.x		fp0,fp0		/*  S = R*R */
 
-	fmove.d		TANQ4(%pc),%fp3
-	fmove.d		TANP3(%pc),%fp2
+	fmove.d		TANQ4(pc),fp3
+	fmove.d		TANP3(pc),fp2
 
-	fmul.x		%fp0,%fp3		/*  SQ4 */
-	fmul.x		%fp0,%fp2		/*  SP3 */
+	fmul.x		fp0,fp3		/*  SQ4 */
+	fmul.x		fp0,fp2		/*  SP3 */
 
-	fadd.d		TANQ3(%pc),%fp3		/*  Q3+SQ4 */
-	fadd.x		TANP2(%pc),%fp2		/*  P2+SP3 */
+	fadd.d		TANQ3(pc),fp3		/*  Q3+SQ4 */
+	fadd.x		TANP2(pc),fp2		/*  P2+SP3 */
 
-	fmul.x		%fp0,%fp3		/*  S(Q3+SQ4) */
-	fmul.x		%fp0,%fp2		/*  S(P2+SP3) */
+	fmul.x		fp0,fp3		/*  S(Q3+SQ4) */
+	fmul.x		fp0,fp2		/*  S(P2+SP3) */
 
-	fadd.x		TANQ2(%pc),%fp3		/*  Q2+S(Q3+SQ4) */
-	fadd.x		TANP1(%pc),%fp2		/*  P1+S(P2+SP3) */
+	fadd.x		TANQ2(pc),fp3		/*  Q2+S(Q3+SQ4) */
+	fadd.x		TANP1(pc),fp2		/*  P1+S(P2+SP3) */
 
-	fmul.x		%fp0,%fp3		/*  S(Q2+S(Q3+SQ4)) */
-	fmul.x		%fp0,%fp2		/*  S(P1+S(P2+SP3)) */
+	fmul.x		fp0,fp3		/*  S(Q2+S(Q3+SQ4)) */
+	fmul.x		fp0,fp2		/*  S(P1+S(P2+SP3)) */
 
-	fadd.x		TANQ1(%pc),%fp3		/*  Q1+S(Q2+S(Q3+SQ4)) */
-	fmul.x		%fp1,%fp2		/*  RS(P1+S(P2+SP3)) */
+	fadd.x		TANQ1(pc),fp3		/*  Q1+S(Q2+S(Q3+SQ4)) */
+	fmul.x		fp1,fp2		/*  RS(P1+S(P2+SP3)) */
 
-	fmul.x		%fp3,%fp0		/*  S(Q1+S(Q2+S(Q3+SQ4))) */
+	fmul.x		fp3,fp0		/*  S(Q1+S(Q2+S(Q3+SQ4))) */
 
-	fadd.x		%fp2,%fp1		/*  R+RS(P1+S(P2+SP3)) */
-	fadd.s		&0x3F800000,%fp0	/*  1+S(Q1+...) */
+	fadd.x		fp2,fp1		/*  R+RS(P1+S(P2+SP3)) */
+	fadd.s		#0x3F800000,fp0	/*  1+S(Q1+...) */
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  restore fp2,fp3 */
+	fmovem.x		(sp)+,fp2-fp3		/*  restore fp2,fp3 */
 
-	fmove.x		%fp1,-(%sp)
-	eor.l		&0x80000000,(%sp)
+	fmove.x		fp1,-(sp)
+	eor.l		#0x80000000,(sp)
 
-	fmove.l		%d0,%fpcr		/*  restore users round mode,prec */
-	fdiv.x		(%sp)+,%fp0		/*  last inst - possible exception set */
+	fmove.l		d0,fpcr		/*  restore users round mode,prec */
+	fdiv.x		(sp)+,fp0		/*  last inst - possible exception set */
 	bra.l		t_inx2
 
 TANBORS:
 /* --IF |X| > 15PI, WE USE THE GENERAL ARGUMENT REDUCTION. */
 /* --IF |X| < 2**(-40), RETURN X OR 1. */
-	cmpi.l		&0x3FFF8000,%d1
+	cmpi.l		#0x3FFF8000,d1
 	bgt.b		REDUCEX
 
 TANSM:
-	fmove.x		%fp0,-(%sp)
-	fmove.l		%d0,%fpcr		/*  restore users round mode,prec */
-	move.b		&FMOV_OP,%d1		/*  last inst is MOVE */
-	fmove.x		(%sp)+,%fp0		/*  last inst - posibble exception set */
+	fmove.x		fp0,-(sp)
+	fmove.l		d0,fpcr		/*  restore users round mode,prec */
+	move.b		#FMOV_OP,d1		/*  last inst is MOVE */
+	fmove.x		(sp)+,fp0		/*  last inst - posibble exception set */
 	bra.l		t_catch
 
 	.globl		stand
@@ -293,57 +299,57 @@ stand:
 /* --THIS REDUCTION METHOD, HOWEVER, IS MUCH FASTER THAN USING */
 /* --THE REMAINDER INSTRUCTION WHICH IS NOW IN SOFTWARE. */
 REDUCEX:
-	fmovem.x		%fp2-%fp5,-(%sp)		/*  save {fp2-fp5} */
-	move.l		%d2,-(%sp)		/*  save d2 */
-	fmove.s		&0x00000000,%fp1	/*  fp1 = 0 */
+	fmovem.x		fp2-fp5,-(sp)		/*  save {fp2-fp5} */
+	move.l		d2,-(sp)		/*  save d2 */
+	fmove.s		#0x00000000,fp1	/*  fp1 = 0 */
 
 /* --If compact form of abs(arg) in d0=$7ffeffff, argument is so large that */
 /* --there is a danger of unwanted overflow in first LOOP iteration.  In this */
 /* --case, reduce argument by one remainder step to make subsequent reduction */
 /* --safe. */
-	cmpi.l		&0x7ffeffff,%d1		/*  is arg dangerously large? */
+	cmpi.l		#0x7ffeffff,d1		/*  is arg dangerously large? */
 	bne.b		LOOP			/*  no */
 
 /*  yes; create 2**16383*PI/2 */
-	move.w		&0x7ffe,FP_SCR0_EX(%a6)
-	move.l		&0xc90fdaa2,FP_SCR0_HI(%a6)
-	clr.l		FP_SCR0_LO(%a6)
+	move.w		#0x7ffe,FP_SCR0_EX(a6)
+	move.l		#0xc90fdaa2,FP_SCR0_HI(a6)
+	clr.l		FP_SCR0_LO(a6)
 
 /*  create low half of 2**16383*PI/2 at FP_SCR1 */
-	move.w		&0x7fdc,FP_SCR1_EX(%a6)
-	move.l		&0x85a308d3,FP_SCR1_HI(%a6)
-	clr.l		FP_SCR1_LO(%a6)
+	move.w		#0x7fdc,FP_SCR1_EX(a6)
+	move.l		#0x85a308d3,FP_SCR1_HI(a6)
+	clr.l		FP_SCR1_LO(a6)
 
-	ftst.x		%fp0			/*  test sign of argument */
+	ftst.x		fp0			/*  test sign of argument */
 	fblt		red_neg
 
-	or.b		&0x80,FP_SCR0_EX(%a6)	/*  positive arg */
-	or.b		&0x80,FP_SCR1_EX(%a6)
+	or.b		#0x80,FP_SCR0_EX(a6)	/*  positive arg */
+	or.b		#0x80,FP_SCR1_EX(a6)
 red_neg:
-	fadd.x		FP_SCR0(%a6),%fp0	/*  high part of reduction is exact */
-	fmove.x		%fp0,%fp1		/*  save high result in fp1 */
-	fadd.x		FP_SCR1(%a6),%fp0	/*  low part of reduction */
-	fsub.x		%fp0,%fp1		/*  determine low component of result */
-	fadd.x		FP_SCR1(%a6),%fp1	/*  fp0/fp1 are reduced argument. */
+	fadd.x		FP_SCR0(a6),fp0	/*  high part of reduction is exact */
+	fmove.x		fp0,fp1		/*  save high result in fp1 */
+	fadd.x		FP_SCR1(a6),fp0	/*  low part of reduction */
+	fsub.x		fp0,fp1		/*  determine low component of result */
+	fadd.x		FP_SCR1(a6),fp1	/*  fp0/fp1 are reduced argument. */
 
 /* --ON ENTRY, FP0 IS X, ON RETURN, FP0 IS X REM PI/2, |X| <= PI/4. */
 /* --integer quotient will be stored in N */
 /* --Intermeditate remainder is 66-bit long; (R,r) in (FP0,FP1) */
 LOOP:
-	fmove.x		%fp0,INARG(%a6)		/*  +-2**K * F, 1 <= F < 2 */
-	move.w		INARG(%a6),%d1
-	move.l		%d1,%a1			/*  save a copy of D0 */
-	andi.l		&0x00007FFF,%d1
-	subi.l		&0x00003FFF,%d1		/*  d0 = K */
-	cmpi.l		&28,%d1
+	fmove.x		fp0,INARG(a6)		/*  +-2**K * F, 1 <= F < 2 */
+	move.w		INARG(a6),d1
+	move.l		d1,a1			/*  save a copy of D0 */
+	andi.l		#0x00007FFF,d1
+	subi.l		#0x00003FFF,d1		/*  d0 = K */
+	cmpi.l		#28,d1
 	ble.b		LASTLOOP
 CONTLOOP:
-	subi.l		&27,%d1			/*  d0 = L := K-27 */
-	move.b		&0,ENDFLAG(%a6)
+	subi.l		#27,d1			/*  d0 = L := K-27 */
+	move.b		#0,ENDFLAG(a6)
 	bra.b		WORK
 LASTLOOP:
-	clr.l		%d1			/*  d0 = L := 0 */
-	move.b		&1,ENDFLAG(%a6)
+	clr.l		d1			/*  d0 = L := 0 */
+	move.b		#1,ENDFLAG(a6)
 
 WORK:
 /* --FIND THE REMAINDER OF (R,r) W.R.T.	2**L * (PI/2). L IS SO CHOSEN */
@@ -352,83 +358,83 @@ WORK:
 /* --CREATE 2**(-L) * (2/PI), SIGN(INARG)*2**(63), */
 /* --2**L * (PIby2_1), 2**L * (PIby2_2) */
 
-	move.l		&0x00003FFE,%d2		/*  BIASED EXP OF 2/PI */
-	sub.l		%d1,%d2			/*  BIASED EXP OF 2**(-L)*(2/PI) */
+	move.l		#0x00003FFE,d2		/*  BIASED EXP OF 2/PI */
+	sub.l		d1,d2			/*  BIASED EXP OF 2**(-L)*(2/PI) */
 
-	move.l		&0xA2F9836E,FP_SCR0_HI(%a6)
-	move.l		&0x4E44152A,FP_SCR0_LO(%a6)
-	move.w		%d2,FP_SCR0_EX(%a6)	/*  FP_SCR0 = 2**(-L)*(2/PI) */
+	move.l		#0xA2F9836E,FP_SCR0_HI(a6)
+	move.l		#0x4E44152A,FP_SCR0_LO(a6)
+	move.w		d2,FP_SCR0_EX(a6)	/*  FP_SCR0 = 2**(-L)*(2/PI) */
 
-	fmove.x		%fp0,%fp2
-	fmul.x		FP_SCR0(%a6),%fp2	/*  fp2 = X * 2**(-L)*(2/PI) */
+	fmove.x		fp0,fp2
+	fmul.x		FP_SCR0(a6),fp2	/*  fp2 = X * 2**(-L)*(2/PI) */
 
 /* --WE MUST NOW FIND INT(FP2). SINCE WE NEED THIS VALUE IN */
 /* --FLOATING POINT FORMAT, THE TWO FMOVE'S	FMOVE.L FP <--> N */
 /* --WILL BE TOO INEFFICIENT. THE WAY AROUND IT IS THAT */
 /* --(SIGN(INARG)*2**63	+	FP2) - SIGN(INARG)*2**63 WILL GIVE */
 /* --US THE DESIRED VALUE IN FLOATING POINT. */
-	move.l		%a1,%d2
-	swap		%d2
-	andi.l		&0x80000000,%d2
-	ori.l		&0x5F000000,%d2		/*  d2 = SIGN(INARG)*2**63 IN SGL */
-	move.l		%d2,TWOTO63(%a6)
-	fadd.s		TWOTO63(%a6),%fp2	/*  THE FRACTIONAL PART OF FP1 IS ROUNDED */
-	fsub.s		TWOTO63(%a6),%fp2	/*  fp2 = N */
-/* 	fintrz.x	%fp2,%fp2 */
+	move.l		a1,d2
+	swap		d2
+	andi.l		#0x80000000,d2
+	ori.l		#0x5F000000,d2		/*  d2 = SIGN(INARG)*2**63 IN SGL */
+	move.l		d2,TWOTO63(a6)
+	fadd.s		TWOTO63(a6),fp2	/*  THE FRACTIONAL PART OF FP1 IS ROUNDED */
+	fsub.s		TWOTO63(a6),fp2	/*  fp2 = N */
+/* 	fintrz.x	fp2,fp2 */
 
 /* --CREATING 2**(L)*Piby2_1 and 2**(L)*Piby2_2 */
-	move.l		%d1,%d2			/*  d2 = L */
+	move.l		d1,d2			/*  d2 = L */
 
-	addi.l		&0x00003FFF,%d2		/*  BIASED EXP OF 2**L * (PI/2) */
-	move.w		%d2,FP_SCR0_EX(%a6)
-	move.l		&0xC90FDAA2,FP_SCR0_HI(%a6)
-	clr.l		FP_SCR0_LO(%a6)		/*  FP_SCR0 = 2**(L) * Piby2_1 */
+	addi.l		#0x00003FFF,d2		/*  BIASED EXP OF 2**L * (PI/2) */
+	move.w		d2,FP_SCR0_EX(a6)
+	move.l		#0xC90FDAA2,FP_SCR0_HI(a6)
+	clr.l		FP_SCR0_LO(a6)		/*  FP_SCR0 = 2**(L) * Piby2_1 */
 
-	addi.l		&0x00003FDD,%d1
-	move.w		%d1,FP_SCR1_EX(%a6)
-	move.l		&0x85A308D3,FP_SCR1_HI(%a6)
-	clr.l		FP_SCR1_LO(%a6)		/*  FP_SCR1 = 2**(L) * Piby2_2 */
+	addi.l		#0x00003FDD,d1
+	move.w		d1,FP_SCR1_EX(a6)
+	move.l		#0x85A308D3,FP_SCR1_HI(a6)
+	clr.l		FP_SCR1_LO(a6)		/*  FP_SCR1 = 2**(L) * Piby2_2 */
 
-	move.b		ENDFLAG(%a6),%d1
+	move.b		ENDFLAG(a6),d1
 
 /* --We are now ready to perform (R+r) - N*P1 - N*P2, P1 = 2**(L) * Piby2_1 and */
 /* --P2 = 2**(L) * Piby2_2 */
-	fmove.x		%fp2,%fp4		/*  fp4 = N */
-	fmul.x		FP_SCR0(%a6),%fp4	/*  fp4 = W = N*P1 */
-	fmove.x		%fp2,%fp5		/*  fp5 = N */
-	fmul.x		FP_SCR1(%a6),%fp5	/*  fp5 = w = N*P2 */
-	fmove.x		%fp4,%fp3		/*  fp3 = W = N*P1 */
+	fmove.x		fp2,fp4		/*  fp4 = N */
+	fmul.x		FP_SCR0(a6),fp4	/*  fp4 = W = N*P1 */
+	fmove.x		fp2,fp5		/*  fp5 = N */
+	fmul.x		FP_SCR1(a6),fp5	/*  fp5 = w = N*P2 */
+	fmove.x		fp4,fp3		/*  fp3 = W = N*P1 */
 
 /* --we want P+p = W+w  but  |p| <= half ulp of P */
 /* --Then, we need to compute  A := R-P   and  a := r-p */
-	fadd.x		%fp5,%fp3		/*  fp3 = P */
-	fsub.x		%fp3,%fp4		/*  fp4 = W-P */
+	fadd.x		fp5,fp3		/*  fp3 = P */
+	fsub.x		fp3,fp4		/*  fp4 = W-P */
 
-	fsub.x		%fp3,%fp0		/*  fp0 = A := R - P */
-	fadd.x		%fp5,%fp4		/*  fp4 = p = (W-P)+w */
+	fsub.x		fp3,fp0		/*  fp0 = A := R - P */
+	fadd.x		fp5,fp4		/*  fp4 = p = (W-P)+w */
 
-	fmove.x		%fp0,%fp3		/*  fp3 = A */
-	fsub.x		%fp4,%fp1		/*  fp1 = a := r - p */
+	fmove.x		fp0,fp3		/*  fp3 = A */
+	fsub.x		fp4,fp1		/*  fp1 = a := r - p */
 
 /* --Now we need to normalize (A,a) to  "new (R,r)" where R+r = A+a but */
 /* --|r| <= half ulp of R. */
-	fadd.x		%fp1,%fp0		/*  fp0 = R := A+a */
+	fadd.x		fp1,fp0		/*  fp0 = R := A+a */
 /* --No need to calculate r if this is the last loop */
-	cmpi.b		&0,%d1
+	cmpi.b		#0,d1
 	bgt.w		RESTORE
 
 /* --Need to calculate r */
-	fsub.x		%fp0,%fp3		/*  fp3 = A-R */
-	fadd.x		%fp3,%fp1		/*  fp1 = r := (A-R)+a */
+	fsub.x		fp0,fp3		/*  fp3 = A-R */
+	fadd.x		fp3,fp1		/*  fp1 = r := (A-R)+a */
 	bra.w		LOOP
 
 RESTORE:
-	fmove.l		%fp2,INT(%a6)
-	move.l		(%sp)+,%d2		/*  restore d2 */
-	fmovem.x		(%sp)+,%fp2-%fp5		/*  restore {fp2-fp5} */
+	fmove.l		fp2,INT(a6)
+	move.l		(sp)+,d2		/*  restore d2 */
+	fmovem.x		(sp)+,fp2-fp5		/*  restore {fp2-fp5} */
 
-	move.l		INT(%a6),%d1
-	ror.l		&1,%d1
+	move.l		INT(a6),d1
+	ror.l		#1,d1
 
 	bra.w		TANCONT
 

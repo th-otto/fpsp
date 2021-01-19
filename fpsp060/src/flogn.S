@@ -258,26 +258,26 @@ LOGTBL:
 	.globl		slogn
 /* --ENTRY POINT FOR LOG(X) FOR X FINITE, NON-ZERO, NOT NAN'S */
 slogn:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
-	move.l		&0x00000000,ADJK(%a6)
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
+	move.l		#0x00000000,ADJK(a6)
 
 LOGBGN:
 /* --FPCR SAVED AND CLEARED, INPUT IS 2^(ADJK)*FP0, FP0 CONTAINS */
 /* --A FINITE, NON-ZERO, NORMALIZED NUMBER. */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
 
-	move.l		(%a0),X(%a6)
-	move.l		4(%a0),X+4(%a6)
-	move.l		8(%a0),X+8(%a6)
+	move.l		(a0),X(a6)
+	move.l		4(a0),X+4(a6)
+	move.l		8(a0),X+8(a6)
 
-	cmpi.l		&0,%d1			/*  CHECK IF X IS NEGATIVE */
+	cmpi.l		#0,d1			/*  CHECK IF X IS NEGATIVE */
 	blt.w		LOGNEG			/*  LOG OF NEGATIVE ARGUMENT IS INVALID */
 /*  X IS POSITIVE, CHECK IF X IS NEAR 1 */
-	cmpi.l		&0x3ffef07d,%d1		/*  IS X < 15/16? */
+	cmpi.l		#0x3ffef07d,d1		/*  IS X < 15/16? */
 	blt.b		LOGMAIN			/*  YES */
-	cmpi.l		&0x3fff8841,%d1		/*  IS X > 17/16? */
+	cmpi.l		#0x3fff8841,d1		/*  IS X > 17/16? */
 	ble.w		LOGNEAR1		/*  NO */
 
 LOGMAIN:
@@ -293,73 +293,73 @@ LOGMAIN:
 /* --DIVISION IS NEEDED TO CALCULATE (Y-F)/F. */
 
 /* --GET K, Y, F, AND ADDRESS OF 1/F. */
-	asr.l		&8,%d1
-	asr.l		&8,%d1			/*  SHIFTED 16 BITS, BIASED EXPO. OF X */
-	subi.l		&0x3FFF,%d1		/*  THIS IS K */
-	add.l		ADJK(%a6),%d1		/*  ADJUST K, ORIGINAL INPUT MAY BE  DENORM. */
-	lea		LOGTBL(%pc),%a0		/*  BASE ADDRESS OF 1/F AND LOG(F) */
-	fmove.l		%d1,%fp1		/*  CONVERT K TO FLOATING-POINT FORMAT */
+	asr.l		#8,d1
+	asr.l		#8,d1			/*  SHIFTED 16 BITS, BIASED EXPO. OF X */
+	subi.l		#0x3FFF,d1		/*  THIS IS K */
+	add.l		ADJK(a6),d1		/*  ADJUST K, ORIGINAL INPUT MAY BE  DENORM. */
+	lea		LOGTBL(pc),a0		/*  BASE ADDRESS OF 1/F AND LOG(F) */
+	fmove.l		d1,fp1		/*  CONVERT K TO FLOATING-POINT FORMAT */
 
 /* --WHILE THE CONVERSION IS GOING ON, WE GET F AND ADDRESS OF 1/F */
-	move.l		&0x3FFF0000,X(%a6)	/*  X IS NOW Y, I.E. 2^(-K)*X */
-	move.l		XFRAC(%a6),FFRAC(%a6)
-	andi.l		&0xFE000000,FFRAC(%a6)	/*  FIRST 7 BITS OF Y */
-	or.l		&0x01000000,FFRAC(%a6)	/*  GET F: ATTACH A 1 AT THE EIGHTH BIT */
-	move.l		FFRAC(%a6),%d1	/*  READY TO GET ADDRESS OF 1/F */
-	andi.l		&0x7E000000,%d1
-	asr.l		&8,%d1
-	asr.l		&8,%d1
-	asr.l		&4,%d1			/*  SHIFTED 20, D0 IS THE DISPLACEMENT */
-	add.l		%d1,%a0			/*  A0 IS THE ADDRESS FOR 1/F */
+	move.l		#0x3FFF0000,X(a6)	/*  X IS NOW Y, I.E. 2^(-K)*X */
+	move.l		XFRAC(a6),FFRAC(a6)
+	andi.l		#0xFE000000,FFRAC(a6)	/*  FIRST 7 BITS OF Y */
+	or.l		#0x01000000,FFRAC(a6)	/*  GET F: ATTACH A 1 AT THE EIGHTH BIT */
+	move.l		FFRAC(a6),d1	/*  READY TO GET ADDRESS OF 1/F */
+	andi.l		#0x7E000000,d1
+	asr.l		#8,d1
+	asr.l		#8,d1
+	asr.l		#4,d1			/*  SHIFTED 20, D0 IS THE DISPLACEMENT */
+	add.l		d1,a0			/*  A0 IS THE ADDRESS FOR 1/F */
 
-	fmove.x		X(%a6),%fp0
-	move.l		&0x3fff0000,F(%a6)
-	clr.l		F+8(%a6)
-	fsub.x		F(%a6),%fp0		/*  Y-F */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  SAVE FP2-3 WHILE FP0 IS NOT READY */
+	fmove.x		X(a6),fp0
+	move.l		#0x3fff0000,F(a6)
+	clr.l		F+8(a6)
+	fsub.x		F(a6),fp0		/*  Y-F */
+	fmovem.x		fp2-fp3,-(sp)		/*  SAVE FP2-3 WHILE FP0 IS NOT READY */
 /* --SUMMARY: FP0 IS Y-F, A0 IS ADDRESS OF 1/F, FP1 IS K */
 /* --REGISTERS SAVED: FPCR, FP1, FP2 */
 
 LP1CONT1:
 /* --AN RE-ENTRY POINT FOR LOGNP1 */
-	fmul.x		(%a0),%fp0		/*  FP0 IS U = (Y-F)/F */
-	fmul.x		LOGOF2(%pc),%fp1	/*  GET K*LOG2 WHILE FP0 IS NOT READY */
-	fmove.x		%fp0,%fp2
-	fmul.x		%fp2,%fp2		/*  FP2 IS V=U*U */
-	fmove.x		%fp1,KLOG2(%a6)		/*  PUT K*LOG2 IN MEMEORY, FREE FP1 */
+	fmul.x		(a0),fp0		/*  FP0 IS U = (Y-F)/F */
+	fmul.x		LOGOF2(pc),fp1	/*  GET K*LOG2 WHILE FP0 IS NOT READY */
+	fmove.x		fp0,fp2
+	fmul.x		fp2,fp2		/*  FP2 IS V=U*U */
+	fmove.x		fp1,KLOG2(a6)		/*  PUT K*LOG2 IN MEMEORY, FREE FP1 */
 
 /* --LOG(1+U) IS APPROXIMATED BY */
 /* --U + V*(A1+U*(A2+U*(A3+U*(A4+U*(A5+U*A6))))) WHICH IS */
 /* --[U + V*(A1+V*(A3+V*A5))]  +  [U*V*(A2+V*(A4+V*A6))] */
 
-	fmove.x		%fp2,%fp3
-	fmove.x		%fp2,%fp1
+	fmove.x		fp2,fp3
+	fmove.x		fp2,fp1
 
-	fmul.d		LOGA6(%pc),%fp1		/*  V*A6 */
-	fmul.d		LOGA5(%pc),%fp2		/*  V*A5 */
+	fmul.d		LOGA6(pc),fp1		/*  V*A6 */
+	fmul.d		LOGA5(pc),fp2		/*  V*A5 */
 
-	fadd.d		LOGA4(%pc),%fp1		/*  A4+V*A6 */
-	fadd.d		LOGA3(%pc),%fp2		/*  A3+V*A5 */
+	fadd.d		LOGA4(pc),fp1		/*  A4+V*A6 */
+	fadd.d		LOGA3(pc),fp2		/*  A3+V*A5 */
 
-	fmul.x		%fp3,%fp1		/*  V*(A4+V*A6) */
-	fmul.x		%fp3,%fp2		/*  V*(A3+V*A5) */
+	fmul.x		fp3,fp1		/*  V*(A4+V*A6) */
+	fmul.x		fp3,fp2		/*  V*(A3+V*A5) */
 
-	fadd.d		LOGA2(%pc),%fp1		/*  A2+V*(A4+V*A6) */
-	fadd.d		LOGA1(%pc),%fp2		/*  A1+V*(A3+V*A5) */
+	fadd.d		LOGA2(pc),fp1		/*  A2+V*(A4+V*A6) */
+	fadd.d		LOGA1(pc),fp2		/*  A1+V*(A3+V*A5) */
 
-	fmul.x		%fp3,%fp1		/*  V*(A2+V*(A4+V*A6)) */
-	add.l		&16,%a0			/*  ADDRESS OF LOG(F) */
-	fmul.x		%fp3,%fp2		/*  V*(A1+V*(A3+V*A5)) */
+	fmul.x		fp3,fp1		/*  V*(A2+V*(A4+V*A6)) */
+	add.l		#16,a0			/*  ADDRESS OF LOG(F) */
+	fmul.x		fp3,fp2		/*  V*(A1+V*(A3+V*A5)) */
 
-	fmul.x		%fp0,%fp1		/*  U*V*(A2+V*(A4+V*A6)) */
-	fadd.x		%fp2,%fp0		/*  U+V*(A1+V*(A3+V*A5)) */
+	fmul.x		fp0,fp1		/*  U*V*(A2+V*(A4+V*A6)) */
+	fadd.x		fp2,fp0		/*  U+V*(A1+V*(A3+V*A5)) */
 
-	fadd.x		(%a0),%fp1		/*  LOG(F)+U*V*(A2+V*(A4+V*A6)) */
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  RESTORE FP2-3 */
-	fadd.x		%fp1,%fp0		/*  FP0 IS LOG(F) + LOG(1+U) */
+	fadd.x		(a0),fp1		/*  LOG(F)+U*V*(A2+V*(A4+V*A6)) */
+	fmovem.x		(sp)+,fp2-fp3		/*  RESTORE FP2-3 */
+	fadd.x		fp1,fp0		/*  FP0 IS LOG(F) + LOG(1+U) */
 
-	fmove.l		%d0,%fpcr
-	fadd.x		KLOG2(%a6),%fp0		/*  FINAL ADD */
+	fmove.l		d0,fpcr
+	fadd.x		KLOG2(a6),fp0		/*  FINAL ADD */
 	bra.l		t_inx2
 
 
@@ -368,54 +368,54 @@ LOGNEAR1:
 /*  if the input is exactly equal to one, then exit through ld_pzero. */
 /*  if these 2 lines weren't here, the correct answer would be returned */
 /*  but the INEX2 bit would be set. */
-	fcmp.b		&0x1,%fp0		/*  is it equal to one? */
+	fcmp.b		#0x1,fp0		/*  is it equal to one? */
 	fbeq.l		ld_pzero		/*  yes */
 
 /* --REGISTERS SAVED: FPCR, FP1. FP0 CONTAINS THE INPUT. */
-	fmove.x		%fp0,%fp1
-	fsub.s		one(%pc),%fp1		/*  FP1 IS X-1 */
-	fadd.s		one(%pc),%fp0		/*  FP0 IS X+1 */
-	fadd.x		%fp1,%fp1		/*  FP1 IS 2(X-1) */
+	fmove.x		fp0,fp1
+	fsub.s		one(pc),fp1		/*  FP1 IS X-1 */
+	fadd.s		one(pc),fp0		/*  FP0 IS X+1 */
+	fadd.x		fp1,fp1		/*  FP1 IS 2(X-1) */
 /* --LOG(X) = LOG(1+U/2)-LOG(1-U/2) WHICH IS AN ODD POLYNOMIAL */
 /* --IN U, U = 2(X-1)/(X+1) = FP1/FP0 */
 
 LP1CONT2:
 /* --THIS IS AN RE-ENTRY POINT FOR LOGNP1 */
-	fdiv.x		%fp0,%fp1		/*  FP1 IS U */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  SAVE FP2-3 */
+	fdiv.x		fp0,fp1		/*  FP1 IS U */
+	fmovem.x		fp2-fp3,-(sp)		/*  SAVE FP2-3 */
 /* --REGISTERS SAVED ARE NOW FPCR,FP1,FP2,FP3 */
 /* --LET V=U*U, W=V*V, CALCULATE */
 /* --U + U*V*(B1 + V*(B2 + V*(B3 + V*(B4 + V*B5)))) BY */
 /* --U + U*V*(  [B1 + W*(B3 + W*B5)]  +  [V*(B2 + W*B4)]  ) */
-	fmove.x		%fp1,%fp0
-	fmul.x		%fp0,%fp0		/*  FP0 IS V */
-	fmove.x		%fp1,SAVEU(%a6)		/*  STORE U IN MEMORY, FREE FP1 */
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  FP1 IS W */
+	fmove.x		fp1,fp0
+	fmul.x		fp0,fp0		/*  FP0 IS V */
+	fmove.x		fp1,SAVEU(a6)		/*  STORE U IN MEMORY, FREE FP1 */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  FP1 IS W */
 
-	fmove.d		LOGB5(%pc),%fp3
-	fmove.d		LOGB4(%pc),%fp2
+	fmove.d		LOGB5(pc),fp3
+	fmove.d		LOGB4(pc),fp2
 
-	fmul.x		%fp1,%fp3		/*  W*B5 */
-	fmul.x		%fp1,%fp2		/*  W*B4 */
+	fmul.x		fp1,fp3		/*  W*B5 */
+	fmul.x		fp1,fp2		/*  W*B4 */
 
-	fadd.d		LOGB3(%pc),%fp3		/*  B3+W*B5 */
-	fadd.d		LOGB2(%pc),%fp2		/*  B2+W*B4 */
+	fadd.d		LOGB3(pc),fp3		/*  B3+W*B5 */
+	fadd.d		LOGB2(pc),fp2		/*  B2+W*B4 */
 
-	fmul.x		%fp3,%fp1		/*  W*(B3+W*B5), FP3 RELEASED */
+	fmul.x		fp3,fp1		/*  W*(B3+W*B5), FP3 RELEASED */
 
-	fmul.x		%fp0,%fp2		/*  V*(B2+W*B4) */
+	fmul.x		fp0,fp2		/*  V*(B2+W*B4) */
 
-	fadd.d		LOGB1(%pc),%fp1		/*  B1+W*(B3+W*B5) */
-	fmul.x		SAVEU(%a6),%fp0		/*  FP0 IS U*V */
+	fadd.d		LOGB1(pc),fp1		/*  B1+W*(B3+W*B5) */
+	fmul.x		SAVEU(a6),fp0		/*  FP0 IS U*V */
 
-	fadd.x		%fp2,%fp1		/*  B1+W*(B3+W*B5) + V*(B2+W*B4), FP2 RELEASED */
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  FP2-3 RESTORED */
+	fadd.x		fp2,fp1		/*  B1+W*(B3+W*B5) + V*(B2+W*B4), FP2 RELEASED */
+	fmovem.x		(sp)+,fp2-fp3		/*  FP2-3 RESTORED */
 
-	fmul.x		%fp1,%fp0		/*  U*V*( [B1+W*(B3+W*B5)] + [V*(B2+W*B4)] ) */
+	fmul.x		fp1,fp0		/*  U*V*( [B1+W*(B3+W*B5)] + [V*(B2+W*B4)] ) */
 
-	fmove.l		%d0,%fpcr
-	fadd.x		SAVEU(%a6),%fp0
+	fmove.l		d0,fpcr
+	fadd.x		SAVEU(a6),fp0
 	bra.l		t_inx2
 
 /* --REGISTERS SAVED FPCR. LOG(-VE) IS INVALID */
@@ -426,88 +426,88 @@ LOGNEG:
 slognd:
 /* --ENTRY POINT FOR LOG(X) FOR DENORMALIZED INPUT */
 
-	move.l		&-100,ADJK(%a6)		/*  INPUT = 2^(ADJK) * FP0 */
+	move.l		#-100,ADJK(a6)		/*  INPUT = 2^(ADJK) * FP0 */
 
 /* ----normalize the input value by left shifting k bits (k to be determined */
 /* ----below), adjusting exponent and storing -k to  ADJK */
 /* ----the value TWOTO100 is no longer needed. */
 /* ----Note that this code assumes the denormalized input is NON-ZERO. */
 
-	movem.l		%d2-%d7,-(%sp)		/*  save some registers  {d2-d7} */
-	move.l		(%a0),%d3		/*  D3 is exponent of smallest norm.  */
-	move.l		4(%a0),%d4
-	move.l		8(%a0),%d5		/*  (D4,D5) is (Hi_X,Lo_X) */
-	clr.l		%d2			/*  D2 used for holding K */
+	movem.l		d2-d7,-(sp)		/*  save some registers  {d2-d7} */
+	move.l		(a0),d3		/*  D3 is exponent of smallest norm.  */
+	move.l		4(a0),d4
+	move.l		8(a0),d5		/*  (D4,D5) is (Hi_X,Lo_X) */
+	clr.l		d2			/*  D2 used for holding K */
 
-	tst.l		%d4
+	tst.l		d4
 	bne.b		Hi_not0
 
 Hi_0:
-	move.l		%d5,%d4
-	clr.l		%d5
-	moveq.l		&32,%d2
-	clr.l		%d6
-	bfffo		%d4{&0:&32},%d6
-	lsl.l		%d6,%d4
-	add.l		%d6,%d2			/*  (D3,D4,D5) is normalized */
+	move.l		d5,d4
+	clr.l		d5
+	moveq.l		#32,d2
+	clr.l		d6
+	bfffo		d4{0:32},d6
+	lsl.l		d6,d4
+	add.l		d6,d2			/*  (D3,D4,D5) is normalized */
 
-	move.l		%d3,X(%a6)
-	move.l		%d4,XFRAC(%a6)
-	move.l		%d5,XFRAC+4(%a6)
-	neg.l		%d2
-	move.l		%d2,ADJK(%a6)
-	fmove.x		X(%a6),%fp0
-	movem.l		(%sp)+,%d2-%d7		/*  restore registers {d2-d7} */
-	lea		X(%a6),%a0
+	move.l		d3,X(a6)
+	move.l		d4,XFRAC(a6)
+	move.l		d5,XFRAC+4(a6)
+	neg.l		d2
+	move.l		d2,ADJK(a6)
+	fmove.x		X(a6),fp0
+	movem.l		(sp)+,d2-d7		/*  restore registers {d2-d7} */
+	lea		X(a6),a0
 	bra.w		LOGBGN			/*  begin regular log(X) */
 
 Hi_not0:
-	clr.l		%d6
-	bfffo		%d4{&0:&32},%d6		/*  find first 1 */
-	move.l		%d6,%d2			/*  get k */
-	lsl.l		%d6,%d4
-	move.l		%d5,%d7			/*  a copy of D5 */
-	lsl.l		%d6,%d5
-	neg.l		%d6
-	addi.l		&32,%d6
-	lsr.l		%d6,%d7
-	or.l		%d7,%d4			/*  (D3,D4,D5) normalized */
+	clr.l		d6
+	bfffo		d4{0:32},d6		/*  find first 1 */
+	move.l		d6,d2			/*  get k */
+	lsl.l		d6,d4
+	move.l		d5,d7			/*  a copy of D5 */
+	lsl.l		d6,d5
+	neg.l		d6
+	addi.l		#32,d6
+	lsr.l		d6,d7
+	or.l		d7,d4			/*  (D3,D4,D5) normalized */
 
-	move.l		%d3,X(%a6)
-	move.l		%d4,XFRAC(%a6)
-	move.l		%d5,XFRAC+4(%a6)
-	neg.l		%d2
-	move.l		%d2,ADJK(%a6)
-	fmove.x		X(%a6),%fp0
-	movem.l		(%sp)+,%d2-%d7		/*  restore registers {d2-d7} */
-	lea		X(%a6),%a0
+	move.l		d3,X(a6)
+	move.l		d4,XFRAC(a6)
+	move.l		d5,XFRAC+4(a6)
+	neg.l		d2
+	move.l		d2,ADJK(a6)
+	fmove.x		X(a6),fp0
+	movem.l		(sp)+,d2-d7		/*  restore registers {d2-d7} */
+	lea		X(a6),a0
 	bra.w		LOGBGN			/*  begin regular log(X) */
 
 	.globl		slognp1
 /* --ENTRY POINT FOR LOG(1+X) FOR X FINITE, NON-ZERO, NOT NAN'S */
 slognp1:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
-	fabs.x		%fp0			/*  test magnitude */
-	fcmp.x		LTHOLD(%pc),%fp0	/*  compare with min threshold */
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
+	fabs.x		fp0			/*  test magnitude */
+	fcmp.x		LTHOLD(pc),fp0	/*  compare with min threshold */
 	fbgt		LP1REAL			/*  if greater, continue */
-	fmove.l		%d0,%fpcr
-	move.b		&FMOV_OP,%d1		/*  last inst is MOVE */
-	fmove.x		(%a0),%fp0		/*  return signed argument */
+	fmove.l		d0,fpcr
+	move.b		#FMOV_OP,d1		/*  last inst is MOVE */
+	fmove.x		(a0),fp0		/*  return signed argument */
 	bra.l		t_catch
 
 LP1REAL:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
-	move.l		&0x00000000,ADJK(%a6)
-	fmove.x		%fp0,%fp1		/*  FP1 IS INPUT Z */
-	fadd.s		one(%pc),%fp0		/*  X := ROUND(1+Z) */
-	fmove.x		%fp0,X(%a6)
-	move.w		XFRAC(%a6),XDCARE(%a6)
-	move.l		X(%a6),%d1
-	cmpi.l		&0,%d1
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
+	move.l		#0x00000000,ADJK(a6)
+	fmove.x		fp0,fp1		/*  FP1 IS INPUT Z */
+	fadd.s		one(pc),fp0		/*  X := ROUND(1+Z) */
+	fmove.x		fp0,X(a6)
+	move.w		XFRAC(a6),XDCARE(a6)
+	move.l		X(a6),d1
+	cmpi.l		#0,d1
 	ble.w		LP1NEG0			/*  LOG OF ZERO OR -VE */
-	cmpi.l		&0x3ffe8000,%d1		/*  IS BOUNDS [1/2,3/2]? */
+	cmpi.l		#0x3ffe8000,d1		/*  IS BOUNDS [1/2,3/2]? */
 	blt.w		LOGMAIN
-	cmpi.l		&0x3fffc000,%d1
+	cmpi.l		#0x3fffc000,d1
 	bgt.w		LOGMAIN
 /* --IF 1+Z > 3/2 OR 1+Z < 1/2, THEN X, WHICH IS ROUNDING 1+Z, */
 /* --CONTAINS AT LEAST 63 BITS OF INFORMATION OF Z. IN THAT CASE, */
@@ -515,16 +515,16 @@ LP1REAL:
 
 LP1NEAR1:
 /* --NEXT SEE IF EXP(-1/16) < X < EXP(1/16) */
-	cmpi.l		&0x3ffef07d,%d1
+	cmpi.l		#0x3ffef07d,d1
 	blt.w		LP1CARE
-	cmpi.l		&0x3fff8841,%d1
+	cmpi.l		#0x3fff8841,d1
 	bgt.w		LP1CARE
 
 LP1ONE16:
 /* --EXP(-1/16) < X < EXP(1/16). LOG(1+Z) = LOG(1+U/2) - LOG(1-U/2) */
 /* --WHERE U = 2Z/(2+Z) = 2Z/(1+X). */
-	fadd.x		%fp1,%fp1		/*  FP1 IS 2Z */
-	fadd.s		one(%pc),%fp0		/*  FP0 IS 1+X */
+	fadd.x		fp1,fp1		/*  FP1 IS 2Z */
+	fadd.s		one(pc),fp0		/*  FP0 IS 1+X */
 /* --U = FP1/FP0 */
 	bra.w		LP1CONT2
 
@@ -538,61 +538,61 @@ LP1CARE:
 /* --ON RETURNING TO LP1CONT1, WE MUST HAVE K IN FP1, ADDRESS OF */
 /* --(1/F) IN A0, Y-F IN FP0, AND FP2 SAVED. */
 
-	move.l		XFRAC(%a6),FFRAC(%a6)
-	andi.l		&0xFE000000,FFRAC(%a6)
-	ori.l		&0x01000000,FFRAC(%a6)	/*  F OBTAINED */
-	cmpi.l		&0x3FFF8000,%d1		/*  SEE IF 1+Z > 1 */
+	move.l		XFRAC(a6),FFRAC(a6)
+	andi.l		#0xFE000000,FFRAC(a6)
+	ori.l		#0x01000000,FFRAC(a6)	/*  F OBTAINED */
+	cmpi.l		#0x3FFF8000,d1		/*  SEE IF 1+Z > 1 */
 	bge.b		KISZERO
 
 KISNEG1:
-	fmove.s		TWO(%pc),%fp0
-	move.l		&0x3fff0000,F(%a6)
-	clr.l		F+8(%a6)
-	fsub.x		F(%a6),%fp0		/*  2-F */
-	move.l		FFRAC(%a6),%d1
-	andi.l		&0x7E000000,%d1
-	asr.l		&8,%d1
-	asr.l		&8,%d1
-	asr.l		&4,%d1			/*  D0 CONTAINS DISPLACEMENT FOR 1/F */
-	fadd.x		%fp1,%fp1		/*  GET 2Z */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  SAVE FP2  {%fp2/%fp3} */
-	fadd.x		%fp1,%fp0		/*  FP0 IS Y-F = (2-F)+2Z */
-	lea		LOGTBL(%pc),%a0		/*  A0 IS ADDRESS OF 1/F */
-	add.l		%d1,%a0
-	fmove.s		negone(%pc),%fp1	/*  FP1 IS K = -1 */
+	fmove.s		TWO(pc),fp0
+	move.l		#0x3fff0000,F(a6)
+	clr.l		F+8(a6)
+	fsub.x		F(a6),fp0		/*  2-F */
+	move.l		FFRAC(a6),d1
+	andi.l		#0x7E000000,d1
+	asr.l		#8,d1
+	asr.l		#8,d1
+	asr.l		#4,d1			/*  D0 CONTAINS DISPLACEMENT FOR 1/F */
+	fadd.x		fp1,fp1		/*  GET 2Z */
+	fmovem.x		fp2-fp3,-(sp)		/*  SAVE FP2  {fp2/fp3} */
+	fadd.x		fp1,fp0		/*  FP0 IS Y-F = (2-F)+2Z */
+	lea		LOGTBL(pc),a0		/*  A0 IS ADDRESS OF 1/F */
+	add.l		d1,a0
+	fmove.s		negone(pc),fp1	/*  FP1 IS K = -1 */
 	bra.w		LP1CONT1
 
 KISZERO:
-	fmove.s		one(%pc),%fp0
-	move.l		&0x3fff0000,F(%a6)
-	clr.l		F+8(%a6)
-	fsub.x		F(%a6),%fp0		/*  1-F */
-	move.l		FFRAC(%a6),%d1
-	andi.l		&0x7E000000,%d1
-	asr.l		&8,%d1
-	asr.l		&8,%d1
-	asr.l		&4,%d1
-	fadd.x		%fp1,%fp0		/*  FP0 IS Y-F */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  FP2 SAVED {%fp2/%fp3} */
-	lea		LOGTBL(%pc),%a0
-	add.l		%d1,%a0			/*  A0 IS ADDRESS OF 1/F */
-	fmove.s		zero(%pc),%fp1		/*  FP1 IS K = 0 */
+	fmove.s		one(pc),fp0
+	move.l		#0x3fff0000,F(a6)
+	clr.l		F+8(a6)
+	fsub.x		F(a6),fp0		/*  1-F */
+	move.l		FFRAC(a6),d1
+	andi.l		#0x7E000000,d1
+	asr.l		#8,d1
+	asr.l		#8,d1
+	asr.l		#4,d1
+	fadd.x		fp1,fp0		/*  FP0 IS Y-F */
+	fmovem.x		fp2-fp3,-(sp)		/*  FP2 SAVED {fp2/fp3} */
+	lea		LOGTBL(pc),a0
+	add.l		d1,a0			/*  A0 IS ADDRESS OF 1/F */
+	fmove.s		zero(pc),fp1		/*  FP1 IS K = 0 */
 	bra.w		LP1CONT1
 
 LP1NEG0:
 /* --FPCR SAVED. D0 IS X IN COMPACT FORM. */
-	cmpi.l		&0,%d1
+	cmpi.l		#0,d1
 	blt.b		LP1NEG
 LP1ZERO:
-	fmove.s		negone(%pc),%fp0
+	fmove.s		negone(pc),fp0
 
-	fmove.l		%d0,%fpcr
+	fmove.l		d0,fpcr
 	bra.l		t_dz
 
 LP1NEG:
-	fmove.s		zero(%pc),%fp0
+	fmove.s		zero(pc),fp0
 
-	fmove.l		%d0,%fpcr
+	fmove.l		d0,fpcr
 	bra.l		t_operr
 
 	.globl		slognp1d

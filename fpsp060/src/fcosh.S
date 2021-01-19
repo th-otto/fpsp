@@ -53,55 +53,55 @@ TWO16380:
 
 	.globl		scosh
 scosh:
-	fmove.x		(%a0),%fp0		/*  LOAD INPUT */
+	fmove.x		(a0),fp0		/*  LOAD INPUT */
 
-	move.l		(%a0),%d1
-	move.w		4(%a0),%d1
-	andi.l		&0x7FFFFFFF,%d1
-	cmpi.l		&0x400CB167,%d1
+	move.l		(a0),d1
+	move.w		4(a0),d1
+	andi.l		#0x7FFFFFFF,d1
+	cmpi.l		#0x400CB167,d1
 	bgt.b		COSHBIG
 
 /* --THIS IS THE USUAL CASE, |X| < 16380 LOG2 */
 /* --COSH(X) = (1/2) * ( EXP(X) + 1/EXP(X) ) */
 
-	fabs.x		%fp0			/*  |X| */
+	fabs.x		fp0			/*  |X| */
 
-	move.l		%d0,-(%sp)
-	clr.l		%d0
-	fmovem.x		%fp0,-(%sp)		/*  save |X| to stack */
-	lea		(%sp),%a0		/*  pass ptr to |X| */
+	move.l		d0,-(sp)
+	clr.l		d0
+	fmovem.x		fp0,-(sp)		/*  save |X| to stack */
+	lea		(sp),a0		/*  pass ptr to |X| */
 	bsr.l		setox			/*  FP0 IS EXP(|X|) */
-	add.l		&0xc,%sp		/*  erase |X| from stack */
-	fmul.s		&0x3F000000,%fp0	/*  (1/2)EXP(|X|) */
-	move.l		(%sp)+,%d0
+	add.l		#0xc,sp		/*  erase |X| from stack */
+	fmul.s		#0x3F000000,fp0	/*  (1/2)EXP(|X|) */
+	move.l		(sp)+,d0
 
-	fmove.s		&0x3E800000,%fp1	/*  (1/4) */
-	fdiv.x		%fp0,%fp1		/*  1/(2 EXP(|X|)) */
+	fmove.s		#0x3E800000,fp1	/*  (1/4) */
+	fdiv.x		fp0,fp1		/*  1/(2 EXP(|X|)) */
 
-	fmove.l		%d0,%fpcr
-	move.b		&FADD_OP,%d1		/*  last inst is ADD */
-	fadd.x		%fp1,%fp0
+	fmove.l		d0,fpcr
+	move.b		#FADD_OP,d1		/*  last inst is ADD */
+	fadd.x		fp1,fp0
 	bra.l		t_catch
 
 COSHBIG:
-	cmpi.l		&0x400CB2B3,%d1
+	cmpi.l		#0x400CB2B3,d1
 	bgt.b		COSHHUGE
 
-	fabs.x		%fp0
-	fsub.d		T1(%pc),%fp0		/*  (|X|-16381LOG2_LEAD) */
-	fsub.d		T2(%pc),%fp0		/*  |X| - 16381 LOG2, ACCURATE */
+	fabs.x		fp0
+	fsub.d		T1(pc),fp0		/*  (|X|-16381LOG2_LEAD) */
+	fsub.d		T2(pc),fp0		/*  |X| - 16381 LOG2, ACCURATE */
 
-	move.l		%d0,-(%sp)
-	clr.l		%d0
-	fmovem.x		%fp0,-(%sp)		/*  save fp0 to stack */
-	lea		(%sp),%a0		/*  pass ptr to fp0 */
+	move.l		d0,-(sp)
+	clr.l		d0
+	fmovem.x		fp0,-(sp)		/*  save fp0 to stack */
+	lea		(sp),a0		/*  pass ptr to fp0 */
 	bsr.l		setox
-	add.l		&0xc,%sp		/*  clear fp0 from stack */
-	move.l		(%sp)+,%d0
+	add.l		#0xc,sp		/*  clear fp0 from stack */
+	move.l		(sp)+,d0
 
-	fmove.l		%d0,%fpcr
-	move.b		&FMUL_OP,%d1		/*  last inst is MUL */
-	fmul.x		TWO16380(%pc),%fp0
+	fmove.l		d0,fpcr
+	move.b		#FMUL_OP,d1		/*  last inst is MUL */
+	fmul.x		TWO16380(pc),fp0
 	bra.l		t_catch
 
 COSHHUGE:
@@ -110,9 +110,9 @@ COSHHUGE:
 	.globl		scoshd
 /* --COSH(X) = 1 FOR DENORMALIZED X */
 scoshd:
-	fmove.s		&0x3F800000,%fp0
+	fmove.s		#0x3F800000,fp0
 
-	fmove.l		%d0,%fpcr
-	fadd.s		&0x00800000,%fp0
+	fmove.l		d0,fpcr
+	fadd.s		#0x00800000,fp0
 	bra.l		t_pinx2
 

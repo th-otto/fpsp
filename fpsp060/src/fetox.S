@@ -321,6 +321,16 @@
 
 	.include "hdr.fpu"
 
+	.xref satan
+	.xref t_extdnrm
+	.xref t_inx2
+	.xref t_catch
+	.xref t_pinx2
+	.xref t_minx2
+	.xref t_operr
+	.xref t_ovfl2
+	.xref t_unfl2
+
 	.text
 
 L2:	.dc.l		0x3FDC0000,0x82E30865,0x4361C4C6,0x00000000
@@ -426,50 +436,50 @@ setox:
 /* --entry point for EXP(X), here X is finite, non-zero, and not NaN's */
 
 /* --Step 1. */
-	move.l		(%a0),%d1		/*  load part of input X */
-	andi.l		&0x7FFF0000,%d1		/*  biased expo. of X */
-	cmpi.l		&0x3FBE0000,%d1		/*  2^(-65) */
+	move.l		(a0),d1		/*  load part of input X */
+	andi.l		#0x7FFF0000,d1		/*  biased expo. of X */
+	cmpi.l		#0x3FBE0000,d1		/*  2^(-65) */
 	bge.b		EXPC1			/*  normal case */
 	bra.l		EXPSM
 
 EXPC1:
 /* --The case |X| >= 2^(-65) */
-	move.w		4(%a0),%d1		/*  expo. and partial sig. of |X| */
-	cmpi.l		&0x400CB167,%d1		/*  16380 log2 trunc. 16 bits */
+	move.w		4(a0),d1		/*  expo. and partial sig. of |X| */
+	cmpi.l		#0x400CB167,d1		/*  16380 log2 trunc. 16 bits */
 	blt.b		EXPMAIN			/*  normal case */
 	bra.l		EEXPBIG
 
 EXPMAIN:
 /* --Step 2. */
 /* --This is the normal branch:	2^(-65) <= |X| < 16380 log2. */
-	fmove.x		(%a0),%fp0		/*  load input from (a0) */
+	fmove.x		(a0),fp0		/*  load input from (a0) */
 
-	fmove.x		%fp0,%fp1
-	fmul.s		&0x42B8AA3B,%fp0	/*  64/log2 * X */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2 {%fp2/%fp3} */
-	move.l		&0,ADJFLAG(%a6)
-	fmove.l		%fp0,%d1		/*  N = int( X * 64/log2 ) */
-	lea		EEXPTBL(%pc),%a1
-	fmove.l		%d1,%fp0		/*  convert to floating-format */
+	fmove.x		fp0,fp1
+	fmul.s		#0x42B8AA3B,fp0	/*  64/log2 * X */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2 {fp2/fp3} */
+	move.l		#0,ADJFLAG(a6)
+	fmove.l		fp0,d1		/*  N = int( X * 64/log2 ) */
+	lea		EEXPTBL(pc),a1
+	fmove.l		d1,fp0		/*  convert to floating-format */
 
-	move.l		%d1,L_SCR1(%a6)		/*  save N temporarily */
-	andi.l		&0x3F,%d1		/*  D0 is J = N mod 64 */
-	lsl.l		&4,%d1
-	add.l		%d1,%a1			/*  address of 2^(J/64) */
-	move.l		L_SCR1(%a6),%d1
-	asr.l		&6,%d1			/*  D0 is M */
-	addi.w		&0x3FFF,%d1		/*  biased expo. of 2^(M) */
-	move.w		L2(%pc),L_SCR1(%a6)	/*  prefetch L2, no need in CB */
+	move.l		d1,L_SCR1(a6)		/*  save N temporarily */
+	andi.l		#0x3F,d1		/*  D0 is J = N mod 64 */
+	lsl.l		#4,d1
+	add.l		d1,a1			/*  address of 2^(J/64) */
+	move.l		L_SCR1(a6),d1
+	asr.l		#6,d1			/*  D0 is M */
+	addi.w		#0x3FFF,d1		/*  biased expo. of 2^(M) */
+	move.w		L2(pc),L_SCR1(a6)	/*  prefetch L2, no need in CB */
 
 EXPCONT1:
 /* --Step 3. */
 /* --fp1,fp2 saved on the stack. fp0 is N, fp1 is X, */
 /* --a0 points to 2^(J/64), D0 is biased expo. of 2^(M) */
-	fmove.x		%fp0,%fp2
-	fmul.s		&0xBC317218,%fp0	/*  N * L1, L1 = lead(-log2/64) */
-	fmul.x		L2(%pc),%fp2		/*  N * L2, L1+L2 = -log2/64 */
-	fadd.x		%fp1,%fp0		/*  X + N*L1 */
-	fadd.x		%fp2,%fp0		/*  fp0 is R, reduced arg. */
+	fmove.x		fp0,fp2
+	fmul.s		#0xBC317218,fp0	/*  N * L1, L1 = lead(-log2/64) */
+	fmul.x		L2(pc),fp2		/*  N * L2, L1+L2 = -log2/64 */
+	fadd.x		fp1,fp0		/*  X + N*L1 */
+	fadd.x		fp2,fp0		/*  fp0 is R, reduced arg. */
 
 /* --Step 4. */
 /* --WE NOW COMPUTE EXP(R)-1 BY A POLYNOMIAL */
@@ -477,111 +487,111 @@ EXPCONT1:
 /* --TO FULLY UTILIZE THE PIPELINE, WE COMPUTE S = R*R */
 /* --[R+R*S*(A2+S*A4)] + [S*(A1+S*(A3+S*A5))] */
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  fp1 IS S = R*R */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  fp1 IS S = R*R */
 
-	fmove.s		&0x3AB60B70,%fp2	/*  fp2 IS A5 */
+	fmove.s		#0x3AB60B70,fp2	/*  fp2 IS A5 */
 
-	fmul.x		%fp1,%fp2		/*  fp2 IS S*A5 */
-	fmove.x		%fp1,%fp3
-	fmul.s		&0x3C088895,%fp3	/*  fp3 IS S*A4 */
+	fmul.x		fp1,fp2		/*  fp2 IS S*A5 */
+	fmove.x		fp1,fp3
+	fmul.s		#0x3C088895,fp3	/*  fp3 IS S*A4 */
 
-	fadd.d		EEXPA3(%pc),%fp2	/*  fp2 IS A3+S*A5 */
-	fadd.d		EEXPA2(%pc),%fp3	/*  fp3 IS A2+S*A4 */
+	fadd.d		EEXPA3(pc),fp2	/*  fp2 IS A3+S*A5 */
+	fadd.d		EEXPA2(pc),fp3	/*  fp3 IS A2+S*A4 */
 
-	fmul.x		%fp1,%fp2		/*  fp2 IS S*(A3+S*A5) */
-	move.w		%d1,SCALE(%a6)		/*  SCALE is 2^(M) in extended */
-	move.l		&0x80000000,SCALE+4(%a6)
-	clr.l		SCALE+8(%a6)
+	fmul.x		fp1,fp2		/*  fp2 IS S*(A3+S*A5) */
+	move.w		d1,SCALE(a6)		/*  SCALE is 2^(M) in extended */
+	move.l		#0x80000000,SCALE+4(a6)
+	clr.l		SCALE+8(a6)
 
-	fmul.x		%fp1,%fp3		/*  fp3 IS S*(A2+S*A4) */
+	fmul.x		fp1,fp3		/*  fp3 IS S*(A2+S*A4) */
 
-	fadd.s		&0x3F000000,%fp2	/*  fp2 IS A1+S*(A3+S*A5) */
-	fmul.x		%fp0,%fp3		/*  fp3 IS R*S*(A2+S*A4) */
+	fadd.s		#0x3F000000,fp2	/*  fp2 IS A1+S*(A3+S*A5) */
+	fmul.x		fp0,fp3		/*  fp3 IS R*S*(A2+S*A4) */
 
-	fmul.x		%fp1,%fp2		/*  fp2 IS S*(A1+S*(A3+S*A5)) */
-	fadd.x		%fp3,%fp0		/*  fp0 IS R+R*S*(A2+S*A4), */
+	fmul.x		fp1,fp2		/*  fp2 IS S*(A1+S*(A3+S*A5)) */
+	fadd.x		fp3,fp0		/*  fp0 IS R+R*S*(A2+S*A4), */
 
-	fmove.x		(%a1)+,%fp1		/*  fp1 is lead. pt. of 2^(J/64) */
-	fadd.x		%fp2,%fp0		/*  fp0 is EXP(R) - 1 */
+	fmove.x		(a1)+,fp1		/*  fp1 is lead. pt. of 2^(J/64) */
+	fadd.x		fp2,fp0		/*  fp0 is EXP(R) - 1 */
 
 /* --Step 5 */
 /* --final reconstruction process */
 /* --EXP(X) = 2^M * ( 2^(J/64) + 2^(J/64)*(EXP(R)-1) ) */
 
-	fmul.x		%fp1,%fp0		/*  2^(J/64)*(Exp(R)-1) */
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  fp2 restored {%fp2/%fp3} */
-	fadd.s		(%a1),%fp0		/*  accurate 2^(J/64) */
+	fmul.x		fp1,fp0		/*  2^(J/64)*(Exp(R)-1) */
+	fmovem.x		(sp)+,fp2-fp3		/*  fp2 restored {fp2/fp3} */
+	fadd.s		(a1),fp0		/*  accurate 2^(J/64) */
 
-	fadd.x		%fp1,%fp0		/*  2^(J/64) + 2^(J/64)*... */
-	move.l		ADJFLAG(%a6),%d1
+	fadd.x		fp1,fp0		/*  2^(J/64) + 2^(J/64)*... */
+	move.l		ADJFLAG(a6),d1
 
 /* --Step 6 */
-	tst.l		%d1
+	tst.l		d1
 	beq.b		NORMAL
 ADJUST:
-	fmul.x		ADJSCALE(%a6),%fp0
+	fmul.x		ADJSCALE(a6),fp0
 NORMAL:
-	fmove.l		%d0,%fpcr		/*  restore user FPCR */
-	move.b		&FMUL_OP,%d1		/*  last inst is MUL */
-	fmul.x		SCALE(%a6),%fp0		/*  multiply 2^(M) */
+	fmove.l		d0,fpcr		/*  restore user FPCR */
+	move.b		#FMUL_OP,d1		/*  last inst is MUL */
+	fmul.x		SCALE(a6),fp0		/*  multiply 2^(M) */
 	bra.l		t_catch
 
 EXPSM:
 /* --Step 7 */
-	fmovem.x	(%a0),%fp0		/*  load X */
-	fmove.l		%d0,%fpcr
-	fadd.s		&0x3F800000,%fp0	/*  1+X in user mode */
+	fmovem.x	(a0),fp0		/*  load X */
+	fmove.l		d0,fpcr
+	fadd.s		#0x3F800000,fp0	/*  1+X in user mode */
 	bra.l		t_pinx2
 
 EEXPBIG:
 /* --Step 8 */
-	cmpi.l		&0x400CB27C,%d1		/*  16480 log2 */
+	cmpi.l		#0x400CB27C,d1		/*  16480 log2 */
 	bgt.b		EXP2BIG
 /* --Steps 8.2 -- 8.6 */
-	fmove.x		(%a0),%fp0		/*  load input from (a0) */
+	fmove.x		(a0),fp0		/*  load input from (a0) */
 
-	fmove.x		%fp0,%fp1
-	fmul.s		&0x42B8AA3B,%fp0	/*  64/log2 * X */
-	fmovem.x	%fp2-%fp3,-(%sp)		/*  save fp2 {%fp2/%fp3} */
-	move.l		&1,ADJFLAG(%a6)
-	fmove.l		%fp0,%d1		/*  N = int( X * 64/log2 ) */
-	lea		EEXPTBL(%pc),%a1
-	fmove.l		%d1,%fp0		/*  convert to floating-format */
-	move.l		%d1,L_SCR1(%a6)		/*  save N temporarily */
-	andi.l		&0x3F,%d1		/*  D0 is J = N mod 64 */
-	lsl.l		&4,%d1
-	add.l		%d1,%a1			/*  address of 2^(J/64) */
-	move.l		L_SCR1(%a6),%d1
-	asr.l		&6,%d1			/*  D0 is K */
-	move.l		%d1,L_SCR1(%a6)		/*  save K temporarily */
-	asr.l		&1,%d1			/*  D0 is M1 */
-	sub.l		%d1,L_SCR1(%a6)		/*  a1 is M */
-	addi.w		&0x3FFF,%d1		/*  biased expo. of 2^(M1) */
-	move.w		%d1,ADJSCALE(%a6)	/*  ADJSCALE := 2^(M1) */
-	move.l		&0x80000000,ADJSCALE+4(%a6)
-	clr.l		ADJSCALE+8(%a6)
-	move.l		L_SCR1(%a6),%d1		/*  D0 is M */
-	addi.w		&0x3FFF,%d1		/*  biased expo. of 2^(M) */
+	fmove.x		fp0,fp1
+	fmul.s		#0x42B8AA3B,fp0	/*  64/log2 * X */
+	fmovem.x	fp2-fp3,-(sp)		/*  save fp2 {fp2/fp3} */
+	move.l		#1,ADJFLAG(a6)
+	fmove.l		fp0,d1		/*  N = int( X * 64/log2 ) */
+	lea		EEXPTBL(pc),a1
+	fmove.l		d1,fp0		/*  convert to floating-format */
+	move.l		d1,L_SCR1(a6)		/*  save N temporarily */
+	andi.l		#0x3F,d1		/*  D0 is J = N mod 64 */
+	lsl.l		#4,d1
+	add.l		d1,a1			/*  address of 2^(J/64) */
+	move.l		L_SCR1(a6),d1
+	asr.l		#6,d1			/*  D0 is K */
+	move.l		d1,L_SCR1(a6)		/*  save K temporarily */
+	asr.l		#1,d1			/*  D0 is M1 */
+	sub.l		d1,L_SCR1(a6)		/*  a1 is M */
+	addi.w		#0x3FFF,d1		/*  biased expo. of 2^(M1) */
+	move.w		d1,ADJSCALE(a6)	/*  ADJSCALE := 2^(M1) */
+	move.l		#0x80000000,ADJSCALE+4(a6)
+	clr.l		ADJSCALE+8(a6)
+	move.l		L_SCR1(a6),d1		/*  D0 is M */
+	addi.w		#0x3FFF,d1		/*  biased expo. of 2^(M) */
 	bra.w		EXPCONT1		/*  go back to Step 3 */
 
 EXP2BIG:
 /* --Step 9 */
-	tst.b		(%a0)			/*  is X positive or negative? */
+	tst.b		(a0)			/*  is X positive or negative? */
 	bmi.l		t_unfl2
 	bra.l		t_ovfl2
 
 	.globl		setoxd
 setoxd:
 /* --entry point for EXP(X), X is denormalized */
-	move.l		(%a0),-(%sp)
-	andi.l		&0x80000000,(%sp)
-	ori.l		&0x00800000,(%sp)	/*  sign(X)*2^(-126) */
+	move.l		(a0),-(sp)
+	andi.l		#0x80000000,(sp)
+	ori.l		#0x00800000,(sp)	/*  sign(X)*2^(-126) */
 
-	fmove.s		&0x3F800000,%fp0
+	fmove.s		#0x3F800000,fp0
 
-	fmove.l		%d0,%fpcr
-	fadd.s		(%sp)+,%fp0
+	fmove.l		d0,fpcr
+	fadd.s		(sp)+,fp0
 	bra.l		t_pinx2
 
 	.globl		setoxm1
@@ -590,49 +600,49 @@ setoxm1:
 
 /* --Step 1. */
 /* --Step 1.1 */
-	move.l		(%a0),%d1		/*  load part of input X */
-	andi.l		&0x7FFF0000,%d1		/*  biased expo. of X */
-	cmpi.l		&0x3FFD0000,%d1		/*  1/4 */
+	move.l		(a0),d1		/*  load part of input X */
+	andi.l		#0x7FFF0000,d1		/*  biased expo. of X */
+	cmpi.l		#0x3FFD0000,d1		/*  1/4 */
 	bge.b		EM1CON1			/*  |X| >= 1/4 */
 	bra.l		EM1SM
 
 EM1CON1:
 /* --Step 1.3 */
 /* --The case |X| >= 1/4 */
-	move.w		4(%a0),%d1		/*  expo. and partial sig. of |X| */
-	cmpi.l		&0x4004C215,%d1		/*  70log2 rounded up to 16 bits */
+	move.w		4(a0),d1		/*  expo. and partial sig. of |X| */
+	cmpi.l		#0x4004C215,d1		/*  70log2 rounded up to 16 bits */
 	ble.b		EM1MAIN			/*  1/4 <= |X| <= 70log2 */
 	bra.l		EM1BIG
 
 EM1MAIN:
 /* --Step 2. */
 /* --This is the case:	1/4 <= |X| <= 70 log2. */
-	fmove.x		(%a0),%fp0		/*  load input from (a0) */
+	fmove.x		(a0),fp0		/*  load input from (a0) */
 
-	fmove.x		%fp0,%fp1
-	fmul.s		&0x42B8AA3B,%fp0	/*  64/log2 * X */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2 {%fp2/%fp3} */
-	fmove.l		%fp0,%d1		/*  N = int( X * 64/log2 ) */
-	lea		EEXPTBL(%pc),%a1
-	fmove.l		%d1,%fp0		/*  convert to floating-format */
+	fmove.x		fp0,fp1
+	fmul.s		#0x42B8AA3B,fp0	/*  64/log2 * X */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2 {fp2/fp3} */
+	fmove.l		fp0,d1		/*  N = int( X * 64/log2 ) */
+	lea		EEXPTBL(pc),a1
+	fmove.l		d1,fp0		/*  convert to floating-format */
 
-	move.l		%d1,L_SCR1(%a6)		/*  save N temporarily */
-	andi.l		&0x3F,%d1		/*  D0 is J = N mod 64 */
-	lsl.l		&4,%d1
-	add.l		%d1,%a1			/*  address of 2^(J/64) */
-	move.l		L_SCR1(%a6),%d1
-	asr.l		&6,%d1			/*  D0 is M */
-	move.l		%d1,L_SCR1(%a6)		/*  save a copy of M */
+	move.l		d1,L_SCR1(a6)		/*  save N temporarily */
+	andi.l		#0x3F,d1		/*  D0 is J = N mod 64 */
+	lsl.l		#4,d1
+	add.l		d1,a1			/*  address of 2^(J/64) */
+	move.l		L_SCR1(a6),d1
+	asr.l		#6,d1			/*  D0 is M */
+	move.l		d1,L_SCR1(a6)		/*  save a copy of M */
 
 /* --Step 3. */
 /* --fp1,fp2 saved on the stack. fp0 is N, fp1 is X, */
 /* --a0 points to 2^(J/64), D0 and a1 both contain M */
-	fmove.x		%fp0,%fp2
-	fmul.s		&0xBC317218,%fp0	/*  N * L1, L1 = lead(-log2/64) */
-	fmul.x		L2(%pc),%fp2		/*  N * L2, L1+L2 = -log2/64 */
-	fadd.x		%fp1,%fp0		/*  X + N*L1 */
-	fadd.x		%fp2,%fp0		/*  fp0 is R, reduced arg. */
-	addi.w		&0x3FFF,%d1		/*  D0 is biased expo. of 2^M */
+	fmove.x		fp0,fp2
+	fmul.s		#0xBC317218,fp0	/*  N * L1, L1 = lead(-log2/64) */
+	fmul.x		L2(pc),fp2		/*  N * L2, L1+L2 = -log2/64 */
+	fadd.x		fp1,fp0		/*  X + N*L1 */
+	fadd.x		fp2,fp0		/*  fp0 is R, reduced arg. */
+	addi.w		#0x3FFF,d1		/*  D0 is biased expo. of 2^M */
 
 /* --Step 4. */
 /* --WE NOW COMPUTE EXP(R)-1 BY A POLYNOMIAL */
@@ -640,174 +650,174 @@ EM1MAIN:
 /* --TO FULLY UTILIZE THE PIPELINE, WE COMPUTE S = R*R */
 /* --[R*S*(A2+S*(A4+S*A6))] + [R+S*(A1+S*(A3+S*A5))] */
 
-	fmove.x		%fp0,%fp1
-	fmul.x		%fp1,%fp1		/*  fp1 IS S = R*R */
+	fmove.x		fp0,fp1
+	fmul.x		fp1,fp1		/*  fp1 IS S = R*R */
 
-	fmove.s		&0x3950097B,%fp2	/*  fp2 IS a6 */
+	fmove.s		#0x3950097B,fp2	/*  fp2 IS a6 */
 
-	fmul.x		%fp1,%fp2		/*  fp2 IS S*A6 */
-	fmove.x		%fp1,%fp3
-	fmul.s		&0x3AB60B6A,%fp3	/*  fp3 IS S*A5 */
+	fmul.x		fp1,fp2		/*  fp2 IS S*A6 */
+	fmove.x		fp1,fp3
+	fmul.s		#0x3AB60B6A,fp3	/*  fp3 IS S*A5 */
 
-	fadd.d		EM1A4(%pc),%fp2		/*  fp2 IS A4+S*A6 */
-	fadd.d		EM1A3(%pc),%fp3		/*  fp3 IS A3+S*A5 */
-	move.w		%d1,SC(%a6)		/*  SC is 2^(M) in extended */
-	move.l		&0x80000000,SC+4(%a6)
-	clr.l		SC+8(%a6)
+	fadd.d		EM1A4(pc),fp2		/*  fp2 IS A4+S*A6 */
+	fadd.d		EM1A3(pc),fp3		/*  fp3 IS A3+S*A5 */
+	move.w		d1,SC(a6)		/*  SC is 2^(M) in extended */
+	move.l		#0x80000000,SC+4(a6)
+	clr.l		SC+8(a6)
 
-	fmul.x		%fp1,%fp2		/*  fp2 IS S*(A4+S*A6) */
-	move.l		L_SCR1(%a6),%d1		/*  D0 is	M */
-	neg.w		%d1			/*  D0 is -M */
-	fmul.x		%fp1,%fp3		/*  fp3 IS S*(A3+S*A5) */
-	addi.w		&0x3FFF,%d1		/*  biased expo. of 2^(-M) */
-	fadd.d		EM1A2(%pc),%fp2		/*  fp2 IS A2+S*(A4+S*A6) */
-	fadd.s		&0x3F000000,%fp3	/*  fp3 IS A1+S*(A3+S*A5) */
+	fmul.x		fp1,fp2		/*  fp2 IS S*(A4+S*A6) */
+	move.l		L_SCR1(a6),d1		/*  D0 is	M */
+	neg.w		d1			/*  D0 is -M */
+	fmul.x		fp1,fp3		/*  fp3 IS S*(A3+S*A5) */
+	addi.w		#0x3FFF,d1		/*  biased expo. of 2^(-M) */
+	fadd.d		EM1A2(pc),fp2		/*  fp2 IS A2+S*(A4+S*A6) */
+	fadd.s		#0x3F000000,fp3	/*  fp3 IS A1+S*(A3+S*A5) */
 
-	fmul.x		%fp1,%fp2		/*  fp2 IS S*(A2+S*(A4+S*A6)) */
-	ori.w		&0x8000,%d1		/*  signed/expo. of -2^(-M) */
-	move.w		%d1,ONEBYSC(%a6)	/*  OnebySc is -2^(-M) */
-	move.l		&0x80000000,ONEBYSC+4(%a6)
-	clr.l		ONEBYSC+8(%a6)
-	fmul.x		%fp3,%fp1		/*  fp1 IS S*(A1+S*(A3+S*A5)) */
+	fmul.x		fp1,fp2		/*  fp2 IS S*(A2+S*(A4+S*A6)) */
+	ori.w		#0x8000,d1		/*  signed/expo. of -2^(-M) */
+	move.w		d1,ONEBYSC(a6)	/*  OnebySc is -2^(-M) */
+	move.l		#0x80000000,ONEBYSC+4(a6)
+	clr.l		ONEBYSC+8(a6)
+	fmul.x		fp3,fp1		/*  fp1 IS S*(A1+S*(A3+S*A5)) */
 
-	fmul.x		%fp0,%fp2		/*  fp2 IS R*S*(A2+S*(A4+S*A6)) */
-	fadd.x		%fp1,%fp0		/*  fp0 IS R+S*(A1+S*(A3+S*A5)) */
+	fmul.x		fp0,fp2		/*  fp2 IS R*S*(A2+S*(A4+S*A6)) */
+	fadd.x		fp1,fp0		/*  fp0 IS R+S*(A1+S*(A3+S*A5)) */
 
-	fadd.x		%fp2,%fp0		/*  fp0 IS EXP(R)-1 */
+	fadd.x		fp2,fp0		/*  fp0 IS EXP(R)-1 */
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  fp2 restored {%fp2/%fp3} */
+	fmovem.x		(sp)+,fp2-fp3		/*  fp2 restored {fp2/fp3} */
 
 /* --Step 5 */
 /* --Compute 2^(J/64)*p */
 
-	fmul.x		(%a1),%fp0		/*  2^(J/64)*(Exp(R)-1) */
+	fmul.x		(a1),fp0		/*  2^(J/64)*(Exp(R)-1) */
 
 /* --Step 6 */
 /* --Step 6.1 */
-	move.l		L_SCR1(%a6),%d1		/*  retrieve M */
-	cmpi.l		&63,%d1
+	move.l		L_SCR1(a6),d1		/*  retrieve M */
+	cmpi.l		#63,d1
 	ble.b		MLE63
 /* --Step 6.2	M >= 64 */
-	fmove.s		12(%a1),%fp1		/*  fp1 is t */
-	fadd.x		ONEBYSC(%a6),%fp1	/*  fp1 is t+OnebySc */
-	fadd.x		%fp1,%fp0		/*  p+(t+OnebySc), fp1 released */
-	fadd.x		(%a1),%fp0		/*  T+(p+(t+OnebySc)) */
+	fmove.s		12(a1),fp1		/*  fp1 is t */
+	fadd.x		ONEBYSC(a6),fp1	/*  fp1 is t+OnebySc */
+	fadd.x		fp1,fp0		/*  p+(t+OnebySc), fp1 released */
+	fadd.x		(a1),fp0		/*  T+(p+(t+OnebySc)) */
 	bra.l		EM1SCALE
 MLE63:
 /* --Step 6.3	M <= 63 */
-	cmpi.l		&-3,%d1
+	cmpi.l		#-3,d1
 	bge.b		MGEN3
 MLTN3:
 /* --Step 6.4	M <= -4 */
-	fadd.s		12(%a1),%fp0		/*  p+t */
-	fadd.x		(%a1),%fp0		/*  T+(p+t) */
-	fadd.x		ONEBYSC(%a6),%fp0	/*  OnebySc + (T+(p+t)) */
+	fadd.s		12(a1),fp0		/*  p+t */
+	fadd.x		(a1),fp0		/*  T+(p+t) */
+	fadd.x		ONEBYSC(a6),fp0	/*  OnebySc + (T+(p+t)) */
 	bra.l		EM1SCALE
 MGEN3:
 /* --Step 6.5	-3 <= M <= 63 */
-	fmove.x		(%a1)+,%fp1		/*  fp1 is T */
-	fadd.s		(%a1),%fp0		/*  fp0 is p+t */
-	fadd.x		ONEBYSC(%a6),%fp1	/*  fp1 is T+OnebySc */
-	fadd.x		%fp1,%fp0		/*  (T+OnebySc)+(p+t) */
+	fmove.x		(a1)+,fp1		/*  fp1 is T */
+	fadd.s		(a1),fp0		/*  fp0 is p+t */
+	fadd.x		ONEBYSC(a6),fp1	/*  fp1 is T+OnebySc */
+	fadd.x		fp1,fp0		/*  (T+OnebySc)+(p+t) */
 
 EM1SCALE:
 /* --Step 6.6 */
-	fmove.l		%d0,%fpcr
-	fmul.x		SC(%a6),%fp0
+	fmove.l		d0,fpcr
+	fmul.x		SC(a6),fp0
 	bra.l		t_inx2
 
 EM1SM:
 /* --Step 7	|X| < 1/4. */
-	cmpi.l		&0x3FBE0000,%d1		/*  2^(-65) */
+	cmpi.l		#0x3FBE0000,d1		/*  2^(-65) */
 	bge.b		EM1POLY
 
 EM1TINY:
 /* --Step 8	|X| < 2^(-65) */
-	cmpi.l		&0x00330000,%d1		/*  2^(-16312) */
+	cmpi.l		#0x00330000,d1		/*  2^(-16312) */
 	blt.b		EM12TINY
 /* --Step 8.2 */
-	move.l		&0x80010000,SC(%a6)	/*  SC is -2^(-16382) */
-	move.l		&0x80000000,SC+4(%a6)
-	clr.l		SC+8(%a6)
-	fmove.x		(%a0),%fp0
-	fmove.l		%d0,%fpcr
-	move.b		&FADD_OP,%d1		/*  last inst is ADD */
-	fadd.x		SC(%a6),%fp0
+	move.l		#0x80010000,SC(a6)	/*  SC is -2^(-16382) */
+	move.l		#0x80000000,SC+4(a6)
+	clr.l		SC+8(a6)
+	fmove.x		(a0),fp0
+	fmove.l		d0,fpcr
+	move.b		#FADD_OP,d1		/*  last inst is ADD */
+	fadd.x		SC(a6),fp0
 	bra.l		t_catch
 
 EM12TINY:
 /* --Step 8.3 */
-	fmove.x		(%a0),%fp0
-	fmul.d		TWO140(%pc),%fp0
-	move.l		&0x80010000,SC(%a6)
-	move.l		&0x80000000,SC+4(%a6)
-	clr.l		SC+8(%a6)
-	fadd.x		SC(%a6),%fp0
-	fmove.l		%d0,%fpcr
-	move.b		&FMUL_OP,%d1		/*  last inst is MUL */
-	fmul.d		TWON140(%pc),%fp0
+	fmove.x		(a0),fp0
+	fmul.d		TWO140(pc),fp0
+	move.l		#0x80010000,SC(a6)
+	move.l		#0x80000000,SC+4(a6)
+	clr.l		SC+8(a6)
+	fadd.x		SC(a6),fp0
+	fmove.l		d0,fpcr
+	move.b		#FMUL_OP,d1		/*  last inst is MUL */
+	fmul.d		TWON140(pc),fp0
 	bra.l		t_catch
 
 EM1POLY:
 /* --Step 9	exp(X)-1 by a simple polynomial */
-	fmove.x		(%a0),%fp0		/*  fp0 is X */
-	fmul.x		%fp0,%fp0		/*  fp0 is S := X*X */
-	fmovem.x		%fp2-%fp3,-(%sp)		/*  save fp2 {%fp2/%fp3} */
-	fmove.s		&0x2F30CAA8,%fp1	/*  fp1 is B12 */
-	fmul.x		%fp0,%fp1		/*  fp1 is S*B12 */
-	fmove.s		&0x310F8290,%fp2	/*  fp2 is B11 */
-	fadd.s		&0x32D73220,%fp1	/*  fp1 is B10+S*B12 */
+	fmove.x		(a0),fp0		/*  fp0 is X */
+	fmul.x		fp0,fp0		/*  fp0 is S := X*X */
+	fmovem.x		fp2-fp3,-(sp)		/*  save fp2 {fp2/fp3} */
+	fmove.s		#0x2F30CAA8,fp1	/*  fp1 is B12 */
+	fmul.x		fp0,fp1		/*  fp1 is S*B12 */
+	fmove.s		#0x310F8290,fp2	/*  fp2 is B11 */
+	fadd.s		#0x32D73220,fp1	/*  fp1 is B10+S*B12 */
 
-	fmul.x		%fp0,%fp2		/*  fp2 is S*B11 */
-	fmul.x		%fp0,%fp1		/*  fp1 is S*(B10 + ... */
+	fmul.x		fp0,fp2		/*  fp2 is S*B11 */
+	fmul.x		fp0,fp1		/*  fp1 is S*(B10 + ... */
 
-	fadd.s		&0x3493F281,%fp2	/*  fp2 is B9+S*... */
-	fadd.d		EM1B8(%pc),%fp1		/*  fp1 is B8+S*... */
+	fadd.s		#0x3493F281,fp2	/*  fp2 is B9+S*... */
+	fadd.d		EM1B8(pc),fp1		/*  fp1 is B8+S*... */
 
-	fmul.x		%fp0,%fp2		/*  fp2 is S*(B9+... */
-	fmul.x		%fp0,%fp1		/*  fp1 is S*(B8+... */
+	fmul.x		fp0,fp2		/*  fp2 is S*(B9+... */
+	fmul.x		fp0,fp1		/*  fp1 is S*(B8+... */
 
-	fadd.d		EM1B7(%pc),%fp2		/*  fp2 is B7+S*... */
-	fadd.d		EM1B6(%pc),%fp1		/*  fp1 is B6+S*... */
+	fadd.d		EM1B7(pc),fp2		/*  fp2 is B7+S*... */
+	fadd.d		EM1B6(pc),fp1		/*  fp1 is B6+S*... */
 
-	fmul.x		%fp0,%fp2		/*  fp2 is S*(B7+... */
-	fmul.x		%fp0,%fp1		/*  fp1 is S*(B6+... */
+	fmul.x		fp0,fp2		/*  fp2 is S*(B7+... */
+	fmul.x		fp0,fp1		/*  fp1 is S*(B6+... */
 
-	fadd.d		EM1B5(%pc),%fp2		/*  fp2 is B5+S*... */
-	fadd.d		EM1B4(%pc),%fp1		/*  fp1 is B4+S*... */
+	fadd.d		EM1B5(pc),fp2		/*  fp2 is B5+S*... */
+	fadd.d		EM1B4(pc),fp1		/*  fp1 is B4+S*... */
 
-	fmul.x		%fp0,%fp2		/*  fp2 is S*(B5+... */
-	fmul.x		%fp0,%fp1		/*  fp1 is S*(B4+... */
+	fmul.x		fp0,fp2		/*  fp2 is S*(B5+... */
+	fmul.x		fp0,fp1		/*  fp1 is S*(B4+... */
 
-	fadd.d		EM1B3(%pc),%fp2		/*  fp2 is B3+S*... */
-	fadd.x		EM1B2(%pc),%fp1		/*  fp1 is B2+S*... */
+	fadd.d		EM1B3(pc),fp2		/*  fp2 is B3+S*... */
+	fadd.x		EM1B2(pc),fp1		/*  fp1 is B2+S*... */
 
-	fmul.x		%fp0,%fp2		/*  fp2 is S*(B3+... */
-	fmul.x		%fp0,%fp1		/*  fp1 is S*(B2+... */
+	fmul.x		fp0,fp2		/*  fp2 is S*(B3+... */
+	fmul.x		fp0,fp1		/*  fp1 is S*(B2+... */
 
-	fmul.x		%fp0,%fp2		/*  fp2 is S*S*(B3+...) */
-	fmul.x		(%a0),%fp1		/*  fp1 is X*S*(B2... */
+	fmul.x		fp0,fp2		/*  fp2 is S*S*(B3+...) */
+	fmul.x		(a0),fp1		/*  fp1 is X*S*(B2... */
 
-	fmul.s		&0x3F000000,%fp0	/*  fp0 is S*B1 */
-	fadd.x		%fp2,%fp1		/*  fp1 is Q */
+	fmul.s		#0x3F000000,fp0	/*  fp0 is S*B1 */
+	fadd.x		fp2,fp1		/*  fp1 is Q */
 
-	fmovem.x		(%sp)+,%fp2-%fp3		/*  fp2 restored {%fp2/%fp3} */
+	fmovem.x		(sp)+,fp2-fp3		/*  fp2 restored {fp2/fp3} */
 
-	fadd.x		%fp1,%fp0		/*  fp0 is S*B1+Q */
+	fadd.x		fp1,fp0		/*  fp0 is S*B1+Q */
 
-	fmove.l		%d0,%fpcr
-	fadd.x		(%a0),%fp0
+	fmove.l		d0,fpcr
+	fadd.x		(a0),fp0
 	bra.l		t_inx2
 
 EM1BIG:
 /* --Step 10	|X| > 70 log2 */
-	move.l		(%a0),%d1
-	cmpi.l		&0,%d1
+	move.l		(a0),d1
+	cmpi.l		#0,d1
 	bgt.w		EXPC1
 /* --Step 10.2 */
-	fmove.s		&0xBF800000,%fp0	/*  fp0 is -1 */
-	fmove.l		%d0,%fpcr
-	fadd.s		&0x00800000,%fp0	/*  -1 + 2^(-126) */
+	fmove.s		#0xBF800000,fp0	/*  fp0 is -1 */
+	fmove.l		d0,fpcr
+	fadd.s		#0x00800000,fp0	/*  -1 + 2^(-126) */
 	bra.l		t_minx2
 
 	.globl		setoxm1d

@@ -39,51 +39,51 @@
 
 	.globl		unf_res
 unf_res:
-	move.l		%d1, -(%sp)		/*  save rnd prec,mode on stack */
+	move.l		d1, -(sp)		/*  save rnd prec,mode on stack */
 
-	btst		&0x7, FTEMP_EX.w(%a0)	/*  make "internal" format */
-	sne		FTEMP_SGN(%a0)
+	btst		#0x7, FTEMP_EX.w(a0)	/*  make "internal" format */
+	sne		FTEMP_SGN(a0)
 
-	move.w		FTEMP_EX.w(%a0), %d1	/*  extract exponent */
-	andi.w		&0x7fff, %d1
-	sub.w		%d0, %d1
-	move.w		%d1, FTEMP_EX.w(%a0)	/*  insert 16 bit exponent */
+	move.w		FTEMP_EX.w(a0), d1	/*  extract exponent */
+	andi.w		#0x7fff, d1
+	sub.w		d0, d1
+	move.w		d1, FTEMP_EX.w(a0)	/*  insert 16 bit exponent */
 
-	move.l		%a0, -(%sp)		/*  save operand ptr during calls */
+	move.l		a0, -(sp)		/*  save operand ptr during calls */
 
-	move.l		0x4(%sp),%d0		/*  pass rnd prec. */
-	andi.w		&0x00c0,%d0
-	lsr.w		&0x4,%d0
+	move.l		0x4(sp),d0		/*  pass rnd prec. */
+	andi.w		#0x00c0,d0
+	lsr.w		#0x4,d0
 	bsr.l		_denorm			/*  denorm result */
 
-	move.l		(%sp),%a0
-	move.w		0x6(%sp),%d1		/*  load prec:mode into %d1 */
-	andi.w		&0xc0,%d1		/*  extract rnd prec */
-	lsr.w		&0x4,%d1
-	swap		%d1
-	move.w		0x6(%sp),%d1
-	andi.w		&0x30,%d1
-	lsr.w		&0x4,%d1
+	move.l		(sp),a0
+	move.w		0x6(sp),d1		/*  load prec:mode into d1 */
+	andi.w		#0xc0,d1		/*  extract rnd prec */
+	lsr.w		#0x4,d1
+	swap		d1
+	move.w		0x6(sp),d1
+	andi.w		#0x30,d1
+	lsr.w		#0x4,d1
 	bsr.l		_round			/*  round the denorm */
 
-	move.l		(%sp)+, %a0
+	move.l		(sp)+, a0
 
 /*  result is now rounded properly. convert back to normal format */
-	bclr		&0x7, FTEMP_EX.w(%a0)	/*  clear sgn first; may have residue */
-	tst.b		FTEMP_SGN(%a0)		/*  is "internal result" sign set? */
+	bclr		#0x7, FTEMP_EX.w(a0)	/*  clear sgn first; may have residue */
+	tst.b		FTEMP_SGN(a0)		/*  is "internal result" sign set? */
 	beq.b		unf_res_chkifzero	/*  no; result is positive */
-	bset		&0x7, FTEMP_EX.w(%a0)	/*  set result sgn */
-	clr.b		FTEMP_SGN(%a0)		/*  clear temp sign */
+	bset		#0x7, FTEMP_EX.w(a0)	/*  set result sgn */
+	clr.b		FTEMP_SGN(a0)		/*  clear temp sign */
 
 /*  the number may have become zero after rounding. set ccodes accordingly. */
 unf_res_chkifzero:
-	clr.l		%d0
-	tst.l		FTEMP_HI(%a0)		/*  is value now a zero? */
+	clr.l		d0
+	tst.l		FTEMP_HI(a0)		/*  is value now a zero? */
 	bne.b		unf_res_cont		/*  no */
-	tst.l		FTEMP_LO(%a0)
+	tst.l		FTEMP_LO(a0)
 	bne.b		unf_res_cont		/*  no */
-/* 	bset		&z_bit, FPSR_CC(%a6)	; yes; set zero ccode bit */
-	bset		&z_bit, %d0		/*  yes; set zero ccode bit */
+/* 	bset		#z_bit, FPSR_CC(a6)	; yes; set zero ccode bit */
+	bset		#z_bit, d0		/*  yes; set zero ccode bit */
 
 unf_res_cont:
 
@@ -92,58 +92,58 @@ unf_res_cont:
  *
  * we know that underflow has occurred. aunfl should be set if INEX2 is also set.
  */
-	btst		&inex2_bit, FPSR_EXCEPT(%a6) /*  is INEX2 set? */
+	btst		#inex2_bit, FPSR_EXCEPT(a6) /*  is INEX2 set? */
 	beq.b		unf_res_end		/*  no */
-	bset		&aunfl_bit, FPSR_AEXCEPT(%a6) /*  yes; set aunfl */
+	bset		#aunfl_bit, FPSR_AEXCEPT(a6) /*  yes; set aunfl */
 
 unf_res_end:
-	addq.l		&0x4,%sp		/*  clear stack */
+	addq.l		#0x4,sp		/*  clear stack */
 	rts
 
 /*  unf_res() for fsglmul() and fsgldiv(). */
 	.globl		unf_res4
 unf_res4:
-	move.l		%d1,-(%sp)		/*  save rnd prec,mode on stack */
+	move.l		d1,-(sp)		/*  save rnd prec,mode on stack */
 
-	btst		&0x7,FTEMP_EX.w(%a0)	/*  make "internal" format */
-	sne		FTEMP_SGN(%a0)
+	btst		#0x7,FTEMP_EX.w(a0)	/*  make "internal" format */
+	sne		FTEMP_SGN(a0)
 
-	move.w		FTEMP_EX.w(%a0),%d1	/*  extract exponent */
-	andi.w		&0x7fff,%d1
-	sub.w		%d0,%d1
-	move.w		%d1,FTEMP_EX.w(%a0)	/*  insert 16 bit exponent */
+	move.w		FTEMP_EX.w(a0),d1	/*  extract exponent */
+	andi.w		#0x7fff,d1
+	sub.w		d0,d1
+	move.w		d1,FTEMP_EX.w(a0)	/*  insert 16 bit exponent */
 
-	move.l		%a0,-(%sp)		/*  save operand ptr during calls */
+	move.l		a0,-(sp)		/*  save operand ptr during calls */
 
-	clr.l		%d0			/*  force rnd prec = ext */
+	clr.l		d0			/*  force rnd prec = ext */
 	bsr.l		_denorm			/*  denorm result */
 
-	move.l		(%sp),%a0
-	move.w		&s_mode,%d1		/*  force rnd prec = sgl */
-	swap		%d1
-	move.w		0x6(%sp),%d1		/*  load rnd mode */
-	andi.w		&0x30,%d1		/*  extract rnd prec */
-	lsr.w		&0x4,%d1
+	move.l		(sp),a0
+	move.w		#s_mode,d1		/*  force rnd prec = sgl */
+	swap		d1
+	move.w		0x6(sp),d1		/*  load rnd mode */
+	andi.w		#0x30,d1		/*  extract rnd prec */
+	lsr.w		#0x4,d1
 	bsr.l		_round			/*  round the denorm */
 
-	move.l		(%sp)+,%a0
+	move.l		(sp)+,a0
 
 /*  result is now rounded properly. convert back to normal format */
-	bclr		&0x7,FTEMP_EX.w(%a0)	/*  clear sgn first; may have residue */
-	tst.b		FTEMP_SGN(%a0)		/*  is "internal result" sign set? */
+	bclr		#0x7,FTEMP_EX.w(a0)	/*  clear sgn first; may have residue */
+	tst.b		FTEMP_SGN(a0)		/*  is "internal result" sign set? */
 	beq.b		unf_res4_chkifzero	/*  no; result is positive */
-	bset		&0x7,FTEMP_EX.w(%a0)	/*  set result sgn */
-	clr.b		FTEMP_SGN(%a0)		/*  clear temp sign */
+	bset		#0x7,FTEMP_EX.w(a0)	/*  set result sgn */
+	clr.b		FTEMP_SGN(a0)		/*  clear temp sign */
 
 /*  the number may have become zero after rounding. set ccodes accordingly. */
 unf_res4_chkifzero:
-	clr.l		%d0
-	tst.l		FTEMP_HI(%a0)		/*  is value now a zero? */
+	clr.l		d0
+	tst.l		FTEMP_HI(a0)		/*  is value now a zero? */
 	bne.b		unf_res4_cont		/*  no */
-	tst.l		FTEMP_LO(%a0)
+	tst.l		FTEMP_LO(a0)
 	bne.b		unf_res4_cont		/*  no */
-/* 	bset		&z_bit,FPSR_CC(%a6)	; yes; set zero ccode bit */
-	bset		&z_bit,%d0		/*  yes; set zero ccode bit */
+/* 	bset		#z_bit,FPSR_CC(a6)	; yes; set zero ccode bit */
+	bset		#z_bit,d0		/*  yes; set zero ccode bit */
 
 unf_res4_cont:
 
@@ -152,12 +152,12 @@ unf_res4_cont:
  *
  * we know that underflow has occurred. aunfl should be set if INEX2 is also set.
  */
-	btst		&inex2_bit,FPSR_EXCEPT(%a6) /*  is INEX2 set? */
+	btst		#inex2_bit,FPSR_EXCEPT(a6) /*  is INEX2 set? */
 	beq.b		unf_res4_end		/*  no */
-	bset		&aunfl_bit,FPSR_AEXCEPT(%a6) /*  yes; set aunfl */
+	bset		#aunfl_bit,FPSR_AEXCEPT(a6) /*  yes; set aunfl */
 
 unf_res4_end:
-	addq.l		&0x4,%sp		/*  clear stack */
+	addq.l		#0x4,sp		/*  clear stack */
 	rts
 
 /*
@@ -195,29 +195,29 @@ unf_res4_end:
  */
 	.globl		ovf_res
 ovf_res:
-	andi.w		&0x10,%d1		/*  keep result sign */
-	lsr.b		&0x4,%d0		/*  shift prec/mode */
-	or.b		%d0,%d1			/*  concat the two */
-	move.w		%d1,%d0			/*  make a copy */
-	lsl.b		&0x1,%d1		/*  multiply d1 by 2 */
+	andi.w		#0x10,d1		/*  keep result sign */
+	lsr.b		#0x4,d0		/*  shift prec/mode */
+	or.b		d0,d1			/*  concat the two */
+	move.w		d1,d0			/*  make a copy */
+	lsl.b		#0x1,d1		/*  multiply d1 by 2 */
 	bra.b		ovf_res_load
 
 	.globl		ovf_res2
 ovf_res2:
-	andi.w		&0x10, %d1		/*  keep result sign */
-	or.b		%d0, %d1		/*  insert rnd mode */
-	swap		%d0
-	or.b		%d0, %d1		/*  insert rnd prec */
-	move.w		%d1, %d0		/*  make a copy */
-	lsl.b		&0x1, %d1		/*  shift left by 1 */
+	andi.w		#0x10, d1		/*  keep result sign */
+	or.b		d0, d1		/*  insert rnd mode */
+	swap		d0
+	or.b		d0, d1		/*  insert rnd prec */
+	move.w		d1, d0		/*  make a copy */
+	lsl.b		#0x1, d1		/*  shift left by 1 */
 
 /*
  * use the rounding mode, precision, and result sign as in index into the
  * two tables below to fetch the default result and the result ccodes.
  */
 ovf_res_load:
-	move.b		(tbl_ovfl_cc.b,%pc,%d0.w*1), %d0 /*  fetch result ccodes */
-	lea		(tbl_ovfl_result.b,%pc,%d1.w*8), %a0 /*  return result ptr */
+	move.b		(tbl_ovfl_cc.b,pc,d0.w*1),d0 /*  fetch result ccodes */
+	lea		(tbl_ovfl_result.b,pc,d1.w*8),a0 /*  return result ptr */
 
 	rts
 

@@ -29,18 +29,18 @@ qnan:	.dc.l		0x7fff0000, 0xffffffff, 0xffffffff
 
 	.globl		t_dz
 t_dz:
-	tst.b		SRC_EX.w(%a0)		/*  no; is src negative? */
+	tst.b		SRC_EX.w(a0)		/*  no; is src negative? */
 	bmi.b		t_dz2			/*  yes */
 
 dz_pinf:
-	fmove.s		&0x7f800000,%fp0	/*  return +INF in fp0 */
-	ori.l		&dzinf_mask,USER_FPSR(%a6) /*  set I/DZ/ADZ */
+	fmove.s		#0x7f800000,fp0	/*  return +INF in fp0 */
+	ori.l		#dzinf_mask,USER_FPSR(a6) /*  set I/DZ/ADZ */
 	rts
 
 	.globl		t_dz2
 t_dz2:
-	fmove.s		&0xff800000,%fp0	/*  return -INF in fp0 */
-	ori.l		&dzinf_mask+neg_mask,USER_FPSR(%a6) /*  set N/I/DZ/ADZ */
+	fmove.s		#0xff800000,fp0	/*  return -INF in fp0 */
+	ori.l		#dzinf_mask+neg_mask,USER_FPSR(a6) /*  set N/I/DZ/ADZ */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -50,8 +50,8 @@ t_dz2:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		t_operr
 t_operr:
-	ori.l		&opnan_mask,USER_FPSR(%a6) /*  set NaN/OPERR/AIOP */
-	/* fmovem.x		qnan(%pc),%fp0 */		/*  return default NAN in fp0 */
+	ori.l		#opnan_mask,USER_FPSR(a6) /*  set NaN/OPERR/AIOP */
+	/* fmovem.x		qnan(pc),fp0 */		/*  return default NAN in fp0 */
 	.dc.w 0xf23a,0xd080,0xffbe /* rejected by gas */
 	rts
 
@@ -67,38 +67,38 @@ t_operr:
 /*  NOT set INEX2/AUNFL/AINEX. */
 	.globl		t_resdnrm
 t_resdnrm:
-	ori.l		&unfl_mask,USER_FPSR(%a6) /*  set UNFL */
+	ori.l		#unfl_mask,USER_FPSR(a6) /*  set UNFL */
 	bra.b		xdnrm_con
 
 	.globl		t_extdnrm
 t_extdnrm:
-	ori.l		&unfinx_mask,USER_FPSR(%a6) /*  set UNFL/INEX2/AUNFL/AINEX */
+	ori.l		#unfinx_mask,USER_FPSR(a6) /*  set UNFL/INEX2/AUNFL/AINEX */
 
 xdnrm_con:
-	move.l		%a0,%a1			/*  make copy of src ptr */
-	move.l		%d0,%d1			/*  make copy of rnd prec,mode */
-	andi.b		&0xc0,%d1		/*  extended precision? */
+	move.l		a0,a1			/*  make copy of src ptr */
+	move.l		d0,d1			/*  make copy of rnd prec,mode */
+	andi.b		#0xc0,d1		/*  extended precision? */
 	bne.b		xdnrm_sd		/*  no */
 
 /*  result precision is extended. */
-	tst.b		LOCAL_EX.w(%a0)		/*  is denorm negative? */
+	tst.b		LOCAL_EX.w(a0)		/*  is denorm negative? */
 	bpl.b		xdnrm_exit		/*  no */
 
-	bset		&neg_bit,FPSR_CC(%a6)	/*  yes; set 'N' ccode bit */
+	bset		#neg_bit,FPSR_CC(a6)	/*  yes; set 'N' ccode bit */
 	bra.b		xdnrm_exit
 
 /*  result precision is single or double */
 xdnrm_sd:
-	move.l		%a1,-(%sp)
-	tst.b		LOCAL_EX.w(%a0)		/*  is denorm pos or neg? */
-	smi.b		%d1			/*  set d0 accordingly */
+	move.l		a1,-(sp)
+	tst.b		LOCAL_EX.w(a0)		/*  is denorm pos or neg? */
+	smi.b		d1			/*  set d0 accordingly */
 	bsr.l		unf_sub
-	move.l		(%sp)+,%a1
+	move.l		(sp)+,a1
 xdnrm_exit:
-	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
+	fmovem.x	(a0),fp0		/*  return default result in fp0 */
 
-	move.b		FPCR_ENABLE(%a6),%d0
-	andi.b		&0x0a,%d0		/*  is UNFL or INEX enabled? */
+	move.b		FPCR_ENABLE(a6),d0
+	andi.b		#0x0a,d0		/*  is UNFL or INEX enabled? */
 	bne.b		xdnrm_ena		/*  yes */
 	rts
 
@@ -109,17 +109,17 @@ xdnrm_exit:
 /*  so, normalize the mantissa, add 0x6000 to the new exponent, */
 /*  and return the result in fp1. */
 xdnrm_ena:
-	move.w		LOCAL_EX.w(%a1),FP_SCR0_EX(%a6)
-	move.l		LOCAL_HI(%a1),FP_SCR0_HI(%a6)
-	move.l		LOCAL_LO(%a1),FP_SCR0_LO(%a6)
+	move.w		LOCAL_EX.w(a1),FP_SCR0_EX(a6)
+	move.l		LOCAL_HI(a1),FP_SCR0_HI(a6)
+	move.l		LOCAL_LO(a1),FP_SCR0_LO(a6)
 
-	lea		FP_SCR0(%a6),%a0
+	lea		FP_SCR0(a6),a0
 	bsr.l		norm			/*  normalize mantissa */
-	addi.l		&0x6000,%d0		/*  add extra bias */
-	andi.w		&0x8000,FP_SCR0_EX(%a6)	/*  keep old sign */
-	or.w		%d0,FP_SCR0_EX(%a6)	/*  insert new exponent */
+	addi.l		#0x6000,d0		/*  add extra bias */
+	andi.w		#0x8000,FP_SCR0_EX(a6)	/*  keep old sign */
+	or.w		d0,FP_SCR0_EX(a6)	/*  insert new exponent */
 
-	fmovem.x	FP_SCR0(%a6),%fp1	/*  return EXOP in fp1 */
+	fmovem.x	FP_SCR0(a6),fp1	/*  return EXOP in fp1 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -135,26 +135,26 @@ xdnrm_ena:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		t_unfl
 t_unfl:
-	ori.l		&unfinx_mask,USER_FPSR(%a6) /*  set UNFL/INEX2/AUNFL/AINEX */
+	ori.l		#unfinx_mask,USER_FPSR(a6) /*  set UNFL/INEX2/AUNFL/AINEX */
 
-	tst.b		(%a0)			/*  is result pos or neg? */
-	smi.b		%d1			/*  set d1 accordingly */
+	tst.b		(a0)			/*  is result pos or neg? */
+	smi.b		d1			/*  set d1 accordingly */
 	bsr.l		unf_sub			/*  calc default unfl result */
-	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
+	fmovem.x	(a0),fp0		/*  return default result in fp0 */
 
-	fmove.s		&0x00000000,%fp1	/*  return EXOP in fp1 */
+	fmove.s		#0x00000000,fp1	/*  return EXOP in fp1 */
 	rts
 
 /*  t_unfl2 ALWAYS tells unf_sub to create a positive result */
 	.globl		t_unfl2
 t_unfl2:
-	ori.l		&unfinx_mask,USER_FPSR(%a6) /*  set UNFL/INEX2/AUNFL/AINEX */
+	ori.l		#unfinx_mask,USER_FPSR(a6) /*  set UNFL/INEX2/AUNFL/AINEX */
 
-	sf.b		%d1			/*  set d0 to represent positive */
+	sf.b		d1			/*  set d0 to represent positive */
 	bsr.l		unf_sub			/*  calc default unfl result */
-	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
+	fmovem.x	(a0),fp0		/*  return default result in fp0 */
 
-	fmove.s		&0x0000000,%fp1		/*  return EXOP in fp1 */
+	fmove.s		#0x0000000,fp1		/*  return EXOP in fp1 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -173,68 +173,68 @@ t_unfl2:
 
 	.globl		t_ovfl_sc
 t_ovfl_sc:
-	ori.l		&ovfl_inx_mask,USER_FPSR(%a6) /*  set OVFL/AOVFL/AINEX */
+	ori.l		#ovfl_inx_mask,USER_FPSR(a6) /*  set OVFL/AOVFL/AINEX */
 
-	move.b		%d0,%d1			/*  fetch rnd mode/prec */
-	andi.b		&0xc0,%d1		/*  extract rnd prec */
+	move.b		d0,d1			/*  fetch rnd mode/prec */
+	andi.b		#0xc0,d1		/*  extract rnd prec */
 	beq.b		ovfl_work		/*  prec is extended */
 
-	tst.b		LOCAL_HI(%a0)		/*  is dst a DENORM? */
+	tst.b		LOCAL_HI(a0)		/*  is dst a DENORM? */
 	bmi.b		ovfl_sc_norm		/*  no */
 
 /*  dst op is a DENORM. we have to normalize the mantissa to see if the */
 /*  result would be inexact for the given precision. make a copy of the */
 /*  dst so we don't screw up the version passed to us. */
-	move.w		LOCAL_EX.w(%a0),FP_SCR0_EX(%a6)
-	move.l		LOCAL_HI(%a0),FP_SCR0_HI(%a6)
-	move.l		LOCAL_LO(%a0),FP_SCR0_LO(%a6)
-	lea		FP_SCR0(%a6),%a0	/*  pass ptr to FP_SCR0 */
-	movem.l		%d0-%d1/%a0,-(%sp)		/*  save d0-d1/a0 */
+	move.w		LOCAL_EX.w(a0),FP_SCR0_EX(a6)
+	move.l		LOCAL_HI(a0),FP_SCR0_HI(a6)
+	move.l		LOCAL_LO(a0),FP_SCR0_LO(a6)
+	lea		FP_SCR0(a6),a0	/*  pass ptr to FP_SCR0 */
+	movem.l		d0-d1/a0,-(sp)		/*  save d0-d1/a0 */
 	bsr.l		norm			/*  normalize mantissa */
-	movem.l		(%sp)+,%d0-%d1/%a0		/*  restore d0-d1/a0 */
+	movem.l		(sp)+,d0-d1/a0		/*  restore d0-d1/a0 */
 
 ovfl_sc_norm:
-	cmpi.b		&0x40,%d1		/*  is prec dbl? */
+	cmpi.b		#0x40,d1		/*  is prec dbl? */
 	bne.b		ovfl_sc_dbl		/*  no; sgl */
 ovfl_sc_sgl:
-	tst.l		LOCAL_LO(%a0)		/*  is lo lw of sgl set? */
+	tst.l		LOCAL_LO(a0)		/*  is lo lw of sgl set? */
 	bne.b		ovfl_sc_inx		/*  yes */
-	tst.b		3+LOCAL_HI(%a0)		/*  is lo byte of hi lw set? */
+	tst.b		3+LOCAL_HI(a0)		/*  is lo byte of hi lw set? */
 	bne.b		ovfl_sc_inx		/*  yes */
 	bra.b		ovfl_work		/*  don't set INEX2 */
 ovfl_sc_dbl:
-	move.l		LOCAL_LO(%a0),%d1	/*  are any of lo 11 bits of */
-	andi.l		&0x7ff,%d1		/*  dbl mantissa set? */
+	move.l		LOCAL_LO(a0),d1	/*  are any of lo 11 bits of */
+	andi.l		#0x7ff,d1		/*  dbl mantissa set? */
 	beq.b		ovfl_work		/*  no; don't set INEX2 */
 ovfl_sc_inx:
-	ori.l		&inex2_mask,USER_FPSR(%a6) /*  set INEX2 */
+	ori.l		#inex2_mask,USER_FPSR(a6) /*  set INEX2 */
 	bra.b		ovfl_work		/*  continue */
 
 	.globl		t_ovfl
 t_ovfl:
-	ori.l		&ovfinx_mask,USER_FPSR(%a6) /*  set OVFL/INEX2/AOVFL/AINEX */
+	ori.l		#ovfinx_mask,USER_FPSR(a6) /*  set OVFL/INEX2/AOVFL/AINEX */
 
 ovfl_work:
-	tst.b		LOCAL_EX.w(%a0)		/*  what is the sign? */
-	smi.b		%d1			/*  set d1 accordingly */
+	tst.b		LOCAL_EX.w(a0)		/*  what is the sign? */
+	smi.b		d1			/*  set d1 accordingly */
 	bsr.l		ovf_res			/*  calc default ovfl result */
-	move.b		%d0,FPSR_CC(%a6)	/*  insert new ccodes */
-	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
+	move.b		d0,FPSR_CC(a6)	/*  insert new ccodes */
+	fmovem.x	(a0),fp0		/*  return default result in fp0 */
 
-	fmove.s		&0x00000000,%fp1	/*  return EXOP in fp1 */
+	fmove.s		#0x00000000,fp1	/*  return EXOP in fp1 */
 	rts
 
 /*  t_ovfl2 ALWAYS tells ovf_res to create a positive result */
 	.globl		t_ovfl2
 t_ovfl2:
-	ori.l		&ovfinx_mask,USER_FPSR(%a6) /*  set OVFL/INEX2/AOVFL/AINEX */
+	ori.l		#ovfinx_mask,USER_FPSR(a6) /*  set OVFL/INEX2/AOVFL/AINEX */
 
-	sf.b		%d1			/*  clear sign flag for positive */
+	sf.b		d1			/*  clear sign flag for positive */
 	bsr.l		ovf_res			/*  calc default ovfl result */
-	move.b		%d0,FPSR_CC(%a6)	/*  insert new ccodes */
-	fmovem.x	(%a0),%fp0		/*  return default result in fp0 */
+	move.b		d0,FPSR_CC(a6)	/*  insert new ccodes */
+	fmovem.x	(a0),fp0		/*  return default result in fp0 */
 
-	fmove.s		&0x00000000,%fp1	/*  return EXOP in fp1 */
+	fmove.s		#0x00000000,fp1	/*  return EXOP in fp1 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -249,10 +249,10 @@ t_ovfl2:
 	.globl		t_catch
 t_catch:
 
-	fsave		-(%sp)
-	tst.b		0x2(%sp)
+	fsave		-(sp)
+	tst.b		0x2(sp)
 	bmi.b		catch
-	add.l		&0xc,%sp
+	add.l		#0xc,sp
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  INEX2 exception:						 */
@@ -265,39 +265,39 @@ t_inx2:
 
 	.globl		t_pinx2
 t_pinx2:
-	ori.w		&inx2a_mask,2+USER_FPSR(%a6) /*  set INEX2/AINEX */
+	ori.w		#inx2a_mask,2+USER_FPSR(a6) /*  set INEX2/AINEX */
 	rts
 
 	.globl		t_minx2
 t_minx2:
-	ori.l		&inx2a_mask+neg_mask,USER_FPSR(%a6) /*  set N/INEX2/AINEX */
+	ori.l		#inx2a_mask+neg_mask,USER_FPSR(a6) /*  set N/INEX2/AINEX */
 	rts
 
 inx2_zero:
-	move.b		&z_bmask,FPSR_CC(%a6)
-	ori.w		&inx2a_mask,2+USER_FPSR(%a6) /*  set INEX2/AINEX */
+	move.b		#z_bmask,FPSR_CC(a6)
+	ori.w		#inx2a_mask,2+USER_FPSR(a6) /*  set INEX2/AINEX */
 	rts
 
 /*  an underflow or overflow exception occurred. */
 /*  we must set INEX/AINEX since the fmul/fdiv/fmov emulation may not! */
 catch:
-	ori.w		&inx2a_mask,FPSR_EXCEPT(%a6)
+	ori.w		#inx2a_mask,FPSR_EXCEPT(a6)
 catch2:
 	bsr.l		fgen_except
-	add.l		&0xc,%sp
+	add.l		#0xc,sp
 	rts
 
 	.globl		t_catch2
 t_catch2:
 
-	fsave		-(%sp)
+	fsave		-(sp)
 
-	tst.b		0x2(%sp)
+	tst.b		0x2(sp)
 	bmi.b		catch2
-	add.l		&0xc,%sp
+	add.l		#0xc,sp
 
-	fmove.l		%fpsr,%d0
-	or.l		%d0,USER_FPSR(%a6)
+	fmove.l		fpsr,d0
+	or.l		d0,USER_FPSR(a6)
 
 	rts
 
@@ -313,19 +313,19 @@ t_catch2:
 /* 	a0   : points to result (in instruction memory)			 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 unf_sub:
-	ori.l		&unfinx_mask,USER_FPSR(%a6)
+	ori.l		#unfinx_mask,USER_FPSR(a6)
 
-	andi.w		&0x10,%d1		/*  keep sign bit in 4th spot */
+	andi.w		#0x10,d1		/*  keep sign bit in 4th spot */
 
-	lsr.b		&0x4,%d0		/*  shift rnd prec,mode to lo bits */
-	andi.b		&0xf,%d0		/*  strip hi rnd mode bit */
-	or.b		%d1,%d0			/*  concat {sgn,mode,prec} */
+	lsr.b		#0x4,d0		/*  shift rnd prec,mode to lo bits */
+	andi.b		#0xf,d0		/*  strip hi rnd mode bit */
+	or.b		d1,d0			/*  concat {sgn,mode,prec} */
 
-	move.l		%d0,%d1			/*  make a copy */
-	lsl.b		&0x1,%d1		/*  mult index 2 by 2 */
+	move.l		d0,d1			/*  make a copy */
+	lsl.b		#0x1,d1		/*  mult index 2 by 2 */
 
-	move.b		(tbl_unf_cc.b,%pc,%d0.w*1),FPSR_CC(%a6) /*  insert ccode bits */
-	lea		(tbl_unf_result.b,%pc,%d1.w*8),%a0 /*  grab result ptr */
+	move.b		(tbl_unf_cc.b,pc,d0.w*1),FPSR_CC(a6) /*  insert ccode bits */
+	lea		(tbl_unf_result.b,pc,d1.w*8),a0 /*  grab result ptr */
 	rts
 
 tbl_unf_cc:
@@ -380,7 +380,7 @@ tbl_unf_result:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		src_zero
 src_zero:
-	tst.b		SRC_EX.w(%a0)		/*  get sign of src operand */
+	tst.b		SRC_EX.w(a0)		/*  get sign of src operand */
 	bmi.b		ld_mzero		/*  if neg, load neg zero */
 
 /*
@@ -388,15 +388,15 @@ src_zero:
  */
 	.globl		ld_pzero
 ld_pzero:
-	fmove.s		&0x00000000,%fp0	/*  load +0 */
-	move.b		&z_bmask,FPSR_CC(%a6)	/*  set 'Z' ccode bit */
+	fmove.s		#0x00000000,fp0	/*  load +0 */
+	move.b		#z_bmask,FPSR_CC(a6)	/*  set 'Z' ccode bit */
 	rts
 
 /*  ld_mzero(): return a negative zero. */
 	.globl		ld_mzero
 ld_mzero:
-	fmove.s		&0x80000000,%fp0	/*  load -0 */
-	move.b		&neg_bmask+z_bmask,FPSR_CC(%a6) /*  set 'N','Z' ccode bits */
+	fmove.s		#0x80000000,fp0	/*  load -0 */
+	move.b		#neg_bmask+z_bmask,FPSR_CC(a6) /*  set 'N','Z' ccode bits */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -404,7 +404,7 @@ ld_mzero:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		dst_zero
 dst_zero:
-	tst.b		DST_EX.w(%a1)		/*  get sign of dst operand */
+	tst.b		DST_EX.w(a1)		/*  get sign of dst operand */
 	bmi.b		ld_mzero		/*  if neg, load neg zero */
 	bra.b		ld_pzero		/*  load positive zero */
 
@@ -413,7 +413,7 @@ dst_zero:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		src_inf
 src_inf:
-	tst.b		SRC_EX.w(%a0)		/*  get sign of src operand */
+	tst.b		SRC_EX.w(a0)		/*  get sign of src operand */
 	bmi.b		ld_minf			/*  if negative branch */
 
 /*
@@ -421,8 +421,8 @@ src_inf:
  */
 	.globl		ld_pinf
 ld_pinf:
-	fmove.s		&0x7f800000,%fp0	/*  load +INF */
-	move.b		&inf_bmask,FPSR_CC(%a6)	/*  set 'INF' ccode bit */
+	fmove.s		#0x7f800000,fp0	/*  load +INF */
+	move.b		#inf_bmask,FPSR_CC(a6)	/*  set 'INF' ccode bit */
 	rts
 
 /*
@@ -430,8 +430,8 @@ ld_pinf:
  */
 	.globl		ld_minf
 ld_minf:
-	fmove.s		&0xff800000,%fp0	/*  load -INF */
-	move.b		&neg_bmask+inf_bmask,FPSR_CC(%a6) /*  set 'N','I' ccode bits */
+	fmove.s		#0xff800000,fp0	/*  load -INF */
+	move.b		#neg_bmask+inf_bmask,FPSR_CC(a6) /*  set 'N','I' ccode bits */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -439,7 +439,7 @@ ld_minf:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		dst_inf
 dst_inf:
-	tst.b		DST_EX.w(%a1)		/*  get sign of dst operand */
+	tst.b		DST_EX.w(a1)		/*  get sign of dst operand */
 	bmi.b		ld_minf			/*  if negative branch */
 	bra.b		ld_pinf
 
@@ -450,7 +450,7 @@ dst_inf:
 /* 	     Routine used for fetox, ftwotox, and ftentox.	 */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 szr_inf:
-	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
+	tst.b		SRC_EX.w(a0)		/*  check sign of source */
 	bmi.b		ld_pzero
 	bra.b		ld_pinf
 
@@ -461,7 +461,7 @@ szr_inf:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		sopr_inf
 sopr_inf:
-	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
+	tst.b		SRC_EX.w(a0)		/*  check sign of source */
 	bmi.w		t_operr
 	bra.b		ld_pinf
 
@@ -472,7 +472,7 @@ sopr_inf:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		setoxm1i
 setoxm1i:
-	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
+	tst.b		SRC_EX.w(a0)		/*  check sign of source */
 	bmi.b		ld_mone
 	bra.b		ld_pinf
 
@@ -481,7 +481,7 @@ setoxm1i:
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		src_one
 src_one:
-	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
+	tst.b		SRC_EX.w(a0)		/*  check sign of source */
 	bmi.b		ld_mone
 
 /*
@@ -489,8 +489,8 @@ src_one:
  */
 	.globl		ld_pone
 ld_pone:
-	fmove.s		&0x3f800000,%fp0	/*  load +1 */
-	clr.b		FPSR_CC(%a6)
+	fmove.s		#0x3f800000,fp0	/*  load +1 */
+	clr.b		FPSR_CC(a6)
 	rts
 
 /*
@@ -498,8 +498,8 @@ ld_pone:
  */
 	.globl		ld_mone
 ld_mone:
-	fmove.s		&0xbf800000,%fp0	/*  load -1 */
-	move.b		&neg_bmask,FPSR_CC(%a6)	/*  set 'N' ccode bit */
+	fmove.s		#0xbf800000,fp0	/*  load -1 */
+	move.b		#neg_bmask,FPSR_CC(a6)	/*  set 'N' ccode bit */
 	rts
 
 ppiby2:	.dc.l		0x3fff0000, 0xc90fdaa2, 0x2168c235
@@ -510,7 +510,7 @@ mpiby2:	.dc.l		0xbfff0000, 0xc90fdaa2, 0x2168c235
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 	.globl		spi_2
 spi_2:
-	tst.b		SRC_EX.w(%a0)		/*  check sign of source */
+	tst.b		SRC_EX.w(a0)		/*  check sign of source */
 	bmi.b		ld_mpi2
 
 /*
@@ -518,8 +518,8 @@ spi_2:
  */
 	.globl		ld_ppi2
 ld_ppi2:
-	fmove.l		%d0,%fpcr
-	fmove.x		ppiby2(%pc),%fp0	/*  load +pi/2 */
+	fmove.l		d0,fpcr
+	fmove.x		ppiby2(pc),fp0	/*  load +pi/2 */
 	bra.w		t_pinx2			/*  set INEX2 */
 
 /*
@@ -527,8 +527,8 @@ ld_ppi2:
  */
 	.globl		ld_mpi2
 ld_mpi2:
-	fmove.l		%d0,%fpcr
-	fmove.x		mpiby2(%pc),%fp0	/*  load -pi/2 */
+	fmove.l		d0,fpcr
+	fmove.x		mpiby2(pc),fp0	/*  load -pi/2 */
 	bra.w		t_minx2			/*  set INEX2 */
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -542,15 +542,15 @@ ld_mpi2:
  */
 	.globl		ssincosz
 ssincosz:
-	fmove.s		&0x3f800000,%fp1
-	tst.b		SRC_EX.w(%a0)		/*  test sign */
+	fmove.s		#0x3f800000,fp1
+	tst.b		SRC_EX.w(a0)		/*  test sign */
 	bpl.b		sincoszp
-	fmove.s		&0x80000000,%fp0	/*  return sin result in fp0 */
-	move.b		&z_bmask+neg_bmask,FPSR_CC(%a6)
+	fmove.s		#0x80000000,fp0	/*  return sin result in fp0 */
+	move.b		#z_bmask+neg_bmask,FPSR_CC(a6)
 	bra.b		sto_cos			/*  store cosine result */
 sincoszp:
-	fmove.s		&0x00000000,%fp0	/*  return sin result in fp0 */
-	move.b		&z_bmask,FPSR_CC(%a6)
+	fmove.s		#0x00000000,fp0	/*  return sin result in fp0 */
+	move.b		#z_bmask,FPSR_CC(a6)
 	bra.b		sto_cos			/*  store cosine result */
 
 /*
@@ -560,7 +560,7 @@ sincoszp:
  */
 	.globl		ssincosi
 ssincosi:
-	fmove.x		qnan(%pc),%fp1		/*  load NAN */
+	fmove.x		qnan(pc),fp1		/*  load NAN */
 	bsr.l		sto_cos			/*  store cosine result */
 	bra.w		t_operr
 
@@ -570,7 +570,7 @@ ssincosi:
  */
 	.globl		ssincosqnan
 ssincosqnan:
-	fmove.x		LOCAL_EX.w(%a0),%fp1
+	fmove.x		LOCAL_EX.w(a0),fp1
 	bsr.l		sto_cos
 	bra.w		src_qnan
 
@@ -580,7 +580,7 @@ ssincosqnan:
  */
 	.globl		ssincossnan
 ssincossnan:
-	fmove.x		LOCAL_EX.w(%a0),%fp1
+	fmove.x		LOCAL_EX.w(a0),fp1
 	bsr.l		sto_cos
 	bra.w		src_snan
 
@@ -599,10 +599,10 @@ ssincossnan:
  */
 	.globl		sto_cos
 sto_cos:
-	move.b		1+EXC_CMDREG(%a6),%d0
-	andi.w		&0x7,%d0
-	move.w		(tbl_sto_cos.b,%pc,%d0.w*2),%d0
-	jmp		(tbl_sto_cos.b,%pc,%d0.w*1)
+	move.b		1+EXC_CMDREG(a6),d0
+	andi.w		#0x7,d0
+	move.w		(tbl_sto_cos.b,pc,d0.w*2),d0
+	jmp		(tbl_sto_cos.b,pc,d0.w*1)
 
 tbl_sto_cos:
 	.dc.w		sto_cos_0 - tbl_sto_cos
@@ -615,28 +615,28 @@ tbl_sto_cos:
 	.dc.w		sto_cos_7 - tbl_sto_cos
 
 sto_cos_0:
-	fmovem.x	%fp1,EXC_FP0(%a6)
+	fmovem.x	fp1,EXC_FP0(a6)
 	rts
 sto_cos_1:
-	fmovem.x	%fp1,EXC_FP1(%a6)
+	fmovem.x	fp1,EXC_FP1(a6)
 	rts
 sto_cos_2:
-	fmove.x		%fp1,%fp2
+	fmove.x		fp1,fp2
 	rts
 sto_cos_3:
-	fmove.x		%fp1,%fp3
+	fmove.x		fp1,fp3
 	rts
 sto_cos_4:
-	fmove.x		%fp1,%fp4
+	fmove.x		fp1,fp4
 	rts
 sto_cos_5:
-	fmove.x		%fp1,%fp5
+	fmove.x		fp1,fp5
 	rts
 sto_cos_6:
-	fmove.x		%fp1,%fp6
+	fmove.x		fp1,fp6
 	rts
 sto_cos_7:
-	fmove.x		%fp1,%fp7
+	fmove.x		fp1,fp7
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -644,80 +644,80 @@ sto_cos_7:
 	.globl		smod_snorm
 smod_sdnrm:
 smod_snorm:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		smod
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.w		smod_zro
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		smod
-	cmpi.b		&SNAN,%d1
+	cmpi.b		#SNAN,d1
 	beq.l		dst_snan
 	bra.l		dst_qnan
 
 	.globl		smod_szero
 smod_szero:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		t_operr
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		t_operr
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		t_operr
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
 	.globl		smod_sinf
 smod_sinf:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		smod_fpn
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		smod_zro
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		smod_fpn
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
 smod_zro:
 srem_zro:
-	move.b		SRC_EX.w(%a0),%d1		/*  get src sign */
-	move.b		DST_EX.w(%a1),%d0		/*  get dst sign */
-	eor.b		%d0,%d1			/*  get qbyte sign */
-	andi.b		&0x80,%d1
-	move.b		%d1,FPSR_QBYTE(%a6)
-	tst.b		%d0
+	move.b		SRC_EX.w(a0),d1		/*  get src sign */
+	move.b		DST_EX.w(a1),d0		/*  get dst sign */
+	eor.b		d0,d1			/*  get qbyte sign */
+	andi.b		#0x80,d1
+	move.b		d1,FPSR_QBYTE(a6)
+	tst.b		d0
 	bpl.w		ld_pzero
 	bra.w		ld_mzero
 
 smod_fpn:
 srem_fpn:
-	clr.b		FPSR_QBYTE(%a6)
-	move.l		%d0,-(%sp)
-	move.b		SRC_EX.w(%a0),%d1		/*  get src sign */
-	move.b		DST_EX.w(%a1),%d0		/*  get dst sign */
-	eor.b		%d0,%d1			/*  get qbyte sign */
-	andi.b		&0x80,%d1
-	move.b		%d1,FPSR_QBYTE(%a6)
-	cmpi.b		&DENORM,DTAG(%a6)
+	clr.b		FPSR_QBYTE(a6)
+	move.l		d0,-(sp)
+	move.b		SRC_EX.w(a0),d1		/*  get src sign */
+	move.b		DST_EX.w(a1),d0		/*  get dst sign */
+	eor.b		d0,d1			/*  get qbyte sign */
+	andi.b		#0x80,d1
+	move.b		d1,FPSR_QBYTE(a6)
+	cmpi.b		#DENORM,DTAG(a6)
 	bne.b		smod_nrm
-	lea		DST.w(%a1),%a0
-	move.l		(%sp)+,%d0
+	lea		DST.w(a1),a0
+	move.l		(sp)+,d0
 	bra.l		t_resdnrm
 smod_nrm:
-	fmove.l		(%sp)+,%fpcr
-	fmove.x		DST.w(%a1),%fp0
-	tst.b		DST_EX.w(%a1)
+	fmove.l		(sp)+,fpcr
+	fmove.x		DST.w(a1),fp0
+	tst.b		DST_EX.w(a1)
 	bmi.b		smod_nrm_neg
 	rts
 
 smod_nrm_neg:
-	move.b		&neg_bmask,FPSR_CC(%a6)	/*  set 'N' ccode */
+	move.b		#neg_bmask,FPSR_CC(a6)	/*  set 'N' ccode */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -725,43 +725,43 @@ smod_nrm_neg:
 	.globl		srem_sdnrm
 srem_sdnrm:
 srem_snorm:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		srem
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.w		srem_zro
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		srem
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
 	.globl		srem_szero
 srem_szero:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		t_operr
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		t_operr
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		t_operr
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
 	.globl		srem_sinf
 srem_sinf:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.w		srem_fpn
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.w		srem_zro
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		srem_fpn
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
@@ -770,39 +770,39 @@ srem_sinf:
 	.globl		sscale_sdnrm
 sscale_snorm:
 sscale_sdnrm:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		sscale
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		dst_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		dst_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sscale
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
 	.globl		sscale_szero
 sscale_szero:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		sscale
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		dst_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		dst_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sscale
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
 	bra.l		dst_snan
 
 	.globl		sscale_sinf
 sscale_sinf:
-	move.b		DTAG(%a6),%d1
+	move.b		DTAG(a6),d1
 	beq.l		t_operr
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		dst_qnan
-	cmpi.b		&SNAN,%d1
+	cmpi.b		#SNAN,d1
 	beq.l		dst_snan
 	bra.l		t_operr
 
@@ -813,10 +813,10 @@ sscale_sinf:
  */
 	.globl		sop_sqnan
 sop_sqnan:
-	move.b		DTAG(%a6),%d1
-	cmpi.b		&QNAN,%d1
+	move.b		DTAG(a6),d1
+	cmpi.b		#QNAN,d1
 	beq.b		dst_qnan
-	cmpi.b		&SNAN,%d1
+	cmpi.b		#SNAN,d1
 	beq.b		dst_snan
 	bra.b		src_qnan
 
@@ -825,15 +825,15 @@ sop_sqnan:
  */
 	.globl		sop_ssnan
 sop_ssnan:
-	move.b		DTAG(%a6),%d1
-	cmpi.b		&QNAN,%d1
+	move.b		DTAG(a6),d1
+	cmpi.b		#QNAN,d1
 	beq.b		dst_qnan_src_snan
-	cmpi.b		&SNAN,%d1
+	cmpi.b		#SNAN,d1
 	beq.b		dst_snan
 	bra.b		src_snan
 
 dst_qnan_src_snan:
-	ori.l		&snaniop_mask,USER_FPSR(%a6) /*  set NAN/SNAN/AIOP */
+	ori.l		#snaniop_mask,USER_FPSR(a6) /*  set NAN/SNAN/AIOP */
 	bra.b		dst_qnan
 
 /*
@@ -841,9 +841,9 @@ dst_qnan_src_snan:
  */
 	.globl		dst_snan
 dst_snan:
-	fmove.x		DST.w(%a1),%fp0		/*  the fmove sets the SNAN bit */
-	fmove.l		%fpsr,%d0		/*  catch resulting status */
-	or.l		%d0,USER_FPSR(%a6)	/*  store status */
+	fmove.x		DST.w(a1),fp0		/*  the fmove sets the SNAN bit */
+	fmove.l		fpsr,d0		/*  catch resulting status */
+	or.l		d0,USER_FPSR(a6)	/*  store status */
 	rts
 
 /*
@@ -851,14 +851,14 @@ dst_snan:
  */
 	.globl		dst_qnan
 dst_qnan:
-	fmove.x		DST.w(%a1),%fp0		/*  return the non-signalling nan */
-	tst.b		DST_EX.w(%a1)		/*  set ccodes according to QNAN sign */
+	fmove.x		DST.w(a1),fp0		/*  return the non-signalling nan */
+	tst.b		DST_EX.w(a1)		/*  set ccodes according to QNAN sign */
 	bmi.b		dst_qnan_m
 dst_qnan_p:
-	move.b		&nan_bmask,FPSR_CC(%a6)
+	move.b		#nan_bmask,FPSR_CC(a6)
 	rts
 dst_qnan_m:
-	move.b		&neg_bmask+nan_bmask,FPSR_CC(%a6)
+	move.b		#neg_bmask+nan_bmask,FPSR_CC(a6)
 	rts
 
 /*
@@ -866,9 +866,9 @@ dst_qnan_m:
  */
 	.globl		src_snan
 src_snan:
-	fmove.x		SRC.w(%a0),%fp0		/*  the fmove sets the SNAN bit */
-	fmove.l		%fpsr,%d0		/*  catch resulting status */
-	or.l		%d0,USER_FPSR(%a6)	/*  store status */
+	fmove.x		SRC.w(a0),fp0		/*  the fmove sets the SNAN bit */
+	fmove.l		fpsr,d0		/*  catch resulting status */
+	or.l		d0,USER_FPSR(a6)	/*  store status */
 	rts
 
 /*
@@ -876,14 +876,14 @@ src_snan:
  */
 	.globl		src_qnan
 src_qnan:
-	fmove.x		SRC.w(%a0),%fp0		/*  return the non-signalling nan */
-	tst.b		SRC_EX.w(%a0)		/*  set ccodes according to QNAN sign */
+	fmove.x		SRC.w(a0),fp0		/*  return the non-signalling nan */
+	tst.b		SRC_EX.w(a0)		/*  set ccodes according to QNAN sign */
 	bmi.b		dst_qnan_m
 src_qnan_p:
-	move.b		&nan_bmask,FPSR_CC(%a6)
+	move.b		#nan_bmask,FPSR_CC(a6)
 	rts
 src_qnan_m:
-	move.b		&neg_bmask+nan_bmask,FPSR_CC(%a6)
+	move.b		#neg_bmask+nan_bmask,FPSR_CC(a6)
 	rts
 
 /*
@@ -897,337 +897,337 @@ src_qnan_m:
 
 	.globl		fsinh
 fsinh:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		ssinh
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		src_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		ssinhd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		flognp1
 flognp1:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		slognp1
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		sopr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		slognp1d
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fetoxm1
 fetoxm1:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		setoxm1
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		setoxm1i
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		setoxm1d
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		ftanh
 ftanh:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		stanh
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		src_one
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		stanhd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fatan
 fatan:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		satan
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		spi_2
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		satand
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fasin
 fasin:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		sasin
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sasind
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fatanh
 fatanh:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		satanh
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		satanhd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fsine
 fsine:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		ssin
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		ssind
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		ftan
 ftan:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		stan
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		stand
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fetox
 fetox:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		setox
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ld_pone
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		szr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		setoxd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		ftwotox
 ftwotox:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		stwotox
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ld_pone
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		szr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		stwotoxd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		ftentox
 ftentox:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		stentox
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ld_pone
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		szr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		stentoxd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		flogn
 flogn:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		slogn
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		t_dz2
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		sopr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		slognd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		flog10
 flog10:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		slog10
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		t_dz2
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		sopr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		slog10d
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		flog2
 flog2:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		slog2
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		t_dz2
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		sopr_inf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		slog2d
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fcosh
 fcosh:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		scosh
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ld_pone
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		ld_pinf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		scoshd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		facos
 facos:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		sacos
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ld_ppi2
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sacosd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fcos
 fcos:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		scos
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ld_pone
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		scosd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fgetexp
 fgetexp:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		sgetexp
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sgetexpd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fgetman
 fgetman:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		sgetman
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		src_zero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		t_operr
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sgetmand
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		src_qnan
 	bra.l		src_snan
 
 	.globl		fsincos
 fsincos:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		ssincos
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		ssincosz
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		ssincosi
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		ssincosd
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		ssincosqnan
 	bra.l		ssincossnan
 
 	.globl		fmod
 fmod:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		smod_snorm
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		smod_szero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		smod_sinf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		smod_sdnrm
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		sop_sqnan
 	bra.l		sop_ssnan
 
 	.globl		frem
 frem:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		srem_snorm
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		srem_szero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		srem_sinf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		srem_sdnrm
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		sop_sqnan
 	bra.l		sop_ssnan
 
 	.globl		fscale
 fscale:
-	move.b		STAG(%a6),%d1
+	move.b		STAG(a6),d1
 	beq.l		sscale_snorm
-	cmpi.b		&ZERO,%d1
+	cmpi.b		#ZERO,d1
 	beq.l		sscale_szero
-	cmpi.b		&INF,%d1
+	cmpi.b		#INF,d1
 	beq.l		sscale_sinf
-	cmpi.b		&DENORM,%d1
+	cmpi.b		#DENORM,d1
 	beq.l		sscale_sdnrm
-	cmpi.b		&QNAN,%d1
+	cmpi.b		#QNAN,d1
 	beq.l		sop_sqnan
 	bra.l		sop_ssnan
 

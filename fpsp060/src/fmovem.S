@@ -51,9 +51,9 @@
  * 	fmovem.x	<ea>, dn						
  * 									
  * 	      <WORD 1>		      <WORD2>				
- * 	1111 0010 00 |<ea>|	11@& 1000 0$$$ 0000			
+ * 	1111 0010 00 |<ea>|	11@# 1000 0$$$ 0000			
  * 									
- * 	& = (0): predecrement addressing mode				
+ * 	# = (0): predecrement addressing mode				
  * 	    (1): postincrement or control addressing mode		
  * 	@ = (0): move listed regs from memory to the FPU		
  * 	    (1): move listed regs from the FPU to memory		
@@ -73,35 +73,35 @@
 fmovem_dynamic:
 
 /*  extract the data register in which the bit string resides... */
-	move.b		1+EXC_EXTWORD(%a6),%d1	/*  fetch extword */
-	andi.w		&0x70,%d1		/*  extract reg bits */
-	lsr.b		&0x4,%d1		/*  shift into lo bits */
+	move.b		1+EXC_EXTWORD(a6),d1	/*  fetch extword */
+	andi.w		#0x70,d1		/*  extract reg bits */
+	lsr.b		#0x4,d1		/*  shift into lo bits */
 
 /*  fetch the bit string into d0... */
 	bsr.l		fetch_dreg		/*  fetch reg string */
 
-	andi.l		&0x000000ff,%d0		/*  keep only lo byte */
+	andi.l		#0x000000ff,d0		/*  keep only lo byte */
 
-	move.l		%d0,-(%sp)		/*  save strg */
-	move.b		(tbl_fmovem_size.w,%pc,%d0.l),%d0
-	move.l		%d0,-(%sp)		/*  save size */
+	move.l		d0,-(sp)		/*  save strg */
+	move.b		(tbl_fmovem_size.w,pc,d0.l),d0
+	move.l		d0,-(sp)		/*  save size */
 	bsr.l		fmovem_calc_ea		/*  calculate <ea> */
-	move.l		(%sp)+,%d0		/*  restore size */
-	move.l		(%sp)+,%d1		/*  restore strg */
+	move.l		(sp)+,d0		/*  restore size */
+	move.l		(sp)+,d1		/*  restore strg */
 
 /*  if the bit string is a zero, then the operation is a no-op */
 /*  but, make sure that we've calculated ea and advanced the opword pointer */
 	beq.w		fmovem_data_done
 
 /*  separate move ins from move outs... */
-	btst		&0x5,EXC_EXTWORD(%a6)	/*  is it a move in or out? */
+	btst		#0x5,EXC_EXTWORD(a6)	/*  is it a move in or out? */
 	beq.w		fmovem_data_in		/*  it's a move out */
 
 /* ;;;;;;;;;;; */
 /*  MOVE OUT:  */
 /* ;;;;;;;;;;; */
 fmovem_data_out:
-	btst		&0x4,EXC_EXTWORD(%a6)	/*  control or predecrement? */
+	btst		#0x4,EXC_EXTWORD(a6)	/*  control or predecrement? */
 	bne.w		fmovem_out_ctrl		/*  control */
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -109,13 +109,13 @@ fmovem_out_predec:
 /*  for predecrement mode, the bit string is the opposite of both control */
 /*  operations and postincrement mode. (bit7 = FP7 ... bit0 = FP0) */
 /*  here, we convert it to be just like the others... */
-	move.b		(tbl_fmovem_convert.w,%pc,%d1.w*1),%d1
+	move.b		(tbl_fmovem_convert.w,pc,d1.w*1),d1
 
-	btst		&0x5,EXC_SR(%a6)	/*  user or supervisor mode? */
+	btst		#0x5,EXC_SR(a6)	/*  user or supervisor mode? */
 	beq.b		fmovem_out_ctrl		/*  user */
 
 fmovem_out_predec_s:
-	cmpi.b		&mda7_flg,SPCOND_FLG(%a6) /*  is <ea> mode -(a7)? */
+	cmpi.b		#mda7_flg,SPCOND_FLG(a6) /*  is <ea> mode -(a7)? */
 	bne.b		fmovem_out_ctrl
 
 /*  the operation was unfortunately an: fmovem.x dn,-(sp) */
@@ -125,79 +125,79 @@ fmovem_out_predec_s:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;; */
 fmovem_out_ctrl:
-	move.l		%a0,%a1			/*  move <ea> to a1 */
+	move.l		a0,a1			/*  move <ea> to a1 */
 
-	sub.l		%d0,%sp			/*  subtract size of dump */
-	lea		(%sp),%a0
+	sub.l		d0,sp			/*  subtract size of dump */
+	lea		(sp),a0
 
-	tst.b		%d1			/*  should FP0 be moved? */
+	tst.b		d1			/*  should FP0 be moved? */
 	bpl.b		fmovem_out_ctrl_fp1	/*  no */
 
-	move.l		0x0+EXC_FP0(%a6),(%a0)+	/*  yes */
-	move.l		0x4+EXC_FP0(%a6),(%a0)+
-	move.l		0x8+EXC_FP0(%a6),(%a0)+
+	move.l		0x0+EXC_FP0(a6),(a0)+	/*  yes */
+	move.l		0x4+EXC_FP0(a6),(a0)+
+	move.l		0x8+EXC_FP0(a6),(a0)+
 
 fmovem_out_ctrl_fp1:
-	lsl.b		&0x1,%d1		/*  should FP1 be moved? */
+	lsl.b		#0x1,d1		/*  should FP1 be moved? */
 	bpl.b		fmovem_out_ctrl_fp2	/*  no */
 
-	move.l		0x0+EXC_FP1(%a6),(%a0)+	/*  yes */
-	move.l		0x4+EXC_FP1(%a6),(%a0)+
-	move.l		0x8+EXC_FP1(%a6),(%a0)+
+	move.l		0x0+EXC_FP1(a6),(a0)+	/*  yes */
+	move.l		0x4+EXC_FP1(a6),(a0)+
+	move.l		0x8+EXC_FP1(a6),(a0)+
 
 fmovem_out_ctrl_fp2:
-	lsl.b		&0x1,%d1		/*  should FP2 be moved? */
+	lsl.b		#0x1,d1		/*  should FP2 be moved? */
 	bpl.b		fmovem_out_ctrl_fp3	/*  no */
 
-	fmovem.x		%fp2,(%a0)		/*  yes */
-	add.l		&0xc,%a0
+	fmovem.x		fp2,(a0)		/*  yes */
+	add.l		#0xc,a0
 
 fmovem_out_ctrl_fp3:
-	lsl.b		&0x1,%d1		/*  should FP3 be moved? */
+	lsl.b		#0x1,d1		/*  should FP3 be moved? */
 	bpl.b		fmovem_out_ctrl_fp4	/*  no */
 
-	fmovem.x		%fp3,(%a0)		/*  yes */
-	add.l		&0xc,%a0
+	fmovem.x		fp3,(a0)		/*  yes */
+	add.l		#0xc,a0
 
 fmovem_out_ctrl_fp4:
-	lsl.b		&0x1,%d1		/*  should FP4 be moved? */
+	lsl.b		#0x1,d1		/*  should FP4 be moved? */
 	bpl.b		fmovem_out_ctrl_fp5	/*  no */
 
-	fmovem.x		%fp4,(%a0)		/*  yes */
-	add.l		&0xc,%a0
+	fmovem.x		fp4,(a0)		/*  yes */
+	add.l		#0xc,a0
 
 fmovem_out_ctrl_fp5:
-	lsl.b		&0x1,%d1		/*  should FP5 be moved? */
+	lsl.b		#0x1,d1		/*  should FP5 be moved? */
 	bpl.b		fmovem_out_ctrl_fp6	/*  no */
 
-	fmovem.x		%fp5,(%a0)		/*  yes */
-	add.l		&0xc,%a0
+	fmovem.x		fp5,(a0)		/*  yes */
+	add.l		#0xc,a0
 
 fmovem_out_ctrl_fp6:
-	lsl.b		&0x1,%d1		/*  should FP6 be moved? */
+	lsl.b		#0x1,d1		/*  should FP6 be moved? */
 	bpl.b		fmovem_out_ctrl_fp7	/*  no */
 
-	fmovem.x		%fp6,(%a0)		/*  yes */
-	add.l		&0xc,%a0
+	fmovem.x		fp6,(a0)		/*  yes */
+	add.l		#0xc,a0
 
 fmovem_out_ctrl_fp7:
-	lsl.b		&0x1,%d1		/*  should FP7 be moved? */
+	lsl.b		#0x1,d1		/*  should FP7 be moved? */
 	bpl.b		fmovem_out_ctrl_done	/*  no */
 
-	fmovem.x		%fp7,(%a0)		/*  yes */
-	add.l		&0xc,%a0
+	fmovem.x		fp7,(a0)		/*  yes */
+	add.l		#0xc,a0
 
 fmovem_out_ctrl_done:
-	move.l		%a1,L_SCR1(%a6)
+	move.l		a1,L_SCR1(a6)
 
-	lea		(%sp),%a0		/*  pass: supervisor src */
-	move.l		%d0,-(%sp)		/*  save size */
+	lea		(sp),a0		/*  pass: supervisor src */
+	move.l		d0,-(sp)		/*  save size */
 	bsr.l		_dmem_write		/*  copy data to user mem */
 
-	move.l		(%sp)+,%d0
-	add.l		%d0,%sp			/*  clear fpreg data from stack */
+	move.l		(sp)+,d0
+	add.l		d0,sp			/*  clear fpreg data from stack */
 
-	tst.l		%d1			/*  did dstore err? */
+	tst.l		d1			/*  did dstore err? */
 	bne.w		fmovem_out_err		/*  yes */
 
 	rts
@@ -206,78 +206,78 @@ fmovem_out_ctrl_done:
 /*  MOVE IN:  */
 /* ;;;;;;;;;; */
 fmovem_data_in:
-	move.l		%a0,L_SCR1(%a6)
+	move.l		a0,L_SCR1(a6)
 
-	sub.l		%d0,%sp			/*  make room for fpregs */
-	lea		(%sp),%a1
+	sub.l		d0,sp			/*  make room for fpregs */
+	lea		(sp),a1
 
-	move.l		%d1,-(%sp)		/*  save bit string for later */
-	move.l		%d0,-(%sp)		/*  save ; of bytes */
+	move.l		d1,-(sp)		/*  save bit string for later */
+	move.l		d0,-(sp)		/*  save ; of bytes */
 
 	bsr.l		_dmem_read		/*  copy data from user mem */
 
-	move.l		(%sp)+,%d0		/*  retrieve ; of bytes */
+	move.l		(sp)+,d0		/*  retrieve ; of bytes */
 
-	tst.l		%d1			/*  did dfetch fail? */
+	tst.l		d1			/*  did dfetch fail? */
 	bne.w		fmovem_in_err		/*  yes */
 
-	move.l		(%sp)+,%d1		/*  load bit string */
+	move.l		(sp)+,d1		/*  load bit string */
 
-	lea		(%sp),%a0		/*  addr of stack */
+	lea		(sp),a0		/*  addr of stack */
 
-	tst.b		%d1			/*  should FP0 be moved? */
+	tst.b		d1			/*  should FP0 be moved? */
 	bpl.b		fmovem_data_in_fp1	/*  no */
 
-	move.l		(%a0)+,0x0+EXC_FP0(%a6)	/*  yes */
-	move.l		(%a0)+,0x4+EXC_FP0(%a6)
-	move.l		(%a0)+,0x8+EXC_FP0(%a6)
+	move.l		(a0)+,0x0+EXC_FP0(a6)	/*  yes */
+	move.l		(a0)+,0x4+EXC_FP0(a6)
+	move.l		(a0)+,0x8+EXC_FP0(a6)
 
 fmovem_data_in_fp1:
-	lsl.b		&0x1,%d1		/*  should FP1 be moved? */
+	lsl.b		#0x1,d1		/*  should FP1 be moved? */
 	bpl.b		fmovem_data_in_fp2	/*  no */
 
-	move.l		(%a0)+,0x0+EXC_FP1(%a6)	/*  yes */
-	move.l		(%a0)+,0x4+EXC_FP1(%a6)
-	move.l		(%a0)+,0x8+EXC_FP1(%a6)
+	move.l		(a0)+,0x0+EXC_FP1(a6)	/*  yes */
+	move.l		(a0)+,0x4+EXC_FP1(a6)
+	move.l		(a0)+,0x8+EXC_FP1(a6)
 
 fmovem_data_in_fp2:
-	lsl.b		&0x1,%d1		/*  should FP2 be moved? */
+	lsl.b		#0x1,d1		/*  should FP2 be moved? */
 	bpl.b		fmovem_data_in_fp3	/*  no */
 
-	fmovem.x		(%a0)+,%fp2		/*  yes */
+	fmovem.x		(a0)+,fp2		/*  yes */
 
 fmovem_data_in_fp3:
-	lsl.b		&0x1,%d1		/*  should FP3 be moved? */
+	lsl.b		#0x1,d1		/*  should FP3 be moved? */
 	bpl.b		fmovem_data_in_fp4	/*  no */
 
-	fmovem.x		(%a0)+,%fp3		/*  yes */
+	fmovem.x		(a0)+,fp3		/*  yes */
 
 fmovem_data_in_fp4:
-	lsl.b		&0x1,%d1		/*  should FP4 be moved? */
+	lsl.b		#0x1,d1		/*  should FP4 be moved? */
 	bpl.b		fmovem_data_in_fp5	/*  no */
 
-	fmovem.x		(%a0)+,%fp4		/*  yes */
+	fmovem.x		(a0)+,fp4		/*  yes */
 
 fmovem_data_in_fp5:
-	lsl.b		&0x1,%d1		/*  should FP5 be moved? */
+	lsl.b		#0x1,d1		/*  should FP5 be moved? */
 	bpl.b		fmovem_data_in_fp6	/*  no */
 
-	fmovem.x		(%a0)+,%fp5		/*  yes */
+	fmovem.x		(a0)+,fp5		/*  yes */
 
 fmovem_data_in_fp6:
-	lsl.b		&0x1,%d1		/*  should FP6 be moved? */
+	lsl.b		#0x1,d1		/*  should FP6 be moved? */
 	bpl.b		fmovem_data_in_fp7	/*  no */
 
-	fmovem.x		(%a0)+,%fp6		/*  yes */
+	fmovem.x		(a0)+,fp6		/*  yes */
 
 fmovem_data_in_fp7:
-	lsl.b		&0x1,%d1		/*  should FP7 be moved? */
+	lsl.b		#0x1,d1		/*  should FP7 be moved? */
 	bpl.b		fmovem_data_in_done	/*  no */
 
-	fmovem.x		(%a0)+,%fp7		/*  yes */
+	fmovem.x		(a0)+,fp7		/*  yes */
 
 fmovem_data_in_done:
-	add.l		%d0,%sp			/*  remove fpregs from stack */
+	add.l		d0,sp			/*  remove fpregs from stack */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -378,21 +378,22 @@ tbl_fmovem_convert:
 /*  _fmovem_calc_ea: calculate effective address  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 fmovem_calc_ea:
-	move.l		%d0,%a0			/*  move ; bytes to a0 */
+	move.l		d0,a0			/*  move ; bytes to a0 */
 
 /*  currently, MODE and REG are taken from the EXC_OPWORD. this could be */
 /*  easily changed if they were inputs passed in registers. */
-	move.w		EXC_OPWORD(%a6),%d0	/*  fetch opcode word */
-	move.w		%d0,%d1			/*  make a copy */
+	move.w		EXC_OPWORD(a6),d0	/*  fetch opcode word */
+	move.w		d0,d1			/*  make a copy */
 
-	andi.w		&0x3f,%d0		/*  extract mode field */
-	andi.l		&0x7,%d1		/*  extract reg  field */
+	andi.w		#0x3f,d0		/*  extract mode field */
+	andi.l		#0x7,d1		/*  extract reg  field */
 
 /*  jump to the corresponding function for each {MODE,REG} pair. */
-	move.w		(tbl_fea_mode.b,%pc,%d0.w*2),%d0 /*  fetch jmp distance */
-	jmp		(tbl_fea_mode.b,%pc,%d0.w*1) /*  jmp to correct ea mode */
+	move.w		(tbl_fea_mode.b,pc,d0.w*2),d0 /*  fetch jmp distance */
+	jmp		(tbl_fea_mode.b,pc,d0.w*1) /*  jmp to correct ea mode */
 
-	swbeg		&64
+	/* swbeg		#64 */
+	.dc.w 0x4afc,64
 tbl_fea_mode:
 	.dc.w		tbl_fea_mode	-	tbl_fea_mode
 	.dc.w		tbl_fea_mode	-	tbl_fea_mode
@@ -470,272 +471,272 @@ tbl_fea_mode:
 /*  Address register indirect: (An)  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 faddr_ind_a0:
-	move.l		EXC_DREGS+0x8(%a6),%a0	/*  Get current a0 */
+	move.l		EXC_DREGS+0x8(a6),a0	/*  Get current a0 */
 	rts
 
 faddr_ind_a1:
-	move.l		EXC_DREGS+0xc(%a6),%a0	/*  Get current a1 */
+	move.l		EXC_DREGS+0xc(a6),a0	/*  Get current a1 */
 	rts
 
 faddr_ind_a2:
-	move.l		%a2,%a0			/*  Get current a2 */
+	move.l		a2,a0			/*  Get current a2 */
 	rts
 
 faddr_ind_a3:
-	move.l		%a3,%a0			/*  Get current a3 */
+	move.l		a3,a0			/*  Get current a3 */
 	rts
 
 faddr_ind_a4:
-	move.l		%a4,%a0			/*  Get current a4 */
+	move.l		a4,a0			/*  Get current a4 */
 	rts
 
 faddr_ind_a5:
-	move.l		%a5,%a0			/*  Get current a5 */
+	move.l		a5,a0			/*  Get current a5 */
 	rts
 
 faddr_ind_a6:
-	move.l		(%a6),%a0		/*  Get current a6 */
+	move.l		(a6),a0		/*  Get current a6 */
 	rts
 
 faddr_ind_a7:
-	move.l		EXC_A7(%a6),%a0		/*  Get current a7 */
+	move.l		EXC_A7(a6),a0		/*  Get current a7 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Address register indirect w/ postincrement: (An)+  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 faddr_ind_p_a0:
-	move.l		EXC_DREGS+0x8(%a6),%d0	/*  Get current a0 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,EXC_DREGS+0x8(%a6)	/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		EXC_DREGS+0x8(a6),d0	/*  Get current a0 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,EXC_DREGS+0x8(a6)	/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a1:
-	move.l		EXC_DREGS+0xc(%a6),%d0	/*  Get current a1 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,EXC_DREGS+0xc(%a6)	/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		EXC_DREGS+0xc(a6),d0	/*  Get current a1 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,EXC_DREGS+0xc(a6)	/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a2:
-	move.l		%a2,%d0			/*  Get current a2 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,%a2			/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		a2,d0			/*  Get current a2 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,a2			/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a3:
-	move.l		%a3,%d0			/*  Get current a3 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,%a3			/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		a3,d0			/*  Get current a3 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,a3			/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a4:
-	move.l		%a4,%d0			/*  Get current a4 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,%a4			/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		a4,d0			/*  Get current a4 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,a4			/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a5:
-	move.l		%a5,%d0			/*  Get current a5 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,%a5			/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		a5,d0			/*  Get current a5 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,a5			/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a6:
-	move.l		(%a6),%d0		/*  Get current a6 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,(%a6)		/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		(a6),d0		/*  Get current a6 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,(a6)		/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_p_a7:
-	move.b		&mia7_flg,SPCOND_FLG(%a6) /*  set "special case" flag */
+	move.b		#mia7_flg,SPCOND_FLG(a6) /*  set "special case" flag */
 
-	move.l		EXC_A7(%a6),%d0		/*  Get current a7 */
-	move.l		%d0,%d1
-	add.l		%a0,%d1			/*  Increment */
-	move.l		%d1,EXC_A7(%a6)		/*  Save incr value */
-	move.l		%d0,%a0
+	move.l		EXC_A7(a6),d0		/*  Get current a7 */
+	move.l		d0,d1
+	add.l		a0,d1			/*  Increment */
+	move.l		d1,EXC_A7(a6)		/*  Save incr value */
+	move.l		d0,a0
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Address register indirect w/ predecrement: -(An)  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 faddr_ind_m_a0:
-	move.l		EXC_DREGS+0x8(%a6),%d0	/*  Get current a0 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,EXC_DREGS+0x8(%a6)	/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		EXC_DREGS+0x8(a6),d0	/*  Get current a0 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,EXC_DREGS+0x8(a6)	/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a1:
-	move.l		EXC_DREGS+0xc(%a6),%d0	/*  Get current a1 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,EXC_DREGS+0xc(%a6)	/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		EXC_DREGS+0xc(a6),d0	/*  Get current a1 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,EXC_DREGS+0xc(a6)	/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a2:
-	move.l		%a2,%d0			/*  Get current a2 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,%a2			/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		a2,d0			/*  Get current a2 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,a2			/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a3:
-	move.l		%a3,%d0			/*  Get current a3 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,%a3			/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		a3,d0			/*  Get current a3 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,a3			/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a4:
-	move.l		%a4,%d0			/*  Get current a4 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,%a4			/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		a4,d0			/*  Get current a4 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,a4			/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a5:
-	move.l		%a5,%d0			/*  Get current a5 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,%a5			/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		a5,d0			/*  Get current a5 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,a5			/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a6:
-	move.l		(%a6),%d0		/*  Get current a6 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,(%a6)		/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		(a6),d0		/*  Get current a6 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,(a6)		/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 faddr_ind_m_a7:
-	move.b		&mda7_flg,SPCOND_FLG(%a6) /*  set "special case" flag */
+	move.b		#mda7_flg,SPCOND_FLG(a6) /*  set "special case" flag */
 
-	move.l		EXC_A7(%a6),%d0		/*  Get current a7 */
-	sub.l		%a0,%d0			/*  Decrement */
-	move.l		%d0,EXC_A7(%a6)		/*  Save decr value */
-	move.l		%d0,%a0
+	move.l		EXC_A7(a6),d0		/*  Get current a7 */
+	sub.l		a0,d0			/*  Decrement */
+	move.l		d0,EXC_A7(a6)		/*  Save decr value */
+	move.l		d0,a0
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Address register indirect w/ displacement: (d16, An)  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 faddr_ind_disp_a0:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		EXC_DREGS+0x8(%a6),%a0	/*  a0 + d16 */
+	add.l		EXC_DREGS+0x8(a6),a0	/*  a0 + d16 */
 	rts
 
 faddr_ind_disp_a1:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		EXC_DREGS+0xc(%a6),%a0	/*  a1 + d16 */
+	add.l		EXC_DREGS+0xc(a6),a0	/*  a1 + d16 */
 	rts
 
 faddr_ind_disp_a2:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		%a2,%a0			/*  a2 + d16 */
+	add.l		a2,a0			/*  a2 + d16 */
 	rts
 
 faddr_ind_disp_a3:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		%a3,%a0			/*  a3 + d16 */
+	add.l		a3,a0			/*  a3 + d16 */
 	rts
 
 faddr_ind_disp_a4:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		%a4,%a0			/*  a4 + d16 */
+	add.l		a4,a0			/*  a4 + d16 */
 	rts
 
 faddr_ind_disp_a5:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		%a5,%a0			/*  a5 + d16 */
+	add.l		a5,a0			/*  a5 + d16 */
 	rts
 
 faddr_ind_disp_a6:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		(%a6),%a0		/*  a6 + d16 */
+	add.l		(a6),a0		/*  a6 + d16 */
 	rts
 
 faddr_ind_disp_a7:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		EXC_A7(%a6),%a0		/*  a7 + d16 */
+	add.l		EXC_A7(a6),a0		/*  a7 + d16 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -745,96 +746,96 @@ faddr_ind_disp_a7:
 /*  Memory indirect preindexed: ([bd, An, Xn], od) */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 faddr_ind_ext:
-	addq.l		&0x8,%d1
+	addq.l		#0x8,d1
 	bsr.l		fetch_dreg		/*  fetch base areg */
-	move.l		%d0,-(%sp)
+	move.l		d0,-(sp)
 
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word		/*  fetch extword in d0 */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		(%sp)+,%a0
+	move.l		(sp)+,a0
 
-	btst		&0x8,%d0
+	btst		#0x8,d0
 	bne.w		fcalc_mem_ind
 
-	move.l		%d0,L_SCR1(%a6)		/*  hold opword */
+	move.l		d0,L_SCR1(a6)		/*  hold opword */
 
-	move.l		%d0,%d1
-	rol.w		&0x4,%d1
-	andi.w		&0xf,%d1		/*  extract index regno */
+	move.l		d0,d1
+	rol.w		#0x4,d1
+	andi.w		#0xf,d1		/*  extract index regno */
 
 /*  count on fetch_dreg() not to alter a0... */
 	bsr.l		fetch_dreg		/*  fetch index */
 
-	move.l		%d2,-(%sp)		/*  save d2 */
-	move.l		L_SCR1(%a6),%d2		/*  fetch opword */
+	move.l		d2,-(sp)		/*  save d2 */
+	move.l		L_SCR1(a6),d2		/*  fetch opword */
 
-	btst		&0xb,%d2		/*  is it word or long? */
+	btst		#0xb,d2		/*  is it word or long? */
 	bne.b		faii8_long
-	ext.l		%d0			/*  sign extend word index */
+	ext.l		d0			/*  sign extend word index */
 faii8_long:
-	move.l		%d2,%d1
-	rol.w		&0x7,%d1
-	andi.l		&0x3,%d1		/*  extract scale value */
+	move.l		d2,d1
+	rol.w		#0x7,d1
+	andi.l		#0x3,d1		/*  extract scale value */
 
-	lsl.l		%d1,%d0			/*  shift index by scale */
+	lsl.l		d1,d0			/*  shift index by scale */
 
-	extb.l		%d2			/*  sign extend displacement */
-	add.l		%d2,%d0			/*  index + disp */
-	add.l		%d0,%a0			/*  An + (index + disp) */
+	extb.l		d2			/*  sign extend displacement */
+	add.l		d2,d0			/*  index + disp */
+	add.l		d0,a0			/*  An + (index + disp) */
 
-	move.l		(%sp)+,%d2		/*  restore old d2 */
+	move.l		(sp)+,d2		/*  restore old d2 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Absolute short: (XXX).W  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;; */
 fabs_short:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word		/*  fetch short address */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  return <ea> in a0 */
+	move.w		d0,a0			/*  return <ea> in a0 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Absolute long: (XXX).L  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;; */
 fabs_long:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long		/*  fetch long address */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		%d0,%a0			/*  return <ea> in a0 */
+	move.l		d0,a0			/*  return <ea> in a0 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 /*  Program counter indirect w/ displacement: (d16, PC)  */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 fpc_ind:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word		/*  fetch word displacement */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.w		%d0,%a0			/*  sign extend displacement */
+	move.w		d0,a0			/*  sign extend displacement */
 
-	add.l		EXC_EXTWPTR(%a6),%a0	/*  pc + d16 */
+	add.l		EXC_EXTWPTR(a6),a0	/*  pc + d16 */
 
 /*  _imem_read_word() increased the extwptr by 2. need to adjust here. */
-	subq.l		&0x2,%a0		/*  adjust <ea> */
+	subq.l		#0x2,a0		/*  adjust <ea> */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
@@ -844,46 +845,46 @@ fpc_ind:
 /*  PC memory indirect preindexed: ([bd, PC, Xn], od)       */
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 fpc_ind_ext:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word		/*  fetch ext word */
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		iea_iacc		/*  yes */
 
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  put base in a0 */
-	subq.l		&0x2,%a0		/*  adjust base */
+	move.l		EXC_EXTWPTR(a6),a0	/*  put base in a0 */
+	subq.l		#0x2,a0		/*  adjust base */
 
-	btst		&0x8,%d0		/*  is disp only 8 bits? */
+	btst		#0x8,d0		/*  is disp only 8 bits? */
 	bne.w		fcalc_mem_ind		/*  calc memory indirect */
 
-	move.l		%d0,L_SCR1(%a6)		/*  store opword */
+	move.l		d0,L_SCR1(a6)		/*  store opword */
 
-	move.l		%d0,%d1			/*  make extword copy */
-	rol.w		&0x4,%d1		/*  rotate reg num into place */
-	andi.w		&0xf,%d1		/*  extract register number */
+	move.l		d0,d1			/*  make extword copy */
+	rol.w		#0x4,d1		/*  rotate reg num into place */
+	andi.w		#0xf,d1		/*  extract register number */
 
 /*  count on fetch_dreg() not to alter a0... */
 	bsr.l		fetch_dreg		/*  fetch index */
 
-	move.l		%d2,-(%sp)		/*  save d2 */
-	move.l		L_SCR1(%a6),%d2		/*  fetch opword */
+	move.l		d2,-(sp)		/*  save d2 */
+	move.l		L_SCR1(a6),d2		/*  fetch opword */
 
-	btst		&0xb,%d2		/*  is index word or long? */
+	btst		#0xb,d2		/*  is index word or long? */
 	bne.b		fpii8_long		/*  long */
-	ext.l		%d0			/*  sign extend word index */
+	ext.l		d0			/*  sign extend word index */
 fpii8_long:
-	move.l		%d2,%d1
-	rol.w		&0x7,%d1		/*  rotate scale value into place */
-	andi.l		&0x3,%d1		/*  extract scale value */
+	move.l		d2,d1
+	rol.w		#0x7,d1		/*  rotate scale value into place */
+	andi.l		#0x3,d1		/*  extract scale value */
 
-	lsl.l		%d1,%d0			/*  shift index by scale */
+	lsl.l		d1,d0			/*  shift index by scale */
 
-	extb.l		%d2			/*  sign extend displacement */
-	add.l		%d2,%d0			/*  disp + index */
-	add.l		%d0,%a0			/*  An + (index + disp) */
+	extb.l		d2			/*  sign extend displacement */
+	add.l		d2,d0			/*  disp + index */
+	add.l		d0,a0			/*  An + (index + disp) */
 
-	move.l		(%sp)+,%d2		/*  restore temp register */
+	move.l		(sp)+,d2		/*  restore temp register */
 	rts
 
 /*  d2 = index */
@@ -891,164 +892,164 @@ fpii8_long:
 /*  d4 = od */
 /*  d5 = extword */
 fcalc_mem_ind:
-	btst		&0x6,%d0		/*  is the index suppressed? */
+	btst		#0x6,d0		/*  is the index suppressed? */
 	beq.b		fcalc_index
 
-	movem.l		%d2-%d5,-(%sp)		/*  save d2-d5 */
+	movem.l		d2-d5,-(sp)		/*  save d2-d5 */
 
-	move.l		%d0,%d5			/*  put extword in d5 */
-	move.l		%a0,%d3			/*  put base in d3 */
+	move.l		d0,d5			/*  put extword in d5 */
+	move.l		a0,d3			/*  put base in d3 */
 
-	clr.l		%d2			/*  yes, so index = 0 */
+	clr.l		d2			/*  yes, so index = 0 */
 	bra.b		fbase_supp_ck
 
 /*  index: */
 fcalc_index:
-	move.l		%d0,L_SCR1(%a6)		/*  save d0 (opword) */
-	bfextu		%d0{&16:&4},%d1		/*  fetch dreg index */
+	move.l		d0,L_SCR1(a6)		/*  save d0 (opword) */
+	bfextu		d0{16:4},d1			/*  fetch dreg index */
 	bsr.l		fetch_dreg
 
-	movem.l		%d2-%d5,-(%sp)		/*  save d2-d5 */
-	move.l		%d0,%d2			/*  put index in d2 */
-	move.l		L_SCR1(%a6),%d5
-	move.l		%a0,%d3
+	movem.l		d2-d5,-(sp)		/*  save d2-d5 */
+	move.l		d0,d2			/*  put index in d2 */
+	move.l		L_SCR1(a6),d5
+	move.l		a0,d3
 
-	btst		&0xb,%d5		/*  is index word or long? */
+	btst		#0xb,d5		/*  is index word or long? */
 	bne.b		fno_ext
-	ext.l		%d2
+	ext.l		d2
 
 fno_ext:
-	bfextu		%d5{&21:&2},%d0
-	lsl.l		%d0,%d2
+	bfextu		d5{21:2},d0
+	lsl.l		d0,d2
 
 /*  base address (passed as parameter in d3): */
 /*  we clear the value here if it should actually be suppressed. */
 fbase_supp_ck:
-	btst		&0x7,%d5		/*  is the bd suppressed? */
+	btst		#0x7,d5		/*  is the bd suppressed? */
 	beq.b		fno_base_sup
-	clr.l		%d3
+	clr.l		d3
 
 /*  base displacement: */
 fno_base_sup:
-	bfextu		%d5{&26:&2},%d0		/*  get bd size */
+	bfextu		d5{26:2},d0			/*  get bd size */
 /* 	beq.l		fmovem_error		; if (size == 0) it's reserved */
 
-	cmpi.b		&0x2,%d0
+	cmpi.b		#0x2,d0
 	blt.b		fno_bd
 	beq.b		fget_word_bd
 
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		fcea_iacc		/*  yes */
 
 	bra.b		fchk_ind
 
 fget_word_bd:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		fcea_iacc		/*  yes */
 
-	ext.l		%d0			/*  sign extend bd */
+	ext.l		d0			/*  sign extend bd */
 
 fchk_ind:
-	add.l		%d0,%d3			/*  base += bd */
+	add.l		d0,d3			/*  base += bd */
 
 /*  outer displacement: */
 fno_bd:
-	bfextu		%d5{&30:&2},%d0		/*  is od suppressed? */
+	bfextu		d5{30:2},d0		/*  is od suppressed? */
 	beq.w		faii_bd
 
-	cmpi.b		&0x2,%d0
+	cmpi.b		#0x2,d0
 	blt.b		fnull_od
 	beq.b		fword_od
 
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x4,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x4,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_long
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		fcea_iacc		/*  yes */
 
 	bra.b		fadd_them
 
 fword_od:
-	move.l		EXC_EXTWPTR(%a6),%a0	/*  fetch instruction addr */
-	addq.l		&0x2,EXC_EXTWPTR(%a6)	/*  incr instruction ptr */
+	move.l		EXC_EXTWPTR(a6),a0	/*  fetch instruction addr */
+	addq.l		#0x2,EXC_EXTWPTR(a6)	/*  incr instruction ptr */
 	bsr.l		_imem_read_word
 
-	tst.l		%d1			/*  did ifetch fail? */
+	tst.l		d1			/*  did ifetch fail? */
 	bne.l		fcea_iacc		/*  yes */
 
-	ext.l		%d0			/*  sign extend od */
+	ext.l		d0			/*  sign extend od */
 	bra.b		fadd_them
 
 fnull_od:
-	clr.l		%d0
+	clr.l		d0
 
 fadd_them:
-	move.l		%d0,%d4
+	move.l		d0,d4
 
-	btst		&0x2,%d5		/*  pre or post indexing? */
+	btst		#0x2,d5		/*  pre or post indexing? */
 	beq.b		fpre_indexed
 
-	move.l		%d3,%a0
+	move.l		d3,a0
 	bsr.l		_dmem_read_long
 
-	tst.l		%d1			/*  did dfetch fail? */
+	tst.l		d1			/*  did dfetch fail? */
 	bne.w		fcea_err		/*  yes */
 
-	add.l		%d2,%d0			/*  <ea> += index */
-	add.l		%d4,%d0			/*  <ea> += od */
+	add.l		d2,d0			/*  <ea> += index */
+	add.l		d4,d0			/*  <ea> += od */
 	bra.b		fdone_ea
 
 fpre_indexed:
-	add.l		%d2,%d3			/*  preindexing */
-	move.l		%d3,%a0
+	add.l		d2,d3			/*  preindexing */
+	move.l		d3,a0
 	bsr.l		_dmem_read_long
 
-	tst.l		%d1			/*  did dfetch fail? */
+	tst.l		d1			/*  did dfetch fail? */
 	bne.w		fcea_err		/*  yes */
 
-	add.l		%d4,%d0			/*  ea += od */
+	add.l		d4,d0			/*  ea += od */
 	bra.b		fdone_ea
 
 faii_bd:
-	add.l		%d2,%d3			/*  ea = (base + bd) + index */
-	move.l		%d3,%d0
+	add.l		d2,d3			/*  ea = (base + bd) + index */
+	move.l		d3,d0
 fdone_ea:
-	move.l		%d0,%a0
+	move.l		d0,a0
 
-	movem.l		(%sp)+,%d2-%d5		/*  restore d2-d5 */
+	movem.l		(sp)+,d2-d5		/*  restore d2-d5 */
 	rts
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 fcea_err:
-	move.l		%d3,%a0
+	move.l		d3,a0
 
-	movem.l		(%sp)+,%d2-%d5		/*  restore d2-d5 */
-	move.w		&0x0101,%d0
+	movem.l		(sp)+,d2-d5		/*  restore d2-d5 */
+	move.w		#0x0101,d0
 	bra.l		iea_dacc
 
 fcea_iacc:
-	movem.l		(%sp)+,%d2-%d5		/*  restore d2-d5 */
+	movem.l		(sp)+,d2-d5		/*  restore d2-d5 */
 	bra.l		iea_iacc
 
 fmovem_out_err:
 	bsr.l		restore
-	move.w		&0x00e1,%d0
+	move.w		#0x00e1,d0
 	bra.b		fmovem_err
 
 fmovem_in_err:
 	bsr.l		restore
-	move.w		&0x0161,%d0
+	move.w		#0x0161,d0
 
 fmovem_err:
-	move.l		L_SCR1(%a6),%a0
+	move.l		L_SCR1(a6),a0
 	bra.l		iea_dacc
 

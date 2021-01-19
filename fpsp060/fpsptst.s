@@ -139,7 +139,6 @@ TESTCTR = -352
 DATA = -384
 
 _real_debug_dregs:
-	rts
 	movem.l d0-d2/a0-a2,-(sp)
 
 	move.l TESTCTR(a6),d0

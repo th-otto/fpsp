@@ -1,7 +1,7 @@
 CROSS=m68k-atari-mint-
 CC = $(CROSS)gcc
 AS = $(CC)
-ASFLAGS = -m68060 -Wall -Werror
+ASFLAGS = -m68060 -Wall -Werror -Wa,--register-prefix-optional
 LDFLAGS = -s
 
 CC_FOR_BUILD = gcc
@@ -10,7 +10,7 @@ FPSP060_SRCS = \
 	src/freal.S \
 	src/x_fovfl.S \
 	src/x_funfl.S \
-	src/x_funsupp.S \
+	src/x_funsup.S \
 	src/x_effadd.S \
 	src/x_foperr.S \
 	src/x_fsnan.S \
@@ -36,7 +36,7 @@ FPSP060_SRCS = \
 	src/fscale.S \
 	src/frem_mod.S \
 	src/fkern.S \
-	src/fgen_except.S \
+	src/fgenexc.S \
 	src/foptbl.S \
 	src/fmul.S \
 	src/fin.S \
@@ -65,7 +65,7 @@ FPSP060_SRCS = \
 	src/fdenorm.S \
 	src/fround.S \
 	src/fnorm.S \
-	src/foptag_set.S \
+	src/foptag.S \
 	src/fresult.S \
 	src/fpack.S \
 	src/fdecbin.S \

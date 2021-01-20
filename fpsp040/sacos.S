@@ -1,114 +1,130 @@
-|
-|	sacos.sa 3.3 12/19/90
-|
-|	Description: The entry point sAcos computes the inverse cosine of
-|		an input argument; sAcosd does the same except for denormalized
-|		input.
-|
-|	Input: Double-extended number X in location pointed to
-|		by address register a0.
-|
-|	Output: The value arccos(X) returned in floating-point register Fp0.
-|
-|	Accuracy and Monotonicity: The returned result is within 3 ulps in
-|		64 significant bit, i.e. within 0.5001 ulp to 53 bits if the
-|		result is subsequently rounded to double precision. The
-|		result is provably monotonic in double precision.
-|
-|	Speed: The program sCOS takes approximately 310 cycles.
-|
-|	Algorithm:
-|
-|	ACOS
-|	1. If |X| >= 1, go to 3.
-|
-|	2. (|X| < 1) Calculate acos(X) by
-|		z := (1-X) / (1+X)
-|		acos(X) = 2 * atan( sqrt(z) ).
-|		Exit.
-|
-|	3. If |X| > 1, go to 5.
-|
-|	4. (|X| = 1) If X > 0, return 0. Otherwise, return Pi. Exit.
-|
-|	5. (|X| > 1) Generate an invalid operation by 0 * infinity.
-|		Exit.
-|
+/*
+ * 	sacos.sa 3.3 12/19/90
+ *
+ * 	Description: The entry point sAcos computes the inverse cosine of
+ * 		an input argument; sAcosd does the same except for denormalized
+ * 		input.
+ *
+ * 	Input: Double-extended number X in location pointed to
+ * 		by address register a0.
+ *
+ * 	Output: The value arccos(X) returned in floating-point register Fp0.
+ *
+ * 	Accuracy and Monotonicity: The returned result is within 3 ulps in
+ * 		64 significant bit, i.e. within 0.5001 ulp to 53 bits if the
+ * 		result is subsequently rounded to double precision. The
+ * 		result is provably monotonic in double precision.
+ *
+ * 	Speed: The program sCOS takes approximately 310 cycles.
+ *
+ * 	Algorithm:
+ *
+ * 	ACOS
+ * 	1. If |X| >= 1, go to 3.
+ *
+ * 	2. (|X| < 1) Calculate acos(X) by
+ * 		z := (1-X) / (1+X)
+ * 		acos(X) = 2 * atan( sqrt(z) ).
+ * 		Exit.
+ *
+ * 	3. If |X| > 1, go to 5.
+ *
+ * 	4. (|X| = 1) If X > 0, return 0. Otherwise, return Pi. Exit.
+ *
+ * 	5. (|X| > 1) Generate an invalid operation by 0 * infinity.
+ * 		Exit.
+ *
+ *
+ * 		Copyright (C) Motorola, Inc. 1990
+ * 			All Rights Reserved
+ *
+ *        For details on the license for this file, please see the
+ *        file, README, in this same directory.
+ */
 
-|		Copyright (C) Motorola, Inc. 1990
-|			All Rights Reserved
-|
-|       For details on the license for this file, please see the
-|       file, README, in this same directory.
+	.xref	t_operr
+	.xref	t_frcinx
+	.xref	satan
 
-|SACOS	idnt	2,1 | Motorola 040 Floating Point Software Package
+	.xref PI
+	.xref PIBY2
 
-	|section	8
+	.text
 
-PI:	.long 0x40000000,0xC90FDAA2,0x2168C235,0x00000000
-PIBY2:	.long 0x3FFF0000,0xC90FDAA2,0x2168C235,0x00000000
-
-	|xref	t_operr
-	|xref	t_frcinx
-	|xref	satan
-
-	.global	sacosd
+	.globl	sacosd
 sacosd:
-|--ACOS(X) = PI/2 FOR DENORMALIZED X
-	fmovel		%d1,%fpcr		| ...load user's rounding mode/precision
-	fmovex		PIBY2,%fp0
+/* --ACOS(X) = PI/2 FOR DENORMALIZED X */
+	fmove.l		d1,fpcr		/*  ...load user's rounding mode/precision */
+	fmove.x		PIBY2,fp0
 	bra		t_frcinx
 
-	.global	sacos
+	.globl	sacos
 sacos:
-	fmovex		(%a0),%fp0	| ...LOAD INPUT
+	fmove.x		(a0),fp0	/*  ...LOAD INPUT */
 
-	movel		(%a0),%d0		| ...pack exponent with upper 16 fraction
-	movew		4(%a0),%d0
-	andil		#0x7FFFFFFF,%d0
-	cmpil		#0x3FFF8000,%d0
-	bges		ACOSBIG
+	move.l		(a0),d0		/*  ...pack exponent with upper 16 fraction */
+	move.w		4(a0),d0
+	andi.l		#0x7FFFFFFF,d0
+	cmpi.l		#0x3FFF8000,d0
+	bge.s		ACOSBIG
 
-|--THIS IS THE USUAL CASE, |X| < 1
-|--ACOS(X) = 2 * ATAN(	SQRT( (1-X)/(1+X) )	)
+/* --THIS IS THE USUAL CASE, |X| < 1 */
+/* --ACOS(X) = 2 * ATAN(	SQRT( (1-X)/(1+X) )	) */
 
-	fmoves		#0x3F800000,%fp1
-	faddx		%fp0,%fp1		| ...1+X
-	fnegx		%fp0		| ... -X
-	fadds		#0x3F800000,%fp0	| ...1-X
-	fdivx		%fp1,%fp0		| ...(1-X)/(1+X)
-	fsqrtx		%fp0		| ...SQRT((1-X)/(1+X))
-	fmovemx	%fp0-%fp0,(%a0)	| ...overwrite input
-	movel		%d1,-(%sp)	|save original users fpcr
-	clrl		%d1
-	bsr		satan		| ...ATAN(SQRT([1-X]/[1+X]))
-	fmovel		(%sp)+,%fpcr	|restore users exceptions
-	faddx		%fp0,%fp0		| ...2 * ATAN( STUFF )
-	bra		t_frcinx
+	.IFNE GAS
+	fmove.s		#0x3F800000,fp1
+	.ELSE
+	fmove.s		#1.0,fp1
+	.ENDC
+	fadd.x		fp0,fp1		/*  ...1+X */
+	fneg.x		fp0		/*  ... -X */
+	.IFNE GAS
+	fadd.s		#0x3F800000,fp0	/*  ...1-X */
+	.ELSE
+	fadd.s		#1.0,fp0	/*  ...1-X */
+	.ENDC
+	fdiv.x		fp1,fp0		/*  ...(1-X)/(1+X) */
+	fsqrt.x		fp0		/*  ...SQRT((1-X)/(1+X)) */
+	fmovem.x	fp0-fp0,(a0)	/*  ...overwrite input */
+	move.l		d1,-(sp)	/* save original users fpcr */
+	clr.l		d1
+	bsr			satan		/*  ...ATAN(SQRT([1-X]/[1+X])) */
+	fmove.l		(sp)+,fpcr	/* restore users exceptions */
+	fadd.x		fp0,fp0		/*  ...2 * ATAN( STUFF ) */
+	bra			t_frcinx
 
 ACOSBIG:
-	fabsx		%fp0
-	fcmps		#0x3F800000,%fp0
-	fbgt		t_operr		|cause an operr exception
+	fabs.x		fp0
+	.IFNE GAS
+	fcmp.s		#0x3F800000,fp0
+	.ELSE
+	fcmp.s		#1.0,fp0
+	.ENDC
+	fbgt		t_operr		/* cause an operr exception */
 
-|--|X| = 1, ACOS(X) = 0 OR PI
-	movel		(%a0),%d0		| ...pack exponent with upper 16 fraction
-	movew		4(%a0),%d0
-	cmpl		#0,%d0		|D0 has original exponent+fraction
-	bgts		ACOSP1
+/* --|X| = 1, ACOS(X) = 0 OR PI */
+	move.l		(a0),d0		/*  ...pack exponent with upper 16 fraction */
+	move.w		4(a0),d0
+	tst.l		d0		/* D0 has original exponent+fraction */
+	bgt.s		ACOSP1
 
-|--X = -1
-|Returns PI and inexact exception
-	fmovex		PI,%fp0
-	fmovel		%d1,%FPCR
-	fadds		#0x00800000,%fp0	|cause an inexact exception to be put
-|					;into the 040 - will not trap until next
-|					;fp inst.
+/* --X = -1 */
+/* Returns PI and inexact exception */
+	fmove.x		PI,fp0
+	fmove.l		d1,FPCR
+	.IFNE GAS
+	fadd.s		#0x00800000,fp0
+	.ELSE
+	fadd.s		#1.17549435082228751e-38,fp0
+	.ENDC
+/*
+ * cause an inexact exception to be put
+ * 					into the 040 - will not trap until next
+ * 					fp inst.
+ */
 	bra		t_frcinx
 
 ACOSP1:
-	fmovel		%d1,%FPCR
-	fmoves		#0x00000000,%fp0
-	rts				|Facos ; of +1 is exact
-
-	|end
+	fmove.l		d1,FPCR
+	fmove.s		#0x00000000,fp0
+	rts				/* Facos ; of +1 is exact */

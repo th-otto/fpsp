@@ -98,51 +98,52 @@ doinstall:
  bsr get_cpu_typ
  cmpi.w   #60,d0
  bcs      no_060
- lea      new_int_instr(pc),a0
- move.l   0xf4.w,a1
- cmp.l    #XBRA,-12(a1)
+ movec    vbr,a1
+ move.l   0xf4(a1),a0
+ cmp.l    #XBRA,-12(a0)
  bne.s    doinstall1
- cmp.l    #XBRA_ID,-8(a1)
+ cmp.l    #XBRA_ID,-8(a0)
  beq      already_installed
 doinstall1:
- move.l   a1,-4(a0)                        /* save old unimplemented integer vector */
- move.l   a0,0xf4.w                        /* set new unimplemented integer vector */
+ lea      new_int_instr(pc),a0
+ move.l   0xf4(a1),-4(a0)                  /* save old unimplemented integer vector */
+ move.l   a0,0xf4(a1)                      /* set new unimplemented integer vector */
 
  lea      new_snan(pc),a0
- move.l   0xd8.w,-4(a0)                    /* save old snan vector */
- move.l   a0,0xd8.w                        /* set new snan vector */
+ move.l   0xd8(a1),-4(a0)                  /* save old snan vector */
+ move.l   a0,0xd8(a1)                      /* set new snan vector */
 
  lea      new_operr(pc),a0
- move.l   0xd0.w,-4(a0)                    /* save old operr vector */
- move.l   a0,0xd0.w                        /* set new operr vector */
+ move.l   0xd0(a1),-4(a0)                  /* save old operr vector */
+ move.l   a0,0xd0(a1)                      /* set new operr vector */
 
  lea      new_overflow(pc),a0
- move.l   0xd4.w,-4(a0)                    /* save old overflow vector */
- move.l   a0,0xd4.w                        /* set new overflow vector */
+ move.l   0xd4(a1),-4(a0)                  /* save old overflow vector */
+ move.l   a0,0xd4(a1)                      /* set new overflow vector */
 
  lea      new_underflow(pc),a0
- move.l   0xcc.w,-4(a0)                    /* save old underflow vector */
- move.l   a0,0xcc.w                        /* set new undeflow vector */
+ move.l   0xcc(a1),-4(a0)                  /* save old underflow vector */
+ move.l   a0,0xcc(a1)                      /* set new undeflow vector */
 
  lea      new_div_zero(pc),a0
- move.l   0xc8.w,-4(a0)                    /* save old div-by-zero vector */
- move.l   a0,0xc8.w                        /* set new div-by-zero vector */
+ move.l   0xc8(a1),-4(a0)                  /* save old div-by-zero vector */
+ move.l   a0,0xc8(a1)                      /* set new div-by-zero vector */
 
  lea      new_inex(pc),a0
- move.l   0xc4.w,-4(a0)                    /* save old inex vector */
- move.l   a0,0xc4.w                        /* set new inex vector */
+ move.l   0xc4(a1),-4(a0)                  /* save old inex vector */
+ move.l   a0,0xc4(a1)                      /* set new inex vector */
 
  lea      new_fline(pc),a0
- move.l   0x2c.w,-4(a0)                    /* save old linef vector */
- move.l   a0,0x2c.w                        /* set new linef vector */
+ move.l   0x2c(a1),-4(a0)                  /* save old linef vector */
+ move.l   a0,0x2c(a1)                      /* set new linef vector */
 
  lea      new_unsupp(pc),a0
- move.l   0xdc.w,-4(a0)                    /* save old unsupp vector */
- move.l   a0,0xdc.w                        /* set new unsupp vector */
+ move.l   0xdc(a1),-4(a0)                  /* save old unsupp vector */
+ move.l   a0,0xdc(a1)                      /* set new unsupp vector */
 
  lea      new_effadd(pc),a0
- move.l   0xf0.w,-4(a0)                    /* save old effective address vector */
- move.l   a0,0xf0.w                        /* set new effective address vector */
+ move.l   0xf0(a1),-4(a0)                  /* save old effective address vector */
+ move.l   a0,0xf0(a1)                      /* set new effective address vector */
 
  .dc.l    0xf23c,0x9000,0,0                /* fmove.l #0,fpcr */
  moveq #0,d0                               /* no error */

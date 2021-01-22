@@ -11,6 +11,7 @@ _pcr    = 0x0808
 XBRA      = 0x58425241              /* "XBRA" */
 XBRA_ID   = 0x46505350              /* "FPSP" */
 XBRA_AB40 = 0x41423430              /* "AB40" */
+XBRA_MCSP = 0x4d435350              /* "MCSP" */
 
         .text
 
@@ -48,6 +49,9 @@ XBRA_AB40 = 0x41423430              /* "AB40" */
         subq.w  #1,d0
         beq.s   exit
         lea already_installed_msg2(pc),a0
+        subq.w  #1,d0
+        beq.s   exit
+        lea already_installed_msg3(pc),a0
         bra.s   exit
 
 done:
@@ -89,6 +93,9 @@ already_installed_msg:
 already_installed_msg2:
         .ascii "AB40 emulation detected, FPSP not installed!"
         .dc.b  13,10,0
+already_installed_msg3:
+        .ascii "Milan emulation detected, FPSP not installed!"
+        .dc.b  13,10,0
 no_060_msg:
         .ascii "No 060 CPU detected, FPSP not installed!"
         .dc.b  13,10,0
@@ -103,17 +110,19 @@ crnl:
  * actual installation code, executed in supervisor mode
  */
 doinstall:
- bsr get_cpu_typ
- cmpi.w   #60,d0
- bne      no_060
- movec    vbr,a1
- move.l   0x2c(a1),a0
- cmp.l    #XBRA,-12(a0)
- bne.s    doinstall1
- cmp.l    #XBRA_ID,-8(a0)
- beq      already_installed
- cmp.l    #XBRA_AB40,-8(a0)
- beq      already_installed2
+		bsr get_cpu_typ
+		cmpi.w   #60,d0
+		bne      no_060
+		movec    vbr,a1
+		move.l   0x2c(a1),a0
+		cmp.l    #XBRA,-12(a0)
+		bne.s    doinstall1
+		cmp.l    #XBRA_ID,-8(a0)
+		beq      already_installed
+		cmp.l    #XBRA_AB40,-8(a0)
+		beq      already_installed2
+		cmp.l    #XBRA_MCSP,-8(a0)
+		beq      already_installed3
 doinstall1:
  lea      new_int_instr(pc),a0
  move.l   0xf4(a1),-4(a0)                  /* save old unimplemented integer vector */
@@ -170,6 +179,10 @@ already_installed:
 
 already_installed2:
  moveq #3,d0                               /* flag error */
+ rts
+
+already_installed3:
+ moveq #4,d0                               /* flag error */
  rts
 
 /*

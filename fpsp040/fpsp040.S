@@ -38,6 +38,7 @@
 XBRA      = 0x58425241              /* "XBRA" */
 XBRA_ID   = 0x46505350              /* "FPSP" */
 XBRA_AB40 = 0x41423430              /* "AB40" */
+XBRA_MCSP = 0x4d435350              /* "MCSP" */
 
 	.include "fpsp.h"
 
@@ -79,6 +80,9 @@ XBRA_AB40 = 0x41423430              /* "AB40" */
         subq.w  #1,d0
         beq.s   exit
         lea already_installed_msg2(pc),a0
+        subq.w  #1,d0
+        beq.s   exit
+        lea already_installed_msg3(pc),a0
         bra.s   exit
 
 done:
@@ -120,6 +124,9 @@ already_installed_msg:
 already_installed_msg2:
         .ascii "AB40 emulation detected, FPSP not installed!"
         .dc.b  13,10,0
+already_installed_msg3:
+        .ascii "Milan emulation detected, FPSP not installed!"
+        .dc.b  13,10,0
 no_040_msg:
         .ascii "No 040 CPU detected, FPSP not installed!"
         .dc.b  13,10,0
@@ -141,6 +148,8 @@ doinstall:
 		beq      already_installed
 		cmp.l    #XBRA_AB40,-8(a0)
 		beq      already_installed2
+		cmp.l    #XBRA_MCSP,-8(a0)
+		beq      already_installed3
 doinstall1:
 	lea        _040_fpsp_fline(pc),a0
 	move.l     0x2c(a1),-4(a0)
@@ -193,6 +202,10 @@ already_installed:
 
 already_installed2:
 	moveq #3,d0                            /* flag error */
+	rts
+
+already_installed3:
+	moveq #4,d0                            /* flag error */
 	rts
 
 /*

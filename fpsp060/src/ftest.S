@@ -537,9 +537,6 @@ effadd_1_pc:
 	bsr.l		chkregs
 	bsr.l		chkfpregs
 
-	clr.l d0
-	rts
-
 fmovml_0:
 	addq.l		#0x1,TESTCTR(a6)
 

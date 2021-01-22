@@ -303,6 +303,8 @@ x060_real_unlock_page:
  * =========================================================
  */
 
+EXC_SR = 4
+
 x060_fpsp_done:
 x060_real_trap:
 x060_real_trace:
@@ -316,7 +318,43 @@ x060_real_cas:
 x060_real_cas2:
         bra.l          xI_CALL_TOP+0x80+0x10
 
+
 /*
+ * Reads from data/instruction memory while in supervisor mode.
+ *
+ *  INPUTS:
+ *     a0 - source address 
+ *     a1 - destination address
+ *     d0 - number of bytes to transfer   
+ *     4(a6),bit5 - 1 = supervisor mode, 0 = user mode
+ *  OUTPUTS:
+ *     d1 - 0 = success, !0 = failure
+ */
+x060_imem_read:
+x060_dmem_read:
+	subq.l		#1,d0			/* dec count by 1 for dbra */
+	btst		#5,EXC_SR(a6)	/* check for supervisor state */
+	bne.s		super_read
+user_read:
+	moveq.l		#1,d1
+	movec		d1,sfc			/* set sfc for user space */
+user_read_loop:
+copyinae:
+	moves.b		(a0)+,d1
+	move.b		d1,(a1)+		/* copy 1 byte */
+	dbra		d0,user_read_loop	/* quit if --ctr < 0 */
+	clr.l		d1				/* return success */
+	rts
+super_read:
+	move.b		(a0)+,(a1)+		/* copy 1 byte */
+	dbra		d0,super_read	/* quit if --ctr < 0 */
+	clr.l		d1				/* return success */
+	rts
+
+
+/*
+ * Writes to data memory while in supervisor mode.
+ *
  *  INPUTS:
  *     a0 - source address 
  *     a1 - destination address
@@ -326,57 +364,24 @@ x060_real_cas2:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write:
-x060_imem_read:
-x060_dmem_read:
-        dc.w      0x4efb,0x0522,0x6,0         /* jmp ([mov_tab,pc,d0.w*4],0) */
-mov_tab:
-        dc.l      mov0,mov1,mov2,mov3,mov4,mov5
-        dc.l      mov6,mov7,mov8,mov9,mov10,mov11,mov12
-mov1:
-        move.b         (a0)+,(a1)+
-mov0:
-        clr.l          d1
-        rts
-mov3:
-        move.b         (a0)+,(a1)+
-mov2:
-        move.w         (a0)+,(a1)+
-        clr.l          d1
-        rts
-mov5:
-        move.b         (a0)+,(a1)+
-mov4:
-        move.l         (a0)+,(a1)+
-        clr.l          d1
-        rts
-mov7:
-        move.b         (a0)+,(a1)+
-mov6:
-        move.w         (a0)+,(a1)+
-        move.l         (a0)+,(a1)+
-        clr.l          d1
-        rts
-mov9:
-        move.b         (a0)+,(a1)+
-mov8:
-        move.l         (a0)+,(a1)+
-        move.l         (a0)+,(a1)+
-        clr.l          d1
-        rts  
-mov11:
-        move.b         (a0)+,(a1)+
-mov10:
-        move.w         (a0)+,(a1)+
-        move.l         (a0)+,(a1)+
-        move.l         (a0)+,(a1)+
-        clr.l          d1
-        rts  
-mov12:
-        move.l         (a0)+,(a1)+
-        move.l         (a0)+,(a1)+
-        move.l         (a0)+,(a1)+
-        clr.l          d1
-        rts  
+	subq.l		#1,d0			/* dec count by 1 for dbra */
+	btst		#5,EXC_SR(a6)	/* check for supervisor state */
+	bne.s		super_write
+user_write:
+	moveq.l		#1,d1
+	movec		d1,dfc			/* set dfc for user data space */
+user_write_loop:
+	move.b		(a0)+,d1		/* copy 1 byte */
+copyoutae:
+	moves.b		d1,(a1)+
+	dbra		d0,user_write_loop	/* quit if --ctr < 0 */
+	clr.l		d1				/* return success */
+	rts
+super_write:
+	move.b		(a0)+,(a1)+		/* copy 1 byte */
+	dbra		d0,super_write	/* quit if --ctr < 0 */
+	clr.l		d1				/* return success */
+	rts
 
 
 
@@ -390,9 +395,16 @@ mov12:
  */
 x060_dmem_read_byte:
         clr.l          d0             /* clear whole longword */
-        move.b         (a0),d0        /* fetch super byte */
-        clr.l          d1             /* return success */
+        clr.l          d1             /* assume success */
+        btst           #5,EXC_SR(a6)  /* check for supervisor state */
+        bne.s          dmrbs          /* supervisor */
+dmrbuae:
+        moves.b        (a0),d0        /* fetch user byte */
         rts
+dmrbs:
+        move.b         (a0),d0        /* fetch super byte */
+        rts
+
 /*
  * INPUTS:
  *     a0 - user source address
@@ -402,9 +414,16 @@ x060_dmem_read_byte:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_read_word:
+x060_imem_read_word:
         clr.l          d0             /* clear whole longword */
+        clr.l          d1             /* assume success */
+        btst           #5,EXC_SR(a6)  /* check for supervisor state */
+        bne.s          dmrws          /* supervisor */
+dmrwuae:
+        moves.w        (a0),d0        /* fetch user word */
+        rts
+dmrws:
         move.w         (a0),d0        /* fetch super word */
-        clr.l          d1             /* return success */
         rts
 
 /*
@@ -415,11 +434,18 @@ x060_dmem_read_word:
  *     d0 - instruction longword in d0
  *     d1 - 0 = success, !0 = failure
  */
-x060_imem_read_long:
 x060_dmem_read_long:
-        move.l         (a0),d0        /* fetch super longword */
-        clr.l          d1             /* return success */
+x060_imem_read_long:
+        clr.l          d1             /* assume success */
+        btst           #5,EXC_SR(a6)  /* check for supervisor state */
+        bne.s          dmrls          /* supervisor */
+dmrluae:
+        moves.l        (a0),d0        /* fetch user longword */
         rts
+dmrls:
+        move.l         (a0),d0        /* fetch super longword */
+        rts
+
 /*
  * INPUTS:
  *     a0 - user destination address
@@ -429,8 +455,14 @@ x060_dmem_read_long:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write_byte:
+        clr.l          d1             /* assume success */
+        btst           #5,EXC_SR(a6)  /* check for supervisor state */
+        bne.s          dmwbs          /* supervisor */
+dmwbuae:
+        moves.b        d0,(a0)        /* store user byte */
+        rts
+dmwbs:
         move.b         d0,(a0)        /* store super byte */
-        clr.l          d1             /* return success */
         rts
 
 /*
@@ -442,8 +474,14 @@ x060_dmem_write_byte:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write_word:
+        clr.l          d1             /* assume success */
+        btst           #5,EXC_SR(a6)  /* check for supervisor state */
+        bne.s          dmwws          /* supervisor */
+dmwwuae:
+        moves.w        d0,(a0)        /* store user word */
+        rts
+dmwws:
         move.w         d0,(a0)        /* store super word */
-        clr.l          d1             /* return success */
         rts
 
 /*
@@ -455,23 +493,15 @@ x060_dmem_write_word:
  *     d1 - 0 = success, !0 = failure
  */
 x060_dmem_write_long:
+        clr.l          d1             /* assume success */
+        btst           #5,EXC_SR(a6)  /* check for supervisor state */
+        bne.s          dmwls          /* supervisor */
+dmwluae:
+        moves.l        d0,(a0)        /* store user longword */
+        rts
+dmwls:
         move.l         d0,(a0)        /* store super longword */
-        clr.l          d1             /* return success */
         rts
-
-/*
- * INPUTS:
- *     a0 - user source address
- *     4(a6),bit5 - 1 = supervisor mode, 0 = user mode
- * OUTPUTS:
- *     d0 - instruction word in d0
- *     d1 - 0 = success, !0 = failure
- */
-x060_imem_read_word:
-        move.w         (a0),d0        /* fetch super word */
-        clr.l          d1             /* return success */
-        rts
-
 
 /*
  * ################################

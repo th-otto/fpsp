@@ -122,4 +122,4 @@ dfpsp: dfpsp.c
 	$(CC_FOR_BUILD) -o $@ $<
 
 clean::
-	$(RM) src/*.o *.sa *.bin *.prg *.tos
+	$(RM) src/*.o *.o *.sa *.bin *.prg *.tos *.pdb

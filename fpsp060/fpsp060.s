@@ -82,7 +82,7 @@ already_installed_msg:
         .ascii "FPSP already installed!"
         .dc.b  13,10,0
 no_060_msg:
-        .ascii "No 040/060 CPU detected, FPSP not installed!"
+        .ascii "No 060 CPU detected, FPSP not installed!"
         .dc.b  13,10,0
 waitkey_msg:
         .ascii "Press any key to continue!"
@@ -96,7 +96,7 @@ crnl:
  */
 doinstall:
  bsr get_cpu_typ
- cmpi.w   #40,d0
+ cmpi.w   #60,d0
  bcs      no_060
  lea      new_int_instr(pc),a0
  move.l   0xf4.w,a1

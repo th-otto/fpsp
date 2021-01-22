@@ -57,17 +57,16 @@ fpsp_fline:
 	move.l	L_SCR1(a6),d0	/* d0 contains the fline and command word */
 	bfextu	d0{4:3},d1	/* extract coprocessor id */
 	cmpi.b	#1,d1		/* check if cpid=1 */
-	bne.w	not_mvcr	/* exit if not */ /* ZZZ */
+	bne.s	not_mvcr	/* exit if not */
 	bfextu	d0{16:6},d1
 	cmpi.b	#0x17,d1		/* check if it is an FMOVECR encoding */
-	bne.w	not_mvcr /* ZZZ */
+	bne.s	not_mvcr
 	/* if an FMOVECR instruction, fix stack */
 	/* and go to FPSP_UNIMP */
 fix_stack:
 	cmpi.b	#VER_40,(a7)	/* test for orig unimp frame */
 	bne.s	ck_rev_fline
 	suba.w	#UNIMP_40_SIZE-4,a7 /* emulate an orig fsave */
-	nop /* XXX */
 	move.b	#VER_40,(a7)
 	move.b	#UNIMP_40_SIZE-4,1(a7)
 	clr.w	2(a7)
@@ -76,7 +75,6 @@ ck_rev_fline:
 	cmpi.b	#VER_41,(a7)	/* test for rev unimp frame */
 	bne		fpsp_fmt_error	/* if not $40 or $41, exit with error */
 	suba.w	#UNIMP_41_SIZE-4,a7 /* emulate a rev fsave */
-	nop /* XXX */
 	move.b	#VER_41,(a7)
 	move.b	#UNIMP_41_SIZE-4,1(a7)
 	clr.w	2(a7)

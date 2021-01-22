@@ -183,7 +183,7 @@ ovf_res:
 	lsl.l	#2,d0		/* move round precision to d0{3:2} */
 	bfextu	FPCR_MODE(a6){2:2},d1 /* set round mode */
 	or.l	d1,d0		/* index is fmt:mode in d0{3:0} */
-	lea.l	tblovfl.l,a1	/* load a1 with table address */ /* XXX pc-rel */
+	lea.l	tblovfl.w(pc),a1	/* load a1 with table address */
 	move.l	0(a1,d0.w*4),a1	/* use d0 as index to the table */
 	jmp	(a1)		/* go to the correct routine */
 
@@ -191,31 +191,31 @@ ovf_res:
  * case DEST_FMT = EXT
  */
 EXT_RN:
-	lea.l	EXT_PINF.l,a1	/* answer is +/- infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is +/- infinity */
 	bset.b	#inf_bit,FPSR_CC(a6)
 	bra	set_sign	/* now go set the sign */
 EXT_RZ:
-	lea.l	EXT_PLRG.l,a1	/* answer is +/- large number */ /* XXX pc-rel */
+	lea.l	EXT_PLRG.w(pc),a1	/* answer is +/- large number */
 	bra	set_sign	/* now go set the sign */
 EXT_RM:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	e_rm_pos
 e_rm_neg:
-	lea.l	EXT_PINF.l,a1	/* answer is negative infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is negative infinity */
 	or.l	#neginf_mask,USER_FPSR(a6)
 	bra	end_ovfr
 e_rm_pos:
-	lea.l	EXT_PLRG.l,a1	/* answer is large positive number */ /* XXX pc-rel */
+	lea.l	EXT_PLRG.w(pc),a1	/* answer is large positive number */
 	bra	end_ovfr
 EXT_RP:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	e_rp_pos
 e_rp_neg:
-	lea.l	EXT_PLRG.l,a1	/* answer is large negative number */ /* XXX pc-rel */
+	lea.l	EXT_PLRG.w(pc),a1	/* answer is large negative number */
 	bset.b	#neg_bit,FPSR_CC(a6)
 	bra	end_ovfr
 e_rp_pos:
-	lea.l	EXT_PINF.l,a1	/* answer is positive infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is positive infinity */
 	bset.b	#inf_bit,FPSR_CC(a6)
 	bra	end_ovfr
 
@@ -223,31 +223,31 @@ e_rp_pos:
  * case DEST_FMT = DBL
  */
 DBL_RN:
-	lea.l	EXT_PINF.l,a1	/* answer is +/- infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is +/- infinity */
 	bset.b	#inf_bit,FPSR_CC(a6)
 	bra	set_sign
 DBL_RZ:
-	lea.l	DBL_PLRG.l,a1	/* answer is +/- large number */ /* XXX pc-rel */
+	lea.l	DBL_PLRG.w(pc),a1	/* answer is +/- large number */
 	bra	set_sign	/* now go set the sign */
 DBL_RM:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	d_rm_pos
 d_rm_neg:
-	lea.l	EXT_PINF.l,a1	/* answer is negative infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is negative infinity */
 	or.l	#neginf_mask,USER_FPSR(a6)
 	bra	end_ovfr	/* inf is same for all precisions (ext,dbl,sgl) */
 d_rm_pos:
-	lea.l	DBL_PLRG.l,a1	/* answer is large positive number */ /* XXX pc-rel */
+	lea.l	DBL_PLRG.w(pc),a1	/* answer is large positive number */
 	bra	end_ovfr
 DBL_RP:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	d_rp_pos
 d_rp_neg:
-	lea.l	DBL_PLRG.l,a1	/* answer is large negative number */ /* XXX pc-rel */
+	lea.l	DBL_PLRG.w(pc),a1	/* answer is large negative number */
 	bset.b	#neg_bit,FPSR_CC(a6)
 	bra.s	end_ovfr
 d_rp_pos:
-	lea.l	EXT_PINF.l,a1	/* answer is positive infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is positive infinity */
 	bset.b	#inf_bit,FPSR_CC(a6)
 	bra.s	end_ovfr
 
@@ -255,31 +255,31 @@ d_rp_pos:
  * case DEST_FMT = SGL
  */
 SGL_RN:
-	lea.l	EXT_PINF.l,a1	/* answer is +/-  infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is +/-  infinity */
 	bset.b	#inf_bit,FPSR_CC(a6)
 	bra.s	set_sign
 SGL_RZ:
-	lea.l	SGL_PLRG.l,a1	/* answer is +/- large number */ /* XXX pc-rel */
+	lea.l	SGL_PLRG.w(pc),a1	/* answer is +/- large number */
 	bra.s	set_sign
 SGL_RM:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	s_rm_pos
 s_rm_neg:
-	lea.l	EXT_PINF.l,a1	/* answer is negative infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is negative infinity */
 	or.l	#neginf_mask,USER_FPSR(a6)
 	bra.s	end_ovfr
 s_rm_pos:
-	lea.l	SGL_PLRG.l,a1	/* answer is large positive number */ /* XXX pc-rel */
+	lea.l	SGL_PLRG.w(pc),a1	/* answer is large positive number */
 	bra.s	end_ovfr
 SGL_RP:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	s_rp_pos
 s_rp_neg:
-	lea.l	SGL_PLRG.l,a1	/* answer is large negative number */ /* XXX pc-rel */
+	lea.l	SGL_PLRG.w(pc),a1	/* answer is large negative number */
 	bset.b	#neg_bit,FPSR_CC(a6)
 	bra.s	end_ovfr
 s_rp_pos:
-	lea.l	EXT_PINF.l,a1	/* answer is positive infinity */ /* XXX pc-rel */
+	lea.l	EXT_PINF.w(pc),a1	/* answer is positive infinity */
 	bset.b	#inf_bit,FPSR_CC(a6)
 	bra.s	end_ovfr
 
@@ -472,13 +472,13 @@ not_dbl:
  * are unnecessary as unf_sub always returns the sign separately from
  * the exponent.
  */
-	.xref EXT_PZRO /* YYY */
-	.xref SGL_PZRO /* YYY */
-	.xref DBL_PZRO /* YYY */
-	.xref EXT_PSML /* YYY */
-	.xref SGL_PSML /* YYY */
-	.xref DBL_PSML /* YYY */
-	.data
+	.text
+EXT_PZRO:	.dc.l	0x00000000,0x00000000,0x00000000,0x00000000 /* +zero */
+SGL_PZRO:	.dc.l	0x3f810000,0x00000000,0x00000000,0x00000000 /* +zero */
+DBL_PZRO:	.dc.l	0x3c010000,0x00000000,0x00000000,0x00000000 /* +zero */
+EXT_PSML:	.dc.l	0x00000000,0x00000000,0x00000001,0x00000000 /* smallest +ext denorm */
+SGL_PSML:	.dc.l	0x3f810000,0x00000100,0x00000000,0x00000000 /* smallest +sgl denorm */
+DBL_PSML:	.dc.l	0x3c010000,0x00000000,0x00000800,0x00000000 /* smallest +dbl denorm */
 
 	.text
 
@@ -516,7 +516,7 @@ unf_sub:
 	lsl.l	#2,d0		/* move round precision to d0{3:2} */
 	bfextu	FPCR_MODE(a6){2:2},d1 /* set round mode */
 	or.l	d1,d0		/* index is fmt:mode in d0{3:0} */
-	lea.l	tblunf.l,a1	/* load a1 with table address */ /* XXX pc-rel */
+	lea.l	tblunf.w(pc),a1	/* load a1 with table address */
 	move.l	0(a1,d0.w*4),a1	/* use d0 as index to the table */
 	jmp	(a1)		/* go to the correct routine */
 
@@ -524,99 +524,99 @@ unf_sub:
  * case DEST_FMT = EXT
  */
 uEXT_RN:
-	lea.l	EXT_PZRO.l,a1	/* answer is +/- zero */ /* XXX pc-rel */
+	lea.l	EXT_PZRO.w(pc),a1	/* answer is +/- zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra	uset_sign	/* now go set the sign */
 uEXT_RZ:
-	lea.l	EXT_PZRO.l,a1	/* answer is +/- zero */ /* XXX pc-rel */
+	lea.l	EXT_PZRO.w(pc),a1	/* answer is +/- zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra	uset_sign	/* now go set the sign */
 uEXT_RM:
 	tst.b	LOCAL_SGN(a0)	/* if negative underflow */
 	beq.s	ue_rm_pos
 ue_rm_neg:
-	lea.l	EXT_PSML.l,a1	/* answer is negative smallest denorm */ /* XXX pc-rel */
+	lea.l	EXT_PSML.w(pc),a1	/* answer is negative smallest denorm */
 	bset.b	#neg_bit,FPSR_CC(a6)
 	bra	end_unfr
 ue_rm_pos:
-	lea.l	EXT_PZRO.l,a1	/* answer is positive zero */ /* XXX pc-rel */
+	lea.l	EXT_PZRO.w(pc),a1	/* answer is positive zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra	end_unfr
 uEXT_RP:
 	tst.b	LOCAL_SGN(a0)	/* if negative underflow */
 	beq.s	ue_rp_pos
 ue_rp_neg:
-	lea.l	EXT_PZRO.l,a1	/* answer is negative zero */ /* XXX pc-rel */
+	lea.l	EXT_PZRO.w(pc),a1	/* answer is negative zero */
 	ori.l	#negz_mask,USER_FPSR(a6)
 	bra	end_unfr
 ue_rp_pos:
-	lea.l	EXT_PSML.l,a1	/* answer is positive smallest denorm */ /* XXX pc-rel */
+	lea.l	EXT_PSML.w(pc),a1	/* answer is positive smallest denorm */
 	bra	end_unfr
 
 /*
  * case DEST_FMT = DBL
  */
 uDBL_RN:
-	lea.l	DBL_PZRO.l,a1	/* answer is +/- zero */ /* XXX pc-rel */
+	lea.l	DBL_PZRO.w(pc),a1	/* answer is +/- zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra	uset_sign
 uDBL_RZ:
-	lea.l	DBL_PZRO.l,a1	/* answer is +/- zero */ /* XXX pc-rel */
+	lea.l	DBL_PZRO.w(pc),a1	/* answer is +/- zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra	uset_sign	/* now go set the sign */
 uDBL_RM:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	ud_rm_pos
 ud_rm_neg:
-	lea.l	DBL_PSML.l,a1	/* answer is smallest denormalized negative */ /* XXX pc-rel */
+	lea.l	DBL_PSML.w(pc),a1	/* answer is smallest denormalized negative */
 	bset.b	#neg_bit,FPSR_CC(a6)
 	bra	end_unfr
 ud_rm_pos:
-	lea.l	DBL_PZRO.l,a1	/* answer is positive zero */ /* XXX pc-rel */
+	lea.l	DBL_PZRO.w(pc),a1	/* answer is positive zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra	end_unfr
 uDBL_RP:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	ud_rp_pos
 ud_rp_neg:
-	lea.l	DBL_PZRO.l,a1	/* answer is negative zero */ /* XXX pc-rel */
+	lea.l	DBL_PZRO.w(pc),a1	/* answer is negative zero */
 	ori.l	#negz_mask,USER_FPSR(a6)
 	bra.s	end_unfr
 ud_rp_pos:
-	lea.l	DBL_PSML.l,a1	/* answer is smallest denormalized negative */ /* XXX pc-rel */
+	lea.l	DBL_PSML.w(pc),a1	/* answer is smallest denormalized negative */
 	bra.s	end_unfr
 
 /*
  * case DEST_FMT = SGL
  */
 uSGL_RN:
-	lea.l	SGL_PZRO.l,a1	/* answer is +/- zero */ /* XXX pc-rel */
+	lea.l	SGL_PZRO.w(pc),a1	/* answer is +/- zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra.s	uset_sign
 uSGL_RZ:
-	lea.l	SGL_PZRO.l,a1	/* answer is +/- zero */ /* XXX pc-rel */
+	lea.l	SGL_PZRO.w(pc),a1	/* answer is +/- zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra.s	uset_sign
 uSGL_RM:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	us_rm_pos
 us_rm_neg:
-	lea.l	SGL_PSML.l,a1	/* answer is smallest denormalized negative */ /* XXX pc-rel */
+	lea.l	SGL_PSML.w(pc),a1	/* answer is smallest denormalized negative */
 	bset.b	#neg_bit,FPSR_CC(a6)
 	bra.s	end_unfr
 us_rm_pos:
-	lea.l	SGL_PZRO.l,a1	/* answer is positive zero */ /* XXX pc-rel */
+	lea.l	SGL_PZRO.w(pc),a1	/* answer is positive zero */
 	bset.b	#z_bit,FPSR_CC(a6)
 	bra.s	end_unfr
 uSGL_RP:
 	tst.b	LOCAL_SGN(a0)	/* if negative overflow */
 	beq.s	us_rp_pos
 us_rp_neg:
-	lea.l	SGL_PZRO.l,a1	/* answer is negative zero */ /* XXX pc-rel */
+	lea.l	SGL_PZRO.w(pc),a1	/* answer is negative zero */
 	ori.l	#negz_mask,USER_FPSR(a6)
 	bra.s	end_unfr
 us_rp_pos:
-	lea.l	SGL_PSML.l,a1	/* answer is smallest denormalized positive */ /* XXX pc-rel */
+	lea.l	SGL_PSML.w(pc),a1	/* answer is smallest denormalized positive */
 	bra.s	end_unfr
 
 uset_sign:
@@ -676,7 +676,7 @@ pregdst:
 	.dc.l	long_d7
 
 reg_dest:
-	lea.l	pregdst.l,a0 /* XXX pc-rel */
+	lea.l	pregdst.w(pc),a0
 	move.l	0(a0,d1.w*4),a0
 	jmp	(a0)
 

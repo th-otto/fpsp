@@ -162,7 +162,6 @@ ovf_e1:
 
 ovf_com:
 	bclr.b	#sign_bit,LOCAL_EX(a0)
-	nop /* XXX */
 	sne	LOCAL_SGN(a0)
 
 	bsr		g_opcls		/* returns opclass in d0 */

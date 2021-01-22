@@ -88,7 +88,7 @@ report_snan:
 	move.b		(a7),VER_TMP(a6)
 	cmpi.b		#VER_40,(a7)	/* test for orig unimp frame */
 	bne.s		ck_rev_snan
-	move.w		#13,d0		/* need to zero 14 lwords */ /* XXX moveq */
+	moveq.l		#13,d0		/* need to zero 14 lwords */
 	bra.s		rep_con
 ck_rev_snan:
 	moveq.l		#11,d0		/* need to zero 12 lwords */
@@ -144,8 +144,6 @@ move_out:
 
 	bfextu		CMDREG1B(a6){3:3},d0 /* move rx field to d0{2:0} */
 	tst.l		d0		/* check for long */
-	nop /* XXX */
-	nop /* XXX */
 	beq.s		sto_long	/* branch if move_out long */
 
 	cmpi.l		#4,d0		/* check for word */
@@ -167,8 +165,7 @@ sto_long:
 /*
  *  Set signalling nan bit
  */
-	/* bset.l		#30,d1 XXX */
-	ori.l		#0x40000000,d1
+	bset.l		#30,d1
 /*
  *  Store to the users destination address
  */
@@ -190,8 +187,7 @@ sto_word:
 /*
  *  Set signalling nan bit
  */
-	/* bset.l		#30,d1 XXX */
-	ori.l		#0x40000000,d1
+	bset.l		#30,d1
 /*
  *  Store to the users destination address
  */
@@ -213,8 +209,7 @@ sto_byte:
 /*
  *  Set signalling nan bit
  */
-	/* bset.l		#30,d1 XXX */
-	ori.l		#0x40000000,d1
+	bset.l		#30,d1
 /*
  *  Store to the users destination address
  */

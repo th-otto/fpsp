@@ -1424,7 +1424,7 @@ opclass3_rf:
 	andi.w	#0x0c00,d0	/* isolate last 2 bits of size field */
 	cmpi.w	#0x0c00,d0	/* if size is 011 or 111, it is packed */
 	beq	pack_out	/* else it is norm or denorm */
-	bra.w	mv_out /* ZZZ could be optimized */
+	bra.s	mv_out
 
 
 /*
@@ -1444,7 +1444,7 @@ mv_tbl:
 	.text
 mv_out:
 	bfextu	CMDREG1B(a6){3:3},d1	/* put source specifier in d1 */
-	lea.l	mv_tbl.l,a0 /* XXX pc-rel */
+	lea.l	mv_tbl.w(pc),a0
 	move.l	0(a0,d1.w*4),a0
 	jmp	(a0)
 
@@ -1620,7 +1620,7 @@ bi:
 	moveq.l	#1,d0		/* set byte count */
 
 	btst.b	#7,STAG(a6)	/* check for extended denorm */
-	bne.w	int_dnrm	/* branch if so */ /* ZZZ */
+	bne.s	int_dnrm	/* branch if so */
 
 	fmovem.x ETEMP(a6),fp0-fp0
 	.IFNE GAS
@@ -1647,7 +1647,7 @@ bi:
 	fmove.b	fp0,L_SCR1(a6)	/* let the 040 perform conversion */
 	fmove.l fpsr,d1
 	or.l	d1,USER_FPSR(a6)	/* capture inex2/ainex if set */
-	bra.w	int_wrt /* ZZZ */
+	bra.s	int_wrt
 
 by_plrg:
 	move.b	#0x7f,L_SCR1(a6)		/* answer is largest positive int */
@@ -1659,7 +1659,7 @@ by_plrg:
 	.ENDC
 /*  42ff0000 in sgl prec = 40050000ff00000000000000 in ext prec */
 	fbge	int_operr		/* set operr */
-	bra.w	int_inx			/* set inexact */ /* ZZZ */
+	bra.s	int_inx			/* set inexact */
 
 by_nlrg:
 	move.b	#0x80,L_SCR1(a6)
@@ -1671,7 +1671,7 @@ by_nlrg:
 	.ENDC
 /*  c3008000 in sgl prec = c00600008080000000000000 in ext prec */
 	fblt	int_operr		/* set operr */
-	bra.w	int_inx			/* set inexact */ /* ZZZ */
+	bra.s	int_inx			/* set inexact */
 
 /*
  *  Common integer routines
@@ -1751,7 +1751,7 @@ sgp:
 	btst.b	#7,STAG(a6)	/* check for extended denorm */
 	bne	sp_catas	/* branch if so */
 	move.w	LOCAL_EX(a0),d0
-	lea	sp_bnds.l,a1 /* XXX pc-rel */
+	lea	sp_bnds.w(pc),a1
 	cmp.w	(a1),d0
 	blt	sp_under
 	cmp.w	2(a1),d0
@@ -1767,7 +1767,7 @@ dp:
 	bne	dp_catas	/* branch if so */
 
 	move.w	LOCAL_EX(a0),d0
-	lea	dp_bnds.l,a1 /* XXX pc-rel */
+	lea	dp_bnds.w(pc),a1
 
 	cmp.w	(a1),d0
 	blt	dp_under
@@ -2006,7 +2006,7 @@ p_regd:
 	.text
 
 pack_out:
-	lea.l	p_movet.l,a0	/* load jmp table address */ /* XXX pc-rel */
+	lea.l	p_movet.w(pc),a0	/* load jmp table address */
 	move.w	STAG(a6),d0	/* get source tag */
 	bfextu	d0{16:3},d0	/* isolate source bits */
 	move.l	(a0,d0.w*4),a0	/* load a0 with routine label for tag */
@@ -2038,7 +2038,7 @@ p_move:
 	beq.s	statick		/* if clear, k-factor is static */
 dynamick:
 	bfextu	d0{25:3},d0	/* isolate register for dynamic k-factor */
-	lea	p_regd.l,a0 /* XXX pc-rel */
+	lea	p_regd.w(pc),a0
 	move.l	0(a0,d0.w*4),a0
 	jmp	(a0)
 statick:

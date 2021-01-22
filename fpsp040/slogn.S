@@ -232,12 +232,6 @@ LOGTBL:
 	.dc.l  0x3FFE0000,0x80808080,0x80808081,0x00000000
 	.dc.l  0x3FFE0000,0xB07197A2,0x3C46C654,0x00000000
 
-	.data
-	.globl INV_L10
-INV_L10:  .dc.l 0x3FFD0000,0xDE5BD8A9,0x37287195,0x00000000
-	.globl INV_L2
-INV_L2:   .dc.l 0x3FFF0000,0xB8AA3B29,0x5C17F0BC,0x00000000
-
 	ADJK = L_SCR1
 
 	X = FP_SCR1
@@ -344,7 +338,7 @@ LOGBGN:
 
 	tst.l	d0		/*  ...CHECK IF X IS NEGATIVE */
 	blt	LOGNEG		/*  ...LOG OF NEGATIVE ARGUMENT IS INVALID */
-	cmp2.l	BOUNDS1_slogn.l,d0	/*  ...X IS POSITIVE, CHECK IF X IS NEAR 1 */ /* XXX pc-rel */
+	cmp2.l	BOUNDS1_slogn.w(pc),d0	/*  ...X IS POSITIVE, CHECK IF X IS NEAR 1 */
 	bcc	LOGNEAR1	/*  ...BOUNDS IS ROUGHLY [15/16, 17/16] */
 
 LOGMAIN:
@@ -532,7 +526,7 @@ LP1REAL:
 	move.l	X(a6),d0
 	tst.l	d0
 	ble	LP1NEG0	/*  ...LOG OF ZERO OR -VE */
-	cmp2.l	BOUNDS2_slogn.l,d0 /* XXX pc-rel */
+	cmp2.l	BOUNDS2_slogn.w(pc),d0
 	bcs	LOGMAIN	/*  ...BOUNDS2 IS [1/2,3/2] */
 /*
  * --IF 1+Z > 3/2 OR 1+Z < 1/2, THEN X, WHICH IS ROUNDING 1+Z,
@@ -543,7 +537,7 @@ LP1NEAR1:
 /*
  * --NEXT SEE IF EXP(-1/16) < X < EXP(1/16)
  */
-	cmp2.l	BOUNDS1_slogn.l,d0 /* XXX pc-rel */
+	cmp2.l	BOUNDS1_slogn.w(pc),d0
 	bcs.s	LP1CARE
 
 LP1ONE16:

@@ -40,12 +40,11 @@ E3_sto:
     move.l  CMDREG3B(a6),d0
     bfextu  d0{6:3},d0      /* isolate dest. reg from cmdreg3b */
 sto_fp:
-    lea.l   fpreg_mask.l,a1 /* XXX pc-rel */
+    lea.l   fpreg_mask.w(pc),a1
     move.b  (a1,d0.w),d0	/* convert reg# to dynamic register mask */
     tst.b   LOCAL_SGN(a0)
     beq.s   is_pos
     bset.b  #sign_bit,LOCAL_EX(a0)
-    nop /* XXX */
 is_pos:
     fmovem.x (a0),d0     /* move to correct register */
 /*
@@ -88,8 +87,6 @@ opc011_store:
     move.l  a0,a1       /* save source addr in a1 */
     move.l  EXC_EA(a6),a0   /* get the address */
     tst.l   d0      /* if dest format is extended */
-    nop /* XXX */
-    nop /* XXX */
     beq dest_ext    /* then branch */
     cmpi.l  #1,d0       /* if dest format is single */
     beq.s   dest_sgl    /* then branch */
@@ -131,7 +128,6 @@ opc011_store:
 dest_dbl:
     clr.l   d0      /* clear d0 */
     move.w  LOCAL_EX(a1),d0 /* get exponent */
-    nop /* XXX */
     subi.w  #0x3fff,d0  /* subtract extended precision bias */
     cmpi.w   #0x4000,d0  /* check if inf */
     beq.s   inf     /* if so, special case */
@@ -140,26 +136,22 @@ dest_dbl:
     lsl.l   #4,d0       /* d0 now in proper place for dbl prec exp */
     tst.b   LOCAL_SGN(a1)
     beq.s   get_mant    /* if positive, go process mantissa */
-    /* bset.l   #31,d0 */      /* if negative, put in sign information */ /* XXX */
-    ori.l #0x80000000,d0 /* before continuing */
+    bset.l   #31,d0      /* if negative, put in sign information before continuing */
     bra.s   get_mant    /* go process mantissa */
 inf:
     move.l  #0x7ff00000,d0  /* load dbl inf exponent */
     clr.l   LOCAL_HI(a1)    /* clear msb */
     tst.b   LOCAL_SGN(a1)
     beq.s   dbl_inf     /* if positive, go ahead and write it */
-    /* bset.l   #31,d0 */      /* if negative put in sign information */ /* XXX */
-    ori.l #0x80000000,d0
+    bset.l   #31,d0      /* if negative put in sign information */
 dbl_inf:
     move.l  d0,LOCAL_EX(a1) /* put the new exp back on the stack */
-    nop /* XXX */
     bra.s   dbl_wrt
 get_mant:
     move.l  LOCAL_HI(a1),d1 /* get ms mantissa */
     bfextu  d1{1:20},d1 /* get upper 20 bits of ms */
     or.l    d1,d0       /* put these bits in ms word of double */
     move.l  d0,LOCAL_EX(a1) /* put the new exp back on the stack */
-    nop /* XXX */
     move.l  LOCAL_HI(a1),d1 /* get ms mantissa */
     move.l  #21,d0      /* load shift count */
     lsl.l   d0,d1       /* put lower 11 bits in upper bits */
@@ -206,7 +198,6 @@ dbl_wrt:
 dest_sgl:
     clr.l   d0
     move.w  LOCAL_EX(a1),d0 /* get exponent */
-    nop /* XXX */
     subi.w  #0x3fff,d0  /* subtract extended precision bias */
     cmpi.w   #0x4000,d0  /* check if inf */
     beq.s   sinf_store      /* if so, special case */
@@ -215,15 +206,13 @@ dest_sgl:
     lsl.l   #7,d0       /* shift it into single exp bits */
     tst.b   LOCAL_SGN(a1)
     beq.s   get_sman    /* if positive, continue */
-    /* bset.l   #31,d0 */      /* if negative, put in sign first */ /* XXX */
-    ori.l #0x80000000,d0
+    bset.l   #31,d0      /* if negative, put in sign first */
     bra.s   get_sman    /* get mantissa */
 sinf_store:
     move.l  #0x7f800000,d0  /* load single inf exp to d0 */
     tst.b   LOCAL_SGN(a1)
     beq.s   sgl_wrt     /* if positive, continue */
-    /* bset.l   #31,d0 */      /* if negative, put in sign info */ /* XXX */
-    ori.l #0x80000000,d0
+    bset.l   #31,d0      /* if negative, put in sign info */
     bra.s   sgl_wrt
 
 get_sman:
@@ -252,7 +241,6 @@ dest_ext:
     tst.b   LOCAL_SGN(a1)   /* put back sign into exponent word */
     beq.s   dstx_cont
     bset.b  #sign_bit,LOCAL_EX(a1)
-    nop /* XXX */
 dstx_cont:
     clr.b   LOCAL_SGN(a1)   /* clear out the sign byte */
 

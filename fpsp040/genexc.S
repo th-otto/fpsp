@@ -154,7 +154,7 @@ frame_com:
 	move.b	FPCR_ENABLE(a6),d0	/* get fpcr enable byte */
 	and.b	FPSR_EXCEPT(a6),d0	/* and in the fpsr exc byte */
 	bfffo	d0{24:8},d1			/* test for first set bit */
-	lea.l	exc_tbl.l,a0		/* load jmp table address */ /* XXX pc-rel */
+	lea.l	exc_tbl.w(pc),a0		/* load jmp table address */
 	subi.b	#24,d1			/* normalize bit offset to 0-8 */
 	move.l	(a0,d1.w*4),a0		/* load routine address based */
 /* 					based on first enabled exc */
@@ -174,7 +174,7 @@ bsun_exc:
  */
 commonE1:
 	bset.b	#E1,E_BYTE(a6)		/* set E1 flag */
-	bra.w	commonE			/* go clean and exit */ /* ZZZ */
+	bra.s	commonE				/* go clean and exit */
 
 commonE3:
 	tst.b	UFLG_TMP(a6)		/* test flag for unsup/unimp state */
@@ -182,7 +182,7 @@ commonE3:
 uniE3:
 	bset.b	#E3,E_BYTE(a6)		/* set E3 flag */
 	bclr.b	#E1,E_BYTE(a6)		/* clr E1 from unimp */
-	bra.w	commonE /* ZZZ */
+	bra.s	commonE
 
 unsE3:
 	tst.b	RES_FLG(a6)

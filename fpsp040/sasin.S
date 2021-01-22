@@ -88,12 +88,7 @@ sasin:
 	fsqrt.x		fp1		/*  ...SQRT([1-X][1+X]) */
 	fdiv.x		fp1,fp0		/*  ...X/SQRT([1-X][1+X]) */
 	fmovem.x	fp0-fp0,(a0)
-	.IFNE GAS
-	bsr.s		satan
-	.ELSE
-	/* bsr			satan */
-	.dc.w 0x613c
-	.ENDC
+	bsr			satan
 	bra			t_frcinx
 
 asinbig:

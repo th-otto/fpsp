@@ -208,24 +208,6 @@ ATANTBL:
 	.dc.l	0x3FFF0000,0xC0AE345F,0x56340AE6,0x00000000
 	.dc.l	0x3FFF0000,0xC0F22291,0x9CB9E6A7,0x00000000
 
-/*
- * Final result table for unf_sub. Note that the negative counterparts
- * are unnecessary as unf_sub always returns the sign separately from
- * the exponent.
- */
-	.globl EXT_PZRO /* YYY */
-	.globl SGL_PZRO /* YYY */
-	.globl DBL_PZRO /* YYY */
-	.globl EXT_PSML /* YYY */
-	.globl SGL_PSML /* YYY */
-	.globl DBL_PSML /* YYY */
-EXT_PZRO:	.dc.l	0x00000000,0x00000000,0x00000000,0x00000000 /* +zero */
-SGL_PZRO:	.dc.l	0x3f810000,0x00000000,0x00000000,0x00000000 /* +zero */
-DBL_PZRO:	.dc.l	0x3c010000,0x00000000,0x00000000,0x00000000 /* +zero */
-EXT_PSML:	.dc.l	0x00000000,0x00000000,0x00000001,0x00000000 /* smallest +ext denorm */
-SGL_PSML:	.dc.l	0x3f810000,0x00000100,0x00000000,0x00000000 /* smallest +sgl denorm */
-DBL_PSML:	.dc.l	0x3c010000,0x00000000,0x00000800,0x00000000 /* smallest +dbl denorm */
-
 	X = FP_SCR1
 	XDCARE = X+2
 	XFRAC = X+4
@@ -374,7 +356,7 @@ ATANSM:
  * --WHERE Y = X*X, AND Z = Y*Y.
  */
 	cmpi.l		#0x3FD78000,d0
-	blt.w		ATANTINY /* ZZZ */
+	blt.s		ATANTINY
 /* --COMPUTE POLYNOMIAL */
 	fmul.x		fp0,fp0	/*  ...FP0 IS Y = X*X */
 

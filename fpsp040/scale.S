@@ -53,7 +53,7 @@ sscale:
 	andi.l		#0x7fff,d1	/* strip sign */
 	move.w		ETEMP(a6),d0	/* check src bounds */
 	andi.w		#0x7fff,d0	/* clr sign bit */
-	cmp2.w		SRC_BNDS.l,d0 /* XXX pc-rel */
+	cmp2.w		SRC_BNDS.w(pc),d0
 	bcc.s		src_in
 	cmpi.w		#0x400c,d0	/* test for too large */
 	bge		src_out

@@ -53,7 +53,7 @@ round:
  * the appropriate g-r-s bits.
  */
 	tst.l	d0			/* if grs are zero, go force */
-	bne.w	rnd_cont		/* lower bits to zero for size */ /* ZZZ */
+	bne.s	rnd_cont	/* lower bits to zero for size */
 
 	swap	d1			/* set up d1.w for round prec. */
 	bra	truncate
@@ -63,7 +63,7 @@ rnd_cont:
  *  Use rounding mode as an index into a jump table for these modes.
  */
 	or.l	#inx2a_mask,USER_FPSR(a6) /* set inex2/ainex */
-	lea	mode_tab.l,a1 /* XXX pc-rel */
+	lea	mode_tab.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 /*
@@ -86,7 +86,7 @@ rnd_plus:
 	tst.b	LOCAL_SGN(a0)		/* check for sign */
 	bmi	truncate		/* if positive then truncate */
 	move.l	#0xffffffff,d0		/* force g,r,s to be all f's */
-	lea	add_to_l.l,a1 /* XXX pc-rel */
+	lea	add_to_l.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 
@@ -100,7 +100,7 @@ rnd_mnus:
 	tst.b	LOCAL_SGN(a0)		/* check for sign */
 	bpl	truncate		/* if negative then truncate */
 	moveq.l	#-1,d0		/* force g,r,s to be all f's */
-	lea	add_to_l.l,a1 /* XXX pc-rel */
+	lea	add_to_l.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 
@@ -123,7 +123,7 @@ rnd_near:
 	swap	d1			/* set up d1 for round prec. */
 	asl.l	#1,d0			/* shift g-bit to c-bit */
 	bcc	truncate		/* if (g=1) then */
-	lea	add_to_l.l,a1 /* XXX pc-rel */
+	lea	add_to_l.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 
@@ -266,7 +266,7 @@ trunct:
 	.dc.l	dbl_done
 
 truncate:
-	lea	trunct.l,a1 /* XXX pc-rel */
+	lea	trunct.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 

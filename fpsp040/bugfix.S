@@ -338,7 +338,7 @@ op0_sete15:
  *  fpsp_fmt_error and allow the kernel to kill the process.
  */
 op0_xb:
-	jmp	fpsp_fmt_error.l /* XXX pc-rel */
+	bra	fpsp_fmt_error
 
 /*
  *  Check for opclass 2 and single size.  If not both, exit.
@@ -441,8 +441,7 @@ op2_loop:
 	move.l	FP_SCR2+4(a6),ETEMP_HI(a6)
 	move.l	FP_SCR2+8(a6),ETEMP_LO(a6)
 	move.l	d1,-(a7)
-	/* bra	op2_com ZZZ */
-	.dc.w 0x6000,2
+	/* bra	op2_com */
 
 /*
  *  We have the opclass 2 single source situation.
@@ -479,7 +478,7 @@ case4:
  *  to the entry point used to kill a process.
  */
 op2_xb:
-	jmp	fpsp_fmt_error.l /* XXX pc-rel */
+	bra fpsp_fmt_error
 
 /*
  *  Enter here if the case is not of the situations affected by

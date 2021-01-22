@@ -36,15 +36,223 @@
  */ 
 
 XBRA      = 0x58425241              /* "XBRA" */
+XBRA_ID   = 0x46505350              /* "FPSP" */
 XBRA_AB40 = 0x41423430              /* "AB40" */
-XBRA_MT40 = 0x4d543430              /* "MT40" */
-
 
 	.include "fpsp.h"
 
 	.xref	b1238_fix
 
 	.text
+
+/*
+ * GEMDOS startup code:
+ * get basepage, calculate program size, and shrink memory
+ */
+        move.l  4(a7),a3
+        move.l  12(a3),a5
+        add.l   20(a3),a5
+        add.l   28(a3),a5
+        lea     256(a5),a5
+/* Setup a (very small) stack in the commandline */
+        lea     256(a3),a7
+/* Free not required memory */
+        move.l  a5,-(a7)
+        move.l  a3,-(a7)
+        clr.w   -(a7)
+        move.w  #0x4a,-(a7)             /* Mshrink */
+        trap    #1
+        lea.l   12(a7),a7
+
+/* do the installation */
+        pea     doinstall(pc)
+        move.w  #38,-(a7)               /* Supexec */
+        trap    #14
+        addq.w  #6,a7
+
+		tst.w   d0
+		beq.s   done
+        lea no_040_msg(pc),a0
+        subq.w  #1,d0
+        beq.s   exit
+        lea already_installed_msg(pc),a0
+        subq.w  #1,d0
+        beq.s   exit
+        lea already_installed_msg2(pc),a0
+        bra.s   exit
+
+done:
+/* terminate and stay resident */
+        clr.w   -(a7)
+        move.l  a5,-(a7)
+        move.w  #49,-(a7)               /* Ptermres */
+        trap    #1
+term:
+        bra.s   term                    /* just in case */
+
+exit:
+	    bsr.s print_string
+exitloop:
+        bsr.s  waitkey
+        clr.w -(a7)                     /* Pterm0 */
+        trap #1
+        bra.s exitloop                  /* just in case */
+
+waitkey:
+        lea waitkey_msg(pc),a0
+        bsr.s print_string
+        move.w #8,-(a7)                 /* Cnecin */
+        trap #1
+        addq.l #2,a7
+        rts
+
+print_string:
+        move.l a0,-(a7)
+        move.w #9,-(a7)                 /* Cconws */
+        trap   #1
+        addq.w #6,a7
+        rts
+
+
+already_installed_msg:
+        .ascii "FPSP already installed!"
+        .dc.b  13,10,0
+already_installed_msg2:
+        .ascii "AB40 emulation detected, FPSP not installed!"
+        .dc.b  13,10,0
+no_040_msg:
+        .ascii "No 040 CPU detected, FPSP not installed!"
+        .dc.b  13,10,0
+waitkey_msg:
+        .ascii "Press any key to continue!"
+crnl:
+        .dc.b  13,10,0
+		.even
+
+doinstall:
+		bsr get_cpu_typ
+		cmpi.w   #40,d0
+		bne      no_040
+		movec    vbr,a1
+		move.l   0x2c(a1),a0
+		cmp.l    #XBRA,-12(a0)
+		bne.s    doinstall1
+		cmp.l    #XBRA_ID,-8(a0)
+		beq      already_installed
+		cmp.l    #XBRA_AB40,-8(a0)
+		beq      already_installed2
+doinstall1:
+	lea        _040_fpsp_fline(pc),a0
+	move.l     0x2c(a1),-4(a0)
+	move.l     a0,0x2c(a1)
+
+	lea        _040_fpsp_bsun(pc),a0
+	move.l     0xc0(a1),-4(a0)
+	move.l     a0,0xc0(a1)
+
+	lea        _040_fpsp_inex(pc),a0
+	move.l     0xc4(a1),-4(a0)
+	move.l     a0,0xc4(a1)
+
+	lea        _040_fpsp_dz(pc),a0
+	move.l     0xc8(a1),-4(a0)
+	move.l     a0,0xc8(a1)
+
+	lea        _040_fpsp_unfl(pc),a0
+	move.l     0xcc(a1),-4(a0)
+	move.l     a0,0xcc(a1)
+
+	lea		   _040_fpsp_operr(pc),a0
+	move.l     0xd0(a1),-4(a0)
+	move.l     a0,0xd0(a1)
+
+	lea        _040_fpsp_ovfl(pc),a0
+	move.l     0xd4(a1),-4(a0)
+	move.l     a0,0xd4(a1)
+
+	lea        _040_fpsp_snan(pc),a0
+	move.l     0xd8(a1),-4(a0)
+	move.l     a0,0xd8(a1)
+
+	lea        _040_fpsp_unsupp(pc),a0
+	move.l     0xdc(a1),-4(a0)
+	move.l     a0,0xdc(a1)
+
+	fmovem.l   #0,fpcr
+
+	moveq #0,d0                            /* no error */
+	rts
+
+no_040:
+	moveq #1,d0                            /* flag error */
+	rts
+
+already_installed:
+	moveq #2,d0                            /* flag error */
+	rts
+
+already_installed2:
+	moveq #3,d0                            /* flag error */
+	rts
+
+/*
+ **********************************************************************
+ *
+ * int get_cpu_typ( void )
+ *
+ * Determine processor type
+ */
+
+get_cpu_typ:
+ move.l   0x10.w,-(a7)             /* save illegal instruction */
+ move.l   0x2c.w,-(a7)             /* save line F */
+ move.l   0xf4.w,-(a7)             /* save unimplemented instruction */
+ move.l   sp,a0                    /* save stack ptr */
+ moveq    #0,d0                    /* default CPU is 68000 */
+ nop                               /* flush pipelines */
+ lea      set_cpu_typ(pc),a1       /* here we go on illegal instruction */
+ move.l   a1,0x10.w                /* illegal instruction */
+ move.l   a1,0x2c.w                /* line F */
+ move.l   a1,0xf4.w                /* unimplemented instruction */
+
+ move     ccr,d1
+ moveq    #10,d0                   /* move.w ccr,d0 legal on 68010+ */
+ movec.l  cacr,d1                  /* d1 = get cache control register */
+ move.l   d1,d0                    /* hold a copy for later */
+ ori.w    #0x0101,d1               /* enable '020 instr. and '030 data caches */
+
+ movec    d1,cacr                  /* set new cache controls from d1 */
+ movec    cacr,d1                  /*   & read it back again to check */
+ movec    d0,cacr                  /* always restore cacr */
+ btst     #0,d1                    /* if '020 instr. cache was not enabled, this is a 68040+ */
+ beq.s    x040
+ moveq    #20,d0                   /* assume 68020 */
+ btst     #8,d1                    /* check if 68030 data cache was enabled */
+ beq.b    set_cpu_typ              /* no data cache, we are done */
+ .dc.w 0xf039,0x4200,0,64          /* pmove    tc,12.l; try to access the TC register */
+ moveq    #30,d0                   /* no fault -> this is a 030 */
+ bra.s    set_cpu_typ
+
+/* can only be 040 or 060 */
+
+x040:
+ moveq    #40,d0                   /* assume 68040 */
+ dc.w     0x4e7a,0x1808            /* movec pcr,d1 */
+ moveq    #60,d0                   /* no fault -> this is 68060 */
+ 
+ .dc.w    0x06d0,0x0000            /* check for apollo addiw.l instruction */
+ moveq    #40,d0                   /* no fault, force 68040 detection */
+ 
+set_cpu_typ:
+ move.l   a0,sp                    /* restore stack ptr */
+ nop                               /* flush pipelines */
+ move.l   (a7)+,0xf4.w             /* restore unimplemented instruction */
+ move.l   (a7)+,0x2c.w             /* restore line F */
+ move.l   (a7)+,0x10.w             /* restore illegal instruction */
+ rts
+
+/* ******************************************************************************************************************* */
+
 /*
  * 	The following counters are used for standalone testing
  */
@@ -74,7 +282,7 @@ stats_unsupp:
  */
 	.globl	_040_fpsp_dz
 	.dc.l XBRA
-	.dc.l XBRA_MT40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_dz:
 	link		a6,#-LOCAL_SIZE
@@ -109,7 +317,7 @@ _040_fpsp_dz:
  */
 	.globl	_040_fpsp_inex
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_inex:
 	link		a6,#-LOCAL_SIZE
@@ -181,10 +389,10 @@ inex_done:
 	.globl	real_ovfl
 	.globl	_040_fpsp_ovfl
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_ovfl:
-	jmp	fpsp_ovfl.l /* XXX pc-rel */
+	bra	fpsp_ovfl
 
 real_ovfl:
 	addq.l     #1,stats_ovfl
@@ -205,10 +413,10 @@ ovfl_done:
 	.globl	real_unfl
 	.globl	_040_fpsp_unfl
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_unfl:
-	jmp	fpsp_unfl.l /* XXX pc-rel */
+	bra	fpsp_unfl
 real_unfl:
 	addq.l     #1,stats_unfl
 	link		a6,#-LOCAL_SIZE
@@ -228,10 +436,10 @@ unfl_done_skel:
 	.globl	real_snan
 	.globl	_040_fpsp_snan
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_snan:
-	jmp	fpsp_snan.l /* XXX pc-rel */
+	bra	fpsp_snan
 real_snan:
 	link		a6,#-LOCAL_SIZE
 	fsave		-(sp)
@@ -248,10 +456,10 @@ real_snan:
 	.globl	real_operr
 	.globl	_040_fpsp_operr
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_operr:
-	jmp	fpsp_operr.l /* XXX pc-rel */
+	bra	fpsp_operr
 real_operr:
 	link		a6,#-LOCAL_SIZE
 	fsave		-(sp)
@@ -270,10 +478,10 @@ real_operr:
 	.globl	real_bsun
 	.globl	_040_fpsp_bsun
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_bsun:
-	jmp	fpsp_bsun.l /* XXX pc-rel */
+	bra	fpsp_bsun
 real_bsun:
 	link		a6,#-LOCAL_SIZE
 	fsave		-(sp)
@@ -298,10 +506,10 @@ real_bsun:
 	.globl	real_fline
 	.globl	_040_fpsp_fline
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_fline:
-	jmp	fpsp_fline.l /* XXX pc-rel */
+	bra fpsp_fline
 real_fline:
 	addq.l     #1,stats_linef
 	rte
@@ -313,10 +521,10 @@ real_fline:
 	.globl	real_unsupp
 	.globl	_040_fpsp_unsupp
 	.dc.l XBRA
-	.dc.l XBRA_AB40
+	.dc.l XBRA_ID
 	.dc.l 0
 _040_fpsp_unsupp:
-	jmp	fpsp_unsupp.l /* XXX pc-rel */
+	bra fpsp_unsupp
 real_unsupp:
 	link		a6,#-LOCAL_SIZE
 	fsave		-(sp)
@@ -403,7 +611,7 @@ user_write:
 	move.l	d0,-(sp)
 	move.l	a1,-(sp)
 	move.l	a0,-(sp)
-	jsr		copyout.l /* XXX pc-rel */
+	bsr copyout
 	adda.w	#12,sp
 	move.l	(sp)+,d1
 	rts
@@ -443,7 +651,7 @@ user_read:
 	move.l	d0,-(sp)
 	move.l	a1,-(sp)
 	move.l	a0,-(sp)
-	jsr	copyin.l /* XXX pc-rel */
+	bsr copyin
 	adda.w	#12,sp
 	move.l	(sp)+,d1
 	rts

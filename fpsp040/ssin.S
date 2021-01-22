@@ -118,14 +118,6 @@ COSB3:	.dc.l 0xBFF50000,0xB60B60B6,0x0B61D438,0x00000000
 COSB2:	.dc.l 0x3FFA0000,0xAAAAAAAA,0xAAAAAB5E
 COSB1:	.dc.l 0xBF000000
 
-	.globl  T1
-T1:	.dc.l 0x40C62D38,0xD3D64634 /* ... 16381 LOG2 LEAD */
-	.globl  T2
-T2:	.dc.l 0x3D6F90AE,0xB1E75CC7 /* ... 16381 LOG2 TRAIL */
-
-	.globl TWO16380 /* YYY */
-TWO16380: .dc.l 0x7FFB0000,0x80000000,0x00000000,0x00000000
-
 	.xref	PITBL
 
 	INARG = FP_SCR4
@@ -571,7 +563,7 @@ WORK_ssin:
  * --No need to calculate r if this is the last loop
  */
 	tst.l		d0
-	bgt.w		RESTORE_ssin /* ZZZ */
+	bgt.s		RESTORE_ssin
 
 /*
  * --Need to calculate r

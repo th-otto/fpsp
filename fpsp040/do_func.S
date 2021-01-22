@@ -70,7 +70,7 @@ do_func:
 	cmpi.l	#0x17,d0		/* if op class and size fields are $17, */
  				/* it is FMOVECR; if not, continue */
 	bne.s	not_fmovecr_df
-	jmp	smovcr.l		/* fmovecr; jmp directly to emulation */ /* XXX pc-rel */
+	bra	smovcr		/* fmovecr; jmp directly to emulation */
 
 not_fmovecr_df:
 	move.w	CMDREG1B(a6),d0
@@ -293,7 +293,7 @@ pmod:
  * 				;10 = inf
  * 				;11 = nan
  */
-	lea	pmodt.l,a1 /* XXX pc-rel */
+	lea	pmodt.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 
@@ -375,7 +375,7 @@ prem:
  * 				;10 = inf
  * 				;11 = nan
  */
-	lea	premt.l,a1 /* XXX pc-rel */
+	lea	premt.w(pc),a1
 	move.l	(a1,d1.w*4),a1
 	jmp	(a1)
 
@@ -454,7 +454,7 @@ pscale:
  * 				;100 = dnrm
  *
  */
-	lea.l	pscalet.l,a1	/* load start of jump table */ /* XXX pc-rel */
+	lea.l	pscalet.w(pc),a1	/* load start of jump table */
 	move.l	(a1,d1.w*4),a1	/* load a1 with label depending on tag */
 	jmp	(a1)		/* go to the routine */
 

@@ -1,11 +1,12 @@
-68882.prg
+fpsp040.prg
 .S[-2]
 .S[-8]
 .S[-S]
 .S[-DGAS=0]
 .L[-S=0] ; no stack needed
 =
-ab40.S
+fpsp040.S
+
 tbldo.S
 
 x_fline.S
@@ -28,7 +29,6 @@ kernelex.S
 res_func.S
 round.S
 
-ab40skel.S
 
 util.S
 sacos.S
@@ -50,5 +50,3 @@ stan.S
 stanh.S
 sto_res.S
 stwotox.S
-
-ab40msgs.S

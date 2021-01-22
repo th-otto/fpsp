@@ -39,4 +39,3 @@ fpsp_bsun:
 	frestore	(a7)+
 	unlk		a6
 	bra			real_bsun
-	nop /* XXX */

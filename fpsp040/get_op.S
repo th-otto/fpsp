@@ -198,8 +198,7 @@ uni_getop:
  *  If the instruction is fmovecr, exit get_op.  It is handled
  *  in do_func and smovecr.sa.
  */
-	bne.w	not_fmovecr_go	/* handle fmovecr as an unimplemented inst */ /* ZZZ */
-	rts
+	beq.s	fmovecr_done
 
 not_fmovecr_go:
 	btst.b	#E1,E_BYTE(a6)	/* if set, there is a packed operand */
@@ -209,6 +208,7 @@ not_fmovecr_go:
 	move.b	STAG(a6),d0
 	or.b	DTAG(a6),d0	/* check if either of STAG/DTAG msb set */
 	bmi.s	dest_op_ck	/* if so, some op needs to be fixed */
+fmovecr_done:
 	rts
 
 dest_op_ck:
@@ -519,11 +519,11 @@ try_zero:
 	move.w	ETEMP_EX+2(a6),d0 /* get word 4 */
 	andi.w	#0x000f,d0	/* clear all but last ni(y)bble */
 	tst.w	d0		/* check for zero. */
-	bne.w	not_spec /* ZZZ */
+	bne.s	not_spec
 	tst.l	ETEMP_HI(a6)	/* check words 3 and 2 */
-	bne.w	not_spec /* ZZZ */
+	bne.s	not_spec
 	tst.l	ETEMP_LO(a6)	/* check words 1 and 0 */
-	bne.w	not_spec /* ZZZ */
+	bne.s	not_spec
 	tst.l	ETEMP(a6)	/* test sign of the zero */
 	bge.s	pos_zero_go
 	move.l	#0x80000000,ETEMP(a6) /* write neg zero to etemp */
@@ -580,7 +580,7 @@ mn_snan:
 	tst.l	ETEMP(a6)	/* check for sign */
 	bge.s	finish_go		/* if clr, go on */
 	or.l	#neg_mask,USER_FPSR(a6) /* set N bit */
-	bra.w	finish_go /* ZZZ */
+	bra.s	finish_go
 
 mtry_zero:
 	move.w	ETEMP_EX+2(a6),d0 /* get word 4 */

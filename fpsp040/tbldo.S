@@ -41,7 +41,7 @@
 	.xref	stentox,stentoxd,stwotox,stwotoxd
 
 /*   instruction		opcode-stag Notes */
-	.data
+	.text
 	.globl	tblpre
 tblpre:
 	.dc.l	smovcr		/* $00-0 fmovecr all */
@@ -547,4 +547,3 @@ tblpre:
 	.dc.l	serror		/* $37-5 fsincos ERROR */
 	.dc.l	serror		/* $37-6 fsincos ERROR */
 	.dc.l	serror		/* $37-7 fsincos ERROR */
-	.text

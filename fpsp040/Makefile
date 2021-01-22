@@ -10,7 +10,7 @@ CFLAGS=-m68040
 ASFLAGS=-m68040 -Wall -Werror -Wa,--register-prefix-optional -Wa,--defsym,GAS=1
 LDFLAGS=
 
-obj1 = \
+obj = \
 	tbldo.o \
 	x_fline.o \
 	x_operr.o \
@@ -31,8 +31,6 @@ obj1 = \
 	kernelex.o \
 	res_func.o \
 	round.o \
-	$(empty)
-obj2 =  \
 	util.o \
 	sacos.o \
 	sasin.o \
@@ -56,29 +54,21 @@ obj2 =  \
 	$(empty)
 	    
 
-all: 68882.prg
+all: fpsp040.a fpsp040.prg
 
-m68882_obj = ab40.o $(obj1) ab40skel.o $(obj2) ab40msgs.o
+fpsp040_obj = fpsp040.o $(obj)
 
-#
-# catting the sources together saves a few bytes
-# that are inserted by gas as padding for the a.out format
-#
-68882.prg: $(m68882_obj:.o=.S) Makefile
-	cat $(m68882_obj:.o=.S) > tmp.S
-	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib tmp.S
+fpsp040.prg: $(fpsp040_obj) Makefile
+	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp040_obj)
 	@-stripex $@
-	rm -f tmp.S
-	m68kdisasm --vma=0x10000 -r $@ > x.s
-	diff oo.s x.s
 
-fpsp040.a: $(obj1) $(obj2) Makefile
+fpsp040.a: $(obj) Makefile
 	$(RM) $@
 	$(AR) rcs $@ $^
 
 EXTRA_LDFLAGS := -x
 
-$(obj1) $(obj2): fpsp.h
+$(fpsp040_obj): fpsp.h
 
 clean::
 	$(RM) *.prg *.o *.a *.tos *.pdb

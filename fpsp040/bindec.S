@@ -883,12 +883,7 @@ x_loop_fin:
 	andi.l	#0xffffff80,d3	/* strip off lsb not used by 882 */
 	move.l	#4,d0		/* put 4 in d0 for binstr call */
 	lea.l	L_SCR1(a6),a0	/* a0 is ptr to L_SCR1 for exp digits */
-	.IFNE GAS
-	bsr.s	binstr		/* call binstr to convert exp */
-	.ELSE
-	/* bsr		binstr */		/* call binstr to convert exp */
-	.dc.w 0x6150
-	.ENDC
+	bsr		binstr		/* call binstr to convert exp */
 	move.l	L_SCR1(a6),d0	/* load L_SCR1 lword to d0 */
 	move.l	#12,d1		/* use d1 for shift count */
 	lsr.l	d1,d0		/* shift d0 right by 12 */

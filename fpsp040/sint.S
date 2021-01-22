@@ -151,7 +151,7 @@ sintexc:
 	cmp.w	#0x403e,LOCAL_EX(a0)	/* check if (unbiased) exp > 63 */
 	bgt.s	out_rnge			/* branch if exp < 63 */
 	cmp.w	#0x3ffd,LOCAL_EX(a0)	/* check if (unbiased) exp < 0 */
-	bgt.w	in_rnge			/* if 63 >= exp > 0, do calc */ /* ZZZ */
+	bgt.s	in_rnge			/* if 63 >= exp > 0, do calc */
 /*
  *  Input is less than zero.  Restore sign, and check for directed
  *  rounding modes.  L_SCR1 contains the rmode in the lower byte.

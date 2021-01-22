@@ -173,7 +173,6 @@ unf_E1:
 	lea		FPTEMP(a6),a0	/* a0 now points to operand */
 unf_cont:
 	bclr.b		#sign_bit,LOCAL_EX(a0)	/* clear sign bit */
-	nop /* XXX */
 	sne		LOCAL_SGN(a0)		/* store sign */
 
 	bsr			denorm		/* returns denorm, a0 points to it */
@@ -226,7 +225,6 @@ opc011_unfl:
 					/* subtract */
 	bmi.s		ext_opc011
 	subq.w		#1,LOCAL_EX(a0)	/* account for denorm bias vs. */
-	nop /* XXX */
 /* 				normalized bias
  * 				          normalized   denormalized
  * 				single       $7f           $7e
@@ -253,7 +251,6 @@ not_opc011_unfl:
 	bset.b		#z_bit,FPSR_CC(a6) /* set condition codes if zero */
 ck_sgn:
 	btst.b		#sign_bit,LOCAL_EX(a0)	/* check the sign bit */
-	nop /* XXX */
 	beq.s		unf_done
 	bset.b		#neg_bit,FPSR_CC(a6)
 

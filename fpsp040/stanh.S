@@ -88,7 +88,7 @@ stanh:
 	move.w		4(a0),d0
 	move.l		d0,X(a6)
 	andi.l		#0x7FFFFFFF,d0
-	cmp2.l		BOUNDS1_stanh.l,d0	/*  ...2**(-40) < |X| < (5/2)LOG2 ? */ /* XXX pc-rel */
+	cmp2.l		BOUNDS1_stanh.w(pc),d0	/*  ...2**(-40) < |X| < (5/2)LOG2 ? */
 	bcs.s		TANHBORS
 
 /*
@@ -125,10 +125,10 @@ stanh:
 
 TANHBORS:
 	cmpi.l		#0x3FFF8000,d0
-	blt.w		TANHSM /* ZZZ */
+	blt.s		TANHSM
 
 	cmpi.l		#0x40048AA1,d0
-	bgt.w		TANHHUGE /* ZZZ */
+	bgt		TANHHUGE
 
 /*
  * -- (5/2) LOG2 < |X| < 50 LOG2,
@@ -167,7 +167,7 @@ TANHBORS:
 	fmove.l		d1,FPCR		/* restore users exceptions */
 	fadd.x		fp1,fp0
 
-	bra		t_frcinx
+	bra.w		t_frcinx
 
 TANHSM:
 	move.w		#0x0000,XDCARE(a6)
@@ -175,7 +175,7 @@ TANHSM:
 	fmove.l		d1,FPCR		/* restore users exceptions */
 	fmove.x		X(a6),fp0		/* last inst - possible exception set */
 
-	bra		t_frcinx
+	bra.w		t_frcinx
 
 TANHHUGE:
 /*
@@ -191,4 +191,4 @@ TANHHUGE:
 	fmove.l		d1,FPCR		/* restore users exceptions */
 	fadd.s		d0,fp0
 
-	bra		t_frcinx
+	bra.w		t_frcinx

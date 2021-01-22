@@ -219,7 +219,7 @@ TANMAIN:
 TANCONT:
 
 	tst.l		d0
-	blt.w		NODD_stan /* ZZZ */
+	blt.s		NODD_stan
 
 	fmove.x		fp0,fp1
 	fmul.x		fp1,fp1		/* ...S = R*R */
@@ -470,7 +470,7 @@ WORK_stan:
  * --No need to calculate r if this is the last loop
  */
 	tst.l		d0
-	bgt.w			RESTORE_stan /* ZZZ */
+	bgt.s			RESTORE_stan
 
 /*
  * --Need to calculate r

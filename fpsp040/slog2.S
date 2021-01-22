@@ -105,8 +105,9 @@
 	.xref	slogn
 	.xref	slognd
 
-	.xref INV_L10 /* YYY */
-	.xref INV_L2 /* YYY */
+	.text
+INV_L10:  .dc.l 0x3FFD0000,0xDE5BD8A9,0x37287195,0x00000000
+INV_L2:   .dc.l 0x3FFF0000,0xB8AA3B29,0x5C17F0BC,0x00000000
 
 	.text
 
@@ -130,7 +131,7 @@ slog10:
  * --entry point for Log10(X), X is normalized
  */
 	move.l		(a0),d0
-	blt.w		invalid /* ZZZ */
+	blt.s		invalid
 	move.l		d1,-(sp)
 	clr.l		d1
 	bsr		slogn				/*  ...log(X), X normal. */
@@ -145,15 +146,10 @@ slog2d:
  * --entry point for Log2(X), X is denormalized
  */
 	move.l		(a0),d0
-	blt.w		invalid /* ZZZ */
+	blt.s		invalid
 	move.l		d1,-(sp)
 	clr.l		d1
-	.IFNE GAS
-	bsr.s		slognd			/*  ...log(X), X denorm. */
-	.ELSE
-	/* bsr			slognd */			/*  ...log(X), X denorm. */
-	.dc.w 0x6170
-	.ENDC
+	bsr			slognd			/*  ...log(X), X denorm. */
 	fmove.l		(sp)+,fpcr
 	fmul.x		INV_L2,fp0
 	bra		t_frcinx
@@ -164,7 +160,7 @@ slog2:
  * --entry point for Log2(X), X is normalized
  */
 	move.l		(a0),d0
-	blt.w		invalid /* ZZZ */
+	blt.s		invalid
 
 	move.l		8(a0),d0
 	bne.s		continue		/*  ...X is not 2^k */

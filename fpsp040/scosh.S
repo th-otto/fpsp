@@ -59,9 +59,13 @@
 
 	.data
 
-	.xref  T1 /* YYY */
-	.xref  T2 /* YYY */
-	.xref  TWO16380 /* YYY */
+	.text
+
+	.globl T1
+T1:	.dc.l 0x40C62D38,0xD3D64634 /* ... 16381 LOG2 LEAD */
+	.globl T2
+T2:	.dc.l 0x3D6F90AE,0xB1E75CC7 /* ... 16381 LOG2 TRAIL */
+TWO16380: .dc.l 0x7FFB0000,0x80000000,0x00000000,0x00000000
 
 	.text
 
@@ -134,12 +138,7 @@ COSHBIG:
 	move.l		d1,-(sp)
 	clr.l		d1
 	fmovem.x	fp0-fp0,(a0)
-	.IFNE GAS
-	bsr.s		setox
-	.ELSE
-	/* bsr			setox */
-	.dc.w 0x6146
-	.ENDC
+	bsr			setox
 	fmove.l		(sp)+,fpcr
 
 	fmul.x		TWO16380.w(pc),fp0

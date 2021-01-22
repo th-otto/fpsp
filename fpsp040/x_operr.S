@@ -80,8 +80,7 @@ fpsp_operr:
 	move.l	CMDREG1B(a6),d0
 	bfextu	d0{3:3},d0	/* 0=long, 4=word, 6=byte */
 	tst.b	d0		/* determine size; check long */
-	nop		/* XXX */
-	beq.w	operr_long /* ZZZ */
+	beq.s	operr_long
 	cmpi.b	#4,d0		/* check word */
 	beq	operr_word
 	cmpi.b	#6,d0		/* check byte */

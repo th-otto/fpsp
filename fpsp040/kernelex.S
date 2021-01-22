@@ -204,7 +204,7 @@ t_sgl:
 	move.l	ETEMP_HI(a6),d0
 	andi.l	#0xff,d0		/* look at only lower 8 bits */
 	bne.s	t_setinx2
-	bra.w	t_work /* ZZZ could be optimized */
+	bra.s	t_work
 t_dbl:
 	move.l	ETEMP_LO(a6),d0
 	andi.l	#0x7ff,d0	/* look at only lower 11 bits */
@@ -439,7 +439,7 @@ t_avoid_unsupp:
 	link	a2,#-LOCAL_SIZE		/* so that a2 fpsp.h negative offsets may be used */
 	fsave	-(a7)
 	tst.b	1(a7)			/* check if idle, exit if so */
-	beq.w	idle_end /* ZZZ */
+	beq.s	idle_end
 	btst.b	#E1,E_BYTE(a2)		/* check for an E1 exception if enabled, there is an unsupp */
 	beq.s	end_avun		/* else, exit */
 	btst.b	#7,DTAG(a2)		/* check for denorm destination */

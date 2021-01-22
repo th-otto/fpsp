@@ -8,8 +8,9 @@ _dtt1   = 0x0007
 _pcr    = 0x0808
 
 
-XBRA     = 0x58425241              /* "XBRA" */
-XBRA_ID  = 0x46505350              /* "FPSP" */
+XBRA      = 0x58425241              /* "XBRA" */
+XBRA_ID   = 0x46505350              /* "FPSP" */
+XBRA_AB40 = 0x41423430              /* "AB40" */
 
         .text
 
@@ -44,6 +45,9 @@ XBRA_ID  = 0x46505350              /* "FPSP" */
         subq.w  #1,d0
         beq.s   exit
         lea already_installed_msg(pc),a0
+        subq.w  #1,d0
+        beq.s   exit
+        lea already_installed_msg2(pc),a0
         bra.s   exit
 
 done:
@@ -78,8 +82,12 @@ print_string:
         addq.w #6,a7
         rts
 
+
 already_installed_msg:
         .ascii "FPSP already installed!"
+        .dc.b  13,10,0
+already_installed_msg2:
+        .ascii "AB40 emulation detected, FPSP not installed!"
         .dc.b  13,10,0
 no_060_msg:
         .ascii "No 060 CPU detected, FPSP not installed!"
@@ -97,13 +105,15 @@ crnl:
 doinstall:
  bsr get_cpu_typ
  cmpi.w   #60,d0
- bcs      no_060
+ bne      no_060
  movec    vbr,a1
- move.l   0xf4(a1),a0
+ move.l   0x2c(a1),a0
  cmp.l    #XBRA,-12(a0)
  bne.s    doinstall1
  cmp.l    #XBRA_ID,-8(a0)
  beq      already_installed
+ cmp.l    #XBRA_AB40,-8(a0)
+ beq      already_installed2
 doinstall1:
  lea      new_int_instr(pc),a0
  move.l   0xf4(a1),-4(a0)                  /* save old unimplemented integer vector */
@@ -156,6 +166,10 @@ no_060:
 
 already_installed:
  moveq #2,d0                               /* flag error */
+ rts
+
+already_installed2:
+ moveq #3,d0                               /* flag error */
  rts
 
 /*

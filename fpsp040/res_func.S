@@ -1349,7 +1349,7 @@ wr_etemp:
 	blt.s	snan_neg
 	rts
 snan_neg:
-	or.l	#neg_bit,USER_FPSR(a6)	/* snan is negative; set N */
+	bset.b	#neg_bit,FPSR_CC(a6)	/* snan is negative; set N */
 	rts
 fmoveinc:
 	clr.w	NMNEXC(a6)

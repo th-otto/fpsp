@@ -636,9 +636,9 @@ x060_real_bsun:
 */
 x060_real_fpu_disabled:
         move.l    d0,-(sp)                  /* # enable the fpu */
-        dc.w      _movec,_pcr
-        bclr      #1,d0
         dc.w      _movecd,_pcr
+        bclr      #1,d0
+        dc.w      _movec,_pcr
         move.l    (sp)+,d0
         move.l    0xc(sp),2(sp)             /* # set "Current PC" */
         dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */

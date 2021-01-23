@@ -178,12 +178,9 @@ stan:
 	andi.l		#0x7FFFFFFF,d0
 
 	cmpi.l		#0x3FD78000,d0		/* ...|X| >= 2**(-40)? */
-	bge.s		TANOK1
-	bra		TANSM
-TANOK1:
+	blt		TANSM
 	cmpi.l		#0x4004BC7E,d0		/* ...|X| < 15 PI? */
-	blt.s		TANMAIN
-	bra		REDUCEX_stan
+	bge		REDUCEX_stan
 
 
 TANMAIN:

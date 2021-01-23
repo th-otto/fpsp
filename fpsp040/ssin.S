@@ -190,16 +190,13 @@ SINBGN:
 	move.l		(a0),d0
 	move.w		4(a0),d0
 	fmove.x		fp0,X(a6)
-	andi.l		#0x7FFFFFFF,d0		/* ...COMPACTIFY X */
+	bclr.l		#31,d0		/* ...COMPACTIFY X */
 
 	cmpi.l		#0x3FD78000,d0		/* ...|X| >= 2**(-40)? */
-	bge.s		SOK1
-	bra		SINSM
+	blt		SINSM
 
-SOK1:
 	cmpi.l		#0x4004BC7E,d0		/* ...|X| < 15 PI? */
-	blt.s		SINMAIN
-	bra		REDUCEX_ssin
+	bge		REDUCEX_ssin
 
 SINMAIN:
 /*
@@ -609,16 +606,13 @@ ssincos:
 	move.l		(a0),d0
 	move.w		4(a0),d0
 	fmove.x		fp0,X(a6)
-	andi.l		#0x7FFFFFFF,d0		/* ...COMPACTIFY X */
+	bclr.l		#31,d0		/* ...COMPACTIFY X */
 
 	cmpi.l		#0x3FD78000,d0		/* ...|X| >= 2**(-40)? */
-	bge.s		SCOK1
-	bra		SCSM
+	blt		SCSM
 
-SCOK1:
 	cmpi.l		#0x4004BC7E,d0		/* ...|X| < 15 PI? */
-	blt.s		SCMAIN
-	bra		REDUCEX_ssin
+	bge		REDUCEX_ssin
 
 
 SCMAIN:

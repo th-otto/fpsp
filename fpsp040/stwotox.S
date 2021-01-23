@@ -347,13 +347,10 @@ stentox:
 	andi.l		#0x7FFFFFFF,d0
 
 	cmpi.l		#0x3FB98000,d0		/* ...|X| >= 2**(-70)? */
-	bge.s		TENOK1
-	bra.s		EXPBORS
+	blt		EXPBORS
 
-TENOK1:
 	cmpi.l		#0x400B9B07,d0		/* ...|X| <= 16480*log2/log10 ? */
-	ble.s		TENMAIN
-	bra.s		EXPBORS
+	bgt		EXPBORS
 
 TENMAIN:
 /*

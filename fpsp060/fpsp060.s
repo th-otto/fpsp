@@ -611,12 +611,12 @@ x060_real_fline:
  * bsun will now be re-executed but with the NaN FPSR bit cleared.
  */
 x060_real_bsun:
-        dc.w      0xf327                    /* fsave         -(sp) */
-        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
-        and.b     #0xfe,(sp)
-        dc.l      0xf21f,0x8800             /* fmove.l (sp)+,fpsr */
-        add.w     #0xc,sp
-        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
+        fsave     -(sp)
+        fmovem.l  fpsr,-(sp)
+        andi.b    #0xfe,(sp)
+        fmovem.l  (sp)+,fpsr
+        lea       12(sp),sp
+        fmovem.l  #0,fpcr
         rte
 
 /*

@@ -164,7 +164,7 @@ doinstall1:
  move.l   0xf0(a1),-4(a0)                  /* save old effective address vector */
  move.l   a0,0xf0(a1)                      /* set new effective address vector */
 
- .dc.l    0xf23c,0x9000,0,0                /* fmove.l #0,fpcr */
+ .dc.w    0xf23c,0x9000,0,0                /* fmovem.l #0,fpcr */
  moveq #0,d0                               /* no error */
  rts
 
@@ -591,7 +591,7 @@ x060_real_inex:
         dc.w      0xf327                    /* fsave         -(sp) */
         move.w    #0x6000,2(sp)
         dc.w      0xf35f                    /* frestore (sp)+ */
-        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
         rte
 
 x060_real_fline:
@@ -612,11 +612,11 @@ x060_real_fline:
  */
 x060_real_bsun:
         dc.w      0xf327                    /* fsave         -(sp) */
-        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
         and.b     #0xfe,(sp)
         dc.l      0xf21f,0x8800             /* fmove.l (sp)+,fpsr */
         add.w     #0xc,sp
-        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
         rte
 
 /*
@@ -641,7 +641,7 @@ x060_real_fpu_disabled:
         dc.w      _movecd,_pcr
         move.l    (sp)+,d0
         move.l    0xc(sp),2(sp)             /* # set "Current PC" */
-        dc.l      0xf23c,0x9000,0,0         /* fmove.l #0,fpcr */
+        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
         rte
 
 /* # The size of this section MUST be 128 bytes!!! */

@@ -138,20 +138,16 @@
 	.include "fpsp.h"
 
 /* Constants in extended precision */
-	.data
-LOG2_bd:	.dc.l	0x3FFD0000,0x9A209A84,0xFBCFF798,0x00000000
-LOG2UP1:	.dc.l	0x3FFD0000,0x9A209A84,0xFBCFF799,0x00000000
+	.text
+LOG2_bd:	.dc.l	0x3FFD0000,0x9A209A84,0xFBCFF798
+LOG2UP1:	.dc.l	0x3FFD0000,0x9A209A84,0xFBCFF799
 
 /* Constants in single precision */
 	.globl FONE
-FONE:	.dc.l	0x3F800000,0x00000000,0x00000000,0x00000000
+FONE:	.dc.l	0x3F800000
 	.globl FTEN
-FTWO:	.dc.l	0x40000000,0x00000000,0x00000000,0x00000000
-FTEN:	.dc.l	0x41200000,0x00000000,0x00000000,0x00000000
-F4933:	.dc.l	0x459A2800,0x00000000,0x00000000,0x00000000
-
-	.globl FZERO
-FZERO:	.dc.l	0x00000000
+FTEN:	.dc.l	0x41200000,0x00000000,0x00000000
+F4933:	.dc.l	0x459A2800,0x00000000,0x00000000
 
 RBDTBL:
 	.dc.b	0,0,0,0
@@ -260,13 +256,13 @@ A3_cont:
 	fmove.x	FP_SCR2(a6),fp0	/* now fp0 has 1.f */
 	subi.w	#0x3fff,d0	/* strip off bias */
 	fadd.w	d0,fp0		/* add in exp */
-	fsub.s	FONE,fp0	/* subtract off 1.0 */
+	fsub.s	FONE.w(pc),fp0	/* subtract off 1.0 */
 	fbge	pos_res		/* if pos, branch */
-	fmul.x	LOG2UP1,fp0	/* if neg, mul by LOG2UP1 */
+	fmul.x	LOG2UP1.w(pc),fp0	/* if neg, mul by LOG2UP1 */
 	fmove.l	fp0,d6		/* put ILOG in d6 as a lword */
 	bra.s	A4_str		/* go move out ILOG */
 pos_res:
-	fmul.x	LOG2_bd,fp0	/* if pos, mul by LOG2 */
+	fmul.x	LOG2_bd.w(pc),fp0	/* if pos, mul by LOG2 */
 	fmove.l	fp0,d6		/* put ILOG in d6 as a lword */
 
 
@@ -412,7 +408,7 @@ k_pos:
 no_inf:
 	neg.l	d0		/* and take abs of ISCALE */
 iscale:
-	fmove.s	FONE,fp1	/* init fp1 to 1 */
+	fmove.s	FONE.w(pc),fp1	/* init fp1 to 1 */
 	bfextu	USER_FPCR(a6){26:2},d1 /* get initial rmode bits */
 	add.w	d1,d1		/* put them in bits 2:1 */
 	add.w	d5,d1		/* add in LAMBDA */
@@ -428,15 +424,15 @@ x_pos:
 	lsr.l	#4,d3		/* put bits in proper position */
 	tst.b	d3		/* decode new rmode for pten table */
 	bne.s	not_rn		/* if zero, it is RN */
-	lea.l	PTENRN,a1	/* load a1 with RN table base */
+	lea.l	PTENRN.w(pc),a1	/* load a1 with RN table base */
 	bra.s	rmode		/* exit decode */
 not_rn:
 	lsr.b	#1,d3		/* get lsb in carry */
 	bcc.s	not_rp_bd		/* if carry clear, it is RM */
-	lea.l	PTENRP,a1	/* load a1 with RP table base */
+	lea.l	PTENRP.w(pc),a1	/* load a1 with RP table base */
 	bra.s	rmode		/* exit decode */
 not_rp_bd:
-	lea.l	PTENRM,a1	/* load a1 with RM table base */
+	lea.l	PTENRM.w(pc),a1	/* load a1 with RM table base */
 rmode:
 	clr.l	d3		/* clr table index */
 e_loop_bd:
@@ -661,7 +657,7 @@ A13_st:
 /*
  *  Compute 10^(LEN-1)
  */
-	fmove.s	FONE,fp2	/* init fp2 to 1.0 */
+	fmove.s	FONE.w(pc),fp2	/* init fp2 to 1.0 */
 	move.l	d4,d0		/* put LEN in d0 */
 	subq.l	#1,d0		/* d0 = LEN -1 */
 	clr.l	d3		/* clr table index */
@@ -691,14 +687,14 @@ A13_con:
 	subq.l	#1,d6		/* subtract 1 from ILOG */
 	move.w	#1,d5		/* set ICTR */
 	fmove.l	#rm_mode,FPCR	/* set rmode to RM */
-	fmul.s	FTEN,fp2	/* compute 10^LEN */
+	fmul.s	FTEN.w(pc),fp2	/* compute 10^LEN */
 	bra	A6_str		/* return to A6 and recompute YINT */
 test_2:
-	fmul.s	FTEN,fp2	/* compute 10^LEN */
+	fmul.s	FTEN.w(pc),fp2	/* compute 10^LEN */
 	fcmp.x	fp2,fp0		/* compare abs(YINT) with 10^LEN */
 	fblt	A14_st		/* if less, all is ok, go to A14 */
 	fbgt	fix_ex		/* if greater, fix and redo */
-	fdiv.s	FTEN,fp0	/* if equal, divide by 10 */
+	fdiv.s	FTEN.w(pc),fp0	/* if equal, divide by 10 */
 	addq.l	#1,d6		/*  and inc ILOG */
 	bra.s	A14_st		/*  and continue elsewhere */
 fix_ex:
@@ -713,7 +709,7 @@ fix_ex:
  *  value calculated cannot be inexact.
  */
 not_zr:
-	fmove.s	FONE,fp2	/* init fp2 to 1.0 */
+	fmove.s	FONE.w(pc),fp2	/* init fp2 to 1.0 */
 	move.l	d4,d0		/* put LEN in d0 */
 	clr.l	d3		/* clr table index */
 z_loop:
@@ -727,10 +723,10 @@ z_next:
 	fabs.x	fp0		/* get abs(YINT) */
 	fcmp.x	fp2,fp0		/* check if abs(YINT) = 10^LEN */
 	fbne	A14_st		/* if not, skip this */
-	fdiv.s	FTEN,fp0	/* divide abs(YINT) by 10 */
+	fdiv.s	FTEN.w(pc),fp0	/* divide abs(YINT) by 10 */
 	addq.l	#1,d6		/* and inc ILOG by 1 */
 	addq.l	#1,d4		/*  and inc LEN */
-	fmul.s	FTEN,fp2	/*  if LEN++, the get 10^^LEN */
+	fmul.s	FTEN.w(pc),fp2	/*  if LEN++, the get 10^^LEN */
 
 
 /*
@@ -858,7 +854,7 @@ use_ilog:
 not_denorm:
 	ftst.x	fp0		/* test for zero */
 	fbne	not_zero_bd	/* if zero, force exponent */
-	fmove.s	FONE,fp0	/* force exponent to 1 */
+	fmove.s	FONE.w(pc),fp0	/* force exponent to 1 */
 	bra.s	convrt		/* do it */
 not_zero_bd:
 	fmove.l	d6,fp0		/* float ILOG */

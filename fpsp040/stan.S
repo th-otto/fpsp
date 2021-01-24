@@ -58,25 +58,20 @@
 
 	.xref TWOBYPI
 
-	.data
+	.text
 
 TANQ4:	.dc.l 0x3EA0B759,0xF50F8688
 TANP3:	.dc.l 0xBEF2BAA5,0xA8924F04
 
-TANQ3:	.dc.l 0xBF346F59,0xB39BA65F,0x00000000,0x00000000
+TANQ3:	.dc.l 0xBF346F59,0xB39BA65F
 
-TANP2:	.dc.l 0x3FF60000,0xE073D3FC,0x199C4A00,0x00000000
+TANP2:	.dc.l 0x3FF60000,0xE073D3FC,0x199C4A00
 
-TANQ2:	.dc.l 0x3FF90000,0xD23CD684,0x15D95FA1,0x00000000
+TANQ2:	.dc.l 0x3FF90000,0xD23CD684,0x15D95FA1
 
-TANP1:	.dc.l 0xBFFC0000,0x8895A6C5,0xFB423BCA,0x00000000
+TANP1:	.dc.l 0xBFFC0000,0x8895A6C5,0xFB423BCA
 
-TANQ1:	.dc.l 0xBFFD0000,0xEEF57E0D,0xA84BC8CE,0x00000000
-
-INVTWOPI_stan: .dc.l 0x3FFC0000,0xA2F9836E,0x4E44152A,0x00000000
-
-TWOPI1_stan:	.dc.l 0x40010000,0xC90FDAA2,0x00000000,0x00000000
-TWOPI2_stan:	.dc.l 0x3FDF0000,0x85A308D4,0x00000000,0x00000000
+TANQ1:	.dc.l 0xBFFD0000,0xEEF57E0D,0xA84BC8CE
 
 /*
  * --N*PI/2, -32 <= N <= 32, IN A LEADING TERM IN EXT. AND TRAILING
@@ -189,7 +184,7 @@ TANMAIN:
  * --THE ARGUMENT REDUCTION IS DONE BY TABLE LOOK UP.
  */
 	fmove.x		fp0,fp1
-	fmul.d		TWOBYPI,fp1	/* ...X*2/PI */
+	fmul.d		TWOBYPI.w(pc),fp1	/* ...X*2/PI */
 
 /*
  * --HIDE THE NEXT TWO INSTRUCTIONS
@@ -221,25 +216,25 @@ TANCONT:
 	fmove.x		fp0,fp1
 	fmul.x		fp1,fp1		/* ...S = R*R */
 
-	fmove.d		TANQ4,fp3
-	fmove.d		TANP3,fp2
+	fmove.d		TANQ4.w(pc),fp3
+	fmove.d		TANP3.w(pc),fp2
 
 	fmul.x		fp1,fp3		/* ...SQ4 */
 	fmul.x		fp1,fp2		/* ...SP3 */
 
-	fadd.d		TANQ3,fp3	/* ...Q3+SQ4 */
-	fadd.x		TANP2,fp2	/* ...P2+SP3 */
+	fadd.d		TANQ3.w(pc),fp3	/* ...Q3+SQ4 */
+	fadd.x		TANP2.w(pc),fp2	/* ...P2+SP3 */
 
 	fmul.x		fp1,fp3		/* ...S(Q3+SQ4) */
 	fmul.x		fp1,fp2		/* ...S(P2+SP3) */
 
-	fadd.x		TANQ2,fp3	/* ...Q2+S(Q3+SQ4) */
-	fadd.x		TANP1,fp2	/* ...P1+S(P2+SP3) */
+	fadd.x		TANQ2.w(pc),fp3	/* ...Q2+S(Q3+SQ4) */
+	fadd.x		TANP1.w(pc),fp2	/* ...P1+S(P2+SP3) */
 
 	fmul.x		fp1,fp3		/* ...S(Q2+S(Q3+SQ4)) */
 	fmul.x		fp1,fp2		/* ...S(P1+S(P2+SP3)) */
 
-	fadd.x		TANQ1,fp3	/* ...Q1+S(Q2+S(Q3+SQ4)) */
+	fadd.x		TANQ1.w(pc),fp3	/* ...Q1+S(Q2+S(Q3+SQ4)) */
 	fmul.x		fp0,fp2		/* ...RS(P1+S(P2+SP3)) */
 
 	fmul.x		fp3,fp1		/* ...S(Q1+S(Q2+S(Q3+SQ4))) */
@@ -263,25 +258,25 @@ NODD_stan:
 	fmove.x		fp0,fp1
 	fmul.x		fp0,fp0		/* ...S = R*R */
 
-	fmove.d		TANQ4,fp3
-	fmove.d		TANP3,fp2
+	fmove.d		TANQ4.w(pc),fp3
+	fmove.d		TANP3.w(pc),fp2
 
 	fmul.x		fp0,fp3		/* ...SQ4 */
 	fmul.x		fp0,fp2		/* ...SP3 */
 
-	fadd.d		TANQ3,fp3	/* ...Q3+SQ4 */
-	fadd.x		TANP2,fp2	/* ...P2+SP3 */
+	fadd.d		TANQ3.w(pc),fp3	/* ...Q3+SQ4 */
+	fadd.x		TANP2.w(pc),fp2	/* ...P2+SP3 */
 
 	fmul.x		fp0,fp3		/* ...S(Q3+SQ4) */
 	fmul.x		fp0,fp2		/* ...S(P2+SP3) */
 
-	fadd.x		TANQ2,fp3	/* ...Q2+S(Q3+SQ4) */
-	fadd.x		TANP1,fp2	/* ...P1+S(P2+SP3) */
+	fadd.x		TANQ2.w(pc),fp3	/* ...Q2+S(Q3+SQ4) */
+	fadd.x		TANP1.w(pc),fp2	/* ...P1+S(P2+SP3) */
 
 	fmul.x		fp0,fp3		/* ...S(Q2+S(Q3+SQ4)) */
 	fmul.x		fp0,fp2		/* ...S(P1+S(P2+SP3)) */
 
-	fadd.x		TANQ1,fp3	/* ...Q1+S(Q2+S(Q3+SQ4)) */
+	fadd.x		TANQ1.w(pc),fp3	/* ...Q1+S(Q2+S(Q3+SQ4)) */
 	fmul.x		fp1,fp2		/* ...RS(P1+S(P2+SP3)) */
 
 	fmul.x		fp3,fp0		/* ...S(Q1+S(Q2+S(Q3+SQ4))) */

@@ -46,7 +46,7 @@
 
 	.xref PIBY2
 
-	.data
+	.text
 PONE:	.dc.l	0x3fff0000,0x80000000,0x00000000	/* +1 */
 MONE:	.dc.l	0xbfff0000,0x80000000,0x00000000	/* -1 */
 PZERO:	.dc.l	0x00000000,0x00000000,0x00000000	/* +0 */
@@ -196,7 +196,7 @@ sslogn:
 	bne	slogn
 	tst.l	LOCAL_LO(a0)
 	bne	slogn
-	fmove.x	PZERO,fp0
+	fmove.x	PZERO.w(pc),fp0
 	rts
 
 	.globl	sslognd
@@ -218,7 +218,7 @@ sslog10:
 	bne	slog10
 	tst.l	LOCAL_LO(a0)
 	bne	slog10
-	fmove.x	PZERO,fp0
+	fmove.x	PZERO.w(pc),fp0
 	rts
 
 	.globl	sslog10d
@@ -240,7 +240,7 @@ sslog2:
 	bne	slog2
 	tst.l	LOCAL_LO(a0)
 	bne	slog2
-	fmove.x	PZERO,fp0
+	fmove.x	PZERO.w(pc),fp0
 	rts
 
 	.globl	sslog2d
@@ -482,19 +482,19 @@ scl_snan:
 ssincosz:
 	btst.b	#sign_bit,ETEMP(a6)	/* get sign */
 	beq.s	sincosp
-	fmove.x	MZERO,fp0
+	fmove.x	MZERO.w(pc),fp0
 	bra.s	sincoscom
 sincosp:
-	fmove.x PZERO,fp0
+	fmove.x PZERO.w(pc),fp0
 sincoscom:
-	fmovem.x PONE,fp1-fp1	/* do not allow FPSR to be affected */
+	fmovem.x PONE.w(pc),fp1-fp1	/* do not allow FPSR to be affected */
 	bra	sto_cos		/* store cosine result */
 
 	.globl	ssincosi
 ssincosi:
-	fmove.x QNAN,fp1	/* load NAN */
+	fmove.x QNAN.w(pc),fp1	/* load NAN */
 	bsr	sto_cos		/* store cosine result */
-	fmove.x QNAN,fp0	/* load NAN */
+	fmove.x QNAN.w(pc),fp0	/* load NAN */
 	bra	t_operr
 
 	.globl	ssincosnan
@@ -515,53 +515,53 @@ ssincosnan:
 /* **Returns +PI/2 */
 	.globl	ld_ppi2
 ld_ppi2:
-	fmove.x PIBY2,fp0		/* load +pi/2 */
+	fmove.x PIBY2.w(pc),fp0		/* load +pi/2 */
 	bra	t_inx2			/* set inex2 exc */
 
 /* **Returns -PI/2 */
 	.globl	ld_mpi2
 ld_mpi2:
-	fmove.x MPIBY2,fp0		/* load -pi/2 */
+	fmove.x MPIBY2.w(pc),fp0		/* load -pi/2 */
 	or.l	#neg_mask,USER_FPSR(a6)	/* set N bit */
 	bra	t_inx2			/* set inex2 exc */
 
 /* **Returns +inf */
 	.globl	ld_pinf
 ld_pinf:
-	fmove.x PINF,fp0		/* load +inf */
+	fmove.x PINF.w(pc),fp0		/* load +inf */
 	or.l	#inf_mask,USER_FPSR(a6)	/* set I bit */
 	rts
 
 /* **Returns -inf */
 	.globl	ld_minf
 ld_minf:
-	fmove.x MINF,fp0		/* load -inf */
+	fmove.x MINF.w(pc),fp0		/* load -inf */
 	or.l	#neg_mask+inf_mask,USER_FPSR(a6)	/* set N and I bits */
 	rts
 
 /* **Returns +1 */
 	.globl	ld_pone
 ld_pone:
-	fmove.x PONE,fp0		/* load +1 */
+	fmove.x PONE.w(pc),fp0		/* load +1 */
 	rts
 
 /* **Returns -1 */
 	.globl	ld_mone
 ld_mone:
-	fmove.x MONE,fp0		/* load -1 */
+	fmove.x MONE.w(pc),fp0		/* load -1 */
 	or.l	#neg_mask,USER_FPSR(a6)	/* set N bit */
 	rts
 
 /* **Returns +0 */
 	.globl	ld_pzero
 ld_pzero:
-	fmove.x PZERO,fp0		/* load +0 */
+	fmove.x PZERO.w(pc),fp0		/* load +0 */
 	or.l	#z_mask,USER_FPSR(a6)	/* set Z bit */
 	rts
 
 /* **Returns -0 */
 	.globl	ld_mzero
 ld_mzero:
-	fmove.x MZERO,fp0		/* load -0 */
+	fmove.x MZERO.w(pc),fp0		/* load -0 */
 	or.l	#neg_mask+z_mask,USER_FPSR(a6)	/* set N and Z bits */
 	rts

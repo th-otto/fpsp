@@ -82,23 +82,21 @@
 
 	.include "fpsp.h"
 
-	.data
+	.text
 L2TEN64:	.dc.l 0x406A934F,0x0979A371 /* ... 64LOG10/LOG2 */
 L10TWO1:	.dc.l 0x3F734413,0x509F8000 /* ... LOG2/64LOG10 */
 
-L10TWO2:	.dc.l 0xBFCD0000,0xC0219DC1,0xDA994FD2,0x00000000
+L10TWO2:	.dc.l 0xBFCD0000,0xC0219DC1,0xDA994FD2
 
-LOG10:	.dc.l 0x40000000,0x935D8DDD,0xAAA8AC17,0x00000000
+LOG10:		.dc.l 0x40000000,0x935D8DDD,0xAAA8AC17
 
-LOG2_stwotox:	.dc.l 0x3FFE0000,0xB17217F7,0xD1CF79AC,0x00000000
+LOG2_stwotox:	.dc.l 0x3FFE0000,0xB17217F7,0xD1CF79AC
 
 EXPA5_stwotox:	.dc.l 0x3F56C16D,0x6F7BD0B2
 EXPA4_stwotox:	.dc.l 0x3F811112,0x302C712C
 EXPA3_stwotox:	.dc.l 0x3FA55555,0x55554CC1
 EXPA2_stwotox:	.dc.l 0x3FC55555,0x55554A54
-EXPA1_stwotox:	.dc.l 0x3FE00000,0x00000000,0x00000000,0x00000000
-
-HUGE_stwotox:	.dc.l 0x7FFE0000,0xFFFFFFFF,0xFFFFFFFF,0x00000000
+EXPA1_stwotox:	.dc.l 0x3FE00000,0x00000000
 
 EXPTBL_stwotox:
 	.dc.l	0x3FFF0000,0x80000000,0x00000000,0x3F738000
@@ -239,7 +237,7 @@ TWOMAIN:
 
 	fmove.l		fp1,N(a6)		/* ...N = ROUND-TO-INT(64 X) */
 	move.l		d2,-(sp)
-	lea		EXPTBL_stwotox,a1	/* ...LOAD ADDRESS OF TABLE OF 2^(J/64) */
+	lea		EXPTBL_stwotox.w(pc),a1	/* ...LOAD ADDRESS OF TABLE OF 2^(J/64) */
 	fmove.l		N(a6),fp1		/* ...N --> FLOATING FMT */
 	move.l		N(a6),d0
 	move.l		d0,d2
@@ -277,7 +275,7 @@ TWOMAIN:
 	clr.l		FACT2LOW(a6)
 	add.w		d0,FACT1(a6)
 
-	fmul.x		LOG2_stwotox,fp0	/* ...FP0 IS R */
+	fmul.x		LOG2_stwotox.w(pc),fp0	/* ...FP0 IS R */
 	add.w		d0,FACT2(a6)
 
 	bra		expr
@@ -357,11 +355,11 @@ TENMAIN:
  * --USUAL CASE, 2^(-70) <= |X| <= 16480 LOG 2 / LOG 10
  */
 	fmove.x		fp0,fp1
-	fmul.d		L2TEN64,fp1	/* ...X*64*LOG10/LOG2 */
+	fmul.d		L2TEN64.w(pc),fp1	/* ...X*64*LOG10/LOG2 */
 
 	fmove.l		fp1,N(a6)		/* ...N=INT(X*64*LOG10/LOG2) */
 	move.l		d2,-(sp)
-	lea		EXPTBL_stwotox,a1	/* ...LOAD ADDRESS OF TABLE OF 2^(J/64) */
+	lea		EXPTBL_stwotox.w(pc),a1	/* ...LOAD ADDRESS OF TABLE OF 2^(J/64) */
 	fmove.l		N(a6),fp1		/* ...N --> FLOATING FMT */
 	move.l		N(a6),d0
 	move.l		d0,d2
@@ -384,10 +382,10 @@ TENMAIN:
  */
 	fmove.x		fp1,fp2
 
-	fmul.d		L10TWO1,fp1	/* ...N*(LOG2/64LOG10)_LEAD */
+	fmul.d		L10TWO1.w(pc),fp1	/* ...N*(LOG2/64LOG10)_LEAD */
 	move.l		(a1)+,FACT1(a6)
 
-	fmul.x		L10TWO2,fp2	/* ...N*(LOG2/64LOG10)_TRAIL */
+	fmul.x		L10TWO2.w(pc),fp2	/* ...N*(LOG2/64LOG10)_TRAIL */
 
 	move.l		(a1)+,FACT1HI(a6)
 	move.l		(a1)+,FACT1LOW(a6)
@@ -401,7 +399,7 @@ TENMAIN:
 	clr.w		FACT2HI+2(a6)
 	clr.l		FACT2LOW(a6)
 
-	fmul.x		LOG10,fp0	/* ...FP0 IS R */
+	fmul.x		LOG10.w(pc),fp0	/* ...FP0 IS R */
 
 	add.w		d0,FACT1(a6)
 	add.w		d0,FACT2(a6)
@@ -416,19 +414,19 @@ expr:
 	fmove.x		fp0,fp1
 	fmul.x		fp1,fp1		/* ...FP1 IS S = R*R */
 
-	fmove.d		EXPA5_stwotox,fp2	/* ...FP2 IS A5 */
-	fmove.d		EXPA4_stwotox,fp3	/* ...FP3 IS A4 */
+	fmove.d		EXPA5_stwotox.w(pc),fp2	/* ...FP2 IS A5 */
+	fmove.d		EXPA4_stwotox.w(pc),fp3	/* ...FP3 IS A4 */
 
 	fmul.x		fp1,fp2		/* ...FP2 IS S*A5 */
 	fmul.x		fp1,fp3		/* ...FP3 IS S*A4 */
 
-	fadd.d		EXPA3_stwotox,fp2	/* ...FP2 IS A3+S*A5 */
-	fadd.d		EXPA2_stwotox,fp3	/* ...FP3 IS A2+S*A4 */
+	fadd.d		EXPA3_stwotox.w(pc),fp2	/* ...FP2 IS A3+S*A5 */
+	fadd.d		EXPA2_stwotox.w(pc),fp3	/* ...FP3 IS A2+S*A4 */
 
 	fmul.x		fp1,fp2		/* ...FP2 IS S*(A3+S*A5) */
 	fmul.x		fp1,fp3		/* ...FP3 IS S*(A2+S*A4) */
 
-	fadd.d		EXPA1_stwotox,fp2	/* ...FP2 IS A1+S*(A3+S*A5) */
+	fadd.d		EXPA1_stwotox.w(pc),fp2	/* ...FP2 IS A1+S*(A3+S*A5) */
 	fmul.x		fp0,fp3		/* ...FP3 IS R*S*(A2+S*A4) */
 
 	fmul.x		fp1,fp2		/* ...FP2 IS S*(A1+S*(A3+S*A5)) */

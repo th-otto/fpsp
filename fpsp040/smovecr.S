@@ -23,17 +23,53 @@
 
 	.xref	nrm_set
 	.xref	round
-	.xref	PIRN
-	.xref	PIRZRM
-	.xref	PIRP
-	.xref	SMALRN
-	.xref	SMALRZRM
-	.xref	SMALRP
-	.xref	BIGRN
-	.xref	BIGRZRM
-	.xref	BIGRP
 
-	.XREF FZERO
+	.text
+
+PIRN:
+	.dc.l 0x40000000,0xc90fdaa2,0x2168c235    /* pi */
+PIRZRM:
+	.dc.l 0x40000000,0xc90fdaa2,0x2168c234    /* pi */
+PIRP:
+	.dc.l 0x40000000,0xc90fdaa2,0x2168c235    /* pi */
+/* round to nearest */
+SMALRN:
+	.dc.l 0x3ffd0000,0x9a209a84,0xfbcff798    /* log10(2) */
+	.dc.l 0x40000000,0xadf85458,0xa2bb4a9a    /* e */
+	.dc.l 0x3fff0000,0xb8aa3b29,0x5c17f0bc    /* log2(e) */
+	.dc.l 0x3ffd0000,0xde5bd8a9,0x37287195    /* log10(e) */
+	.dc.l 0x00000000,0x00000000,0x00000000    /* 0.0 */
+/*  round to zero;round to negative infinity */
+SMALRZRM:
+	.dc.l 0x3ffd0000,0x9a209a84,0xfbcff798    /* log10(2) */
+	.dc.l 0x40000000,0xadf85458,0xa2bb4a9a    /* e */
+	.dc.l 0x3fff0000,0xb8aa3b29,0x5c17f0bb    /* log2(e) */
+	.dc.l 0x3ffd0000,0xde5bd8a9,0x37287195    /* log10(e) */
+	.dc.l 0x00000000,0x00000000,0x00000000    /* 0.0 */
+/*  round to positive infinity */
+SMALRP:
+	.dc.l 0x3ffd0000,0x9a209a84,0xfbcff799    /* log10(2) */
+	.dc.l 0x40000000,0xadf85458,0xa2bb4a9b    /* e */
+	.dc.l 0x3fff0000,0xb8aa3b29,0x5c17f0bc    /* log2(e) */
+	.dc.l 0x3ffd0000,0xde5bd8a9,0x37287195    /* log10(e) */
+	.dc.l 0x00000000,0x00000000,0x00000000    /* 0.0 */
+
+/* round to nearest */
+BIGRN:
+	.dc.l 0x3ffe0000,0xb17217f7,0xd1cf79ac    /* ln(2) */
+	.dc.l 0x40000000,0x935d8ddd,0xaaa8ac17    /* ln(10) */
+	.dc.l 0x3fff0000,0x80000000,0x00000000    /* 10 ^ 0 */
+
+/* round to minus infinity */
+BIGRZRM:
+	.dc.l 0x3ffe0000,0xb17217f7,0xd1cf79ab    /* ln(2) */
+	.dc.l 0x40000000,0x935d8ddd,0xaaa8ac16    /* ln(10) */
+	.dc.l 0x3fff0000,0x80000000,0x00000000    /* 10 ^ 0 */
+/* round to positive infinity */
+BIGRP:
+	.dc.l 0x3ffe0000,0xb17217f7,0xd1cf79ac    /* ln(2) */
+	.dc.l 0x40000000,0x935d8ddd,0xaaa8ac17    /* ln(10) */
+	.dc.l 0x3fff0000,0x80000000,0x00000000    /* 10 ^ 0 */
 
 	.text
 
@@ -58,7 +94,7 @@ smovcr:
 	cmpi.b	#0x3f,d0		/* check range $30 - $3f */
 	ble.s	BG_TBL		/* valid constants in this range */
 Z_VAL:
-	fmove.s	FZERO,fp0
+	fmove.s	#0,fp0
 	rts
 PI_TBL:
 	tst.b	d1		/* offset is zero, check for rmode */
@@ -66,13 +102,13 @@ PI_TBL:
 	cmpi.b	#0x3,d1		/* check for rp */
 	beq.s	PI_RP		/* if 3, rp mode */
 PI_RZRM:
-	lea.l	PIRZRM,a0	/* rmode is rz or rm, load PIRZRM in a0 */
+	lea.l	PIRZRM.w(pc),a0	/* rmode is rz or rm, load PIRZRM in a0 */
 	bra	set_finx
 PI_RN:
-	lea.l	PIRN,a0		/* rmode is rn, load PIRN in a0 */
+	lea.l	PIRN.w(pc),a0		/* rmode is rn, load PIRN in a0 */
 	bra	set_finx
 PI_RP:
-	lea.l	PIRP,a0		/* rmode is rp, load PIRP in a0 */
+	lea.l	PIRP.w(pc),a0		/* rmode is rp, load PIRP in a0 */
 	bra	set_finx
 SM_TBL:
 	subi.l	#0xb,d0		/* make offset in 0 - 4 range */
@@ -81,17 +117,17 @@ SM_TBL:
 	cmpi.b	#0x3,d1		/* check for rp */
 	beq.s	SM_RP		/* if 3, rp mode */
 SM_RZRM:
-	lea.l	SMALRZRM,a0	/* rmode is rz or rm, load SMRZRM in a0 */
+	lea.l	SMALRZRM.w(pc),a0	/* rmode is rz or rm, load SMRZRM in a0 */
 	cmpi.b	#0x2,d0		/* check if result is inex */
 	ble.s	set_finx	/* if 0 - 2, it is inexact */
 	bra.s	no_finx		/* if 3, it is exact */
 SM_RN:
-	lea.l	SMALRN,a0	/* rmode is rn, load SMRN in a0 */
+	lea.l	SMALRN.w(pc),a0	/* rmode is rn, load SMRN in a0 */
 	cmpi.b	#0x2,d0		/* check if result is inex */
 	ble.s	set_finx	/* if 0 - 2, it is inexact */
 	bra.s	no_finx		/* if 3, it is exact */
 SM_RP:
-	lea.l	SMALRP,a0	/* rmode is rp, load SMRP in a0 */
+	lea.l	SMALRP.w(pc),a0	/* rmode is rp, load SMRP in a0 */
 	cmpi.b	#0x2,d0		/* check if result is inex */
 	ble.s	set_finx	/* if 0 - 2, it is inexact */
 	bra.s	no_finx		/* if 3, it is exact */
@@ -102,21 +138,21 @@ BG_TBL:
 	cmpi.b	#0x3,d1		/* check for rp */
 	beq.s	BG_RP		/* if 3, rp mode */
 BG_RZRM:
-	lea.l	BIGRZRM,a0	/* rmode is rz or rm, load BGRZRM in a0 */
+	lea.l	BIGRZRM.w(pc),a0	/* rmode is rz or rm, load BGRZRM in a0 */
 	cmpi.b	#0x1,d0		/* check if result is inex */
 	ble.s	set_finx	/* if 0 - 1, it is inexact */
 	cmpi.b	#0x7,d0		/* second check */
 	ble.s	no_finx		/* if 0 - 7, it is exact */
 	bra.s	set_finx	/* if 8 - f, it is inexact */
 BG_RN:
-	lea.l	BIGRN,a0	/* rmode is rn, load BGRN in a0 */
+	lea.l	BIGRN.w(pc),a0	/* rmode is rn, load BGRN in a0 */
 	cmpi.b	#0x1,d0		/* check if result is inex */
 	ble.s	set_finx	/* if 0 - 1, it is inexact */
 	cmpi.b	#0x7,d0		/* second check */
 	ble.s	no_finx		/* if 0 - 7, it is exact */
 	bra.s	set_finx	/* if 8 - f, it is inexact */
 BG_RP:
-	lea.l	BIGRP,a0	/* rmode is rp, load SMRP in a0 */
+	lea.l	BIGRP.w(pc),a0	/* rmode is rp, load SMRP in a0 */
 	cmpi.b	#0x1,d0		/* check if result is inex */
 	ble.s	set_finx	/* if 0 - 1, it is inexact */
 	cmpi.b	#0x7,d0		/* second check */

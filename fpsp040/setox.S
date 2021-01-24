@@ -337,7 +337,7 @@
 
 	.include "fpsp.h"
 
-	.data
+	.text
 L2:	.dc.l	0x3FDC0000,0x82E30865,0x4361C4C6,0x00000000
 
 EXPA3_setox:	.dc.l	0x3FA55555,0x55554431
@@ -358,12 +358,12 @@ EM1B4:	.dc.l	0x3F811111,0x11111111
 EM1B3:	.dc.l	0x3FA55555,0x55555555
 
 EM1B2:	.dc.l	0x3FFC0000,0xAAAAAAAA,0xAAAAAAAB
-	.dc.l	0x00000000
 
 TWO140:	.dc.l	0x48B00000,0x00000000
 TWON140:	.dc.l	0x37300000,0x00000000
 
-	.globl EXPTBL
+ONEHALF: dc.l 0x3F000000
+
 EXPTBL:
 	.dc.l	0x3FFF0000,0x80000000,0x00000000,0x00000000
 	.dc.l	0x3FFF0000,0x8164D1F3,0xBC030774,0x9F841A9B
@@ -500,7 +500,7 @@ EXPMAIN:
 	fmovem.x	fp2-fp2/fp3,-(a7)	/* ...save fp2 */
 	move.l		#0,ADJFLAG(a6)
 	fmove.l		fp0,d0				/* ...N = int( X * 64/log2 ) */
-	lea		EXPTBL,a1
+	lea		EXPTBL.w(pc),a1
 	fmove.l		d0,fp0				/* ...convert to floating-format */
 
 	move.l		d0,L_SCR1(a6)		/* ...save N temporarily */
@@ -510,7 +510,7 @@ EXPMAIN:
 	move.l		L_SCR1(a6),d0
 	asr.l		#6,d0				/* ...D0 is M */
 	addi.w		#0x3FFF,d0			/* ...biased expo. of 2^(M) */
-	move.w		L2,L_SCR1(a6)		/* ...prefetch L2, no need in CB */
+	move.w		L2.w(pc),L_SCR1(a6)		/* ...prefetch L2, no need in CB */
 
 EXPCONT1:
 /*
@@ -524,7 +524,7 @@ EXPCONT1:
 	.ELSE
 	fmul.s		#-0.0108304247260093689,fp0		/* ...N * L1, L1 = lead(-log2/64) */
 	.ENDC
-	fmul.x		L2,fp2				/* ...N * L2, L1+L2 = -log2/64 */
+	fmul.x		L2.w(pc),fp2				/* ...N * L2, L1+L2 = -log2/64 */
 	fadd.x		fp1,fp0				/* ...X + N*L1 */
 	fadd.x		fp2,fp0				/* ...fp0 is R, reduced arg. */
 /* 	MOVE.W		#0x3FA5,EXPA3_setox	...load EXPA3 in cache */
@@ -554,8 +554,8 @@ EXPCONT1:
 	fmul.s		#0.00833334494382143021,fp3		/* ...fp3 IS S*A4 */
 	.ENDC
 
-	fadd.d		EXPA3_setox,fp2		/* ...fp2 IS A3+S*A5 */
-	fadd.d		EXPA2_setox,fp3		/* ...fp3 IS A2+S*A4 */
+	fadd.d		EXPA3_setox.w(pc),fp2		/* ...fp2 IS A3+S*A5 */
+	fadd.d		EXPA2_setox.w(pc),fp3		/* ...fp3 IS A2+S*A4 */
 
 	fmul.x		fp1,fp2				/* ...fp2 IS S*(A3+S*A5) */
 	move.w		d0,SCALE(a6)		/* ...SCALE is 2^(M) in extended */
@@ -565,11 +565,7 @@ EXPCONT1:
 
 	fmul.x		fp1,fp3				/* ...fp3 IS S*(A2+S*A4) */
 
-	.IFNE GAS
-	fadd.s		#0x3F000000,fp2		/* ...fp2 IS A1+S*(A3+S*A5) */
-	.ELSE
-	fadd.s		#0.5,fp2			/* ...fp2 IS A1+S*(A3+S*A5) */
-	.ENDC
+	fadd.s		ONEHALF.w(pc),fp2	/* ...fp2 IS A1+S*(A3+S*A5) */
 	fmul.x		fp0,fp3				/* ...fp3 IS R*S*(A2+S*A4) */
 
 	fmul.x		fp1,fp2				/* ...fp2 IS S*(A1+S*(A3+S*A5)) */
@@ -637,7 +633,7 @@ EXPBIG_setox:
 	fmovem.x	 fp2-fp2/fp3,-(a7)	/* ...save fp2 */
 	move.l		#1,ADJFLAG(a6)
 	fmove.l		fp0,d0				/* ...N = int( X * 64/log2 ) */
-	lea		EXPTBL,a1
+	lea		EXPTBL.w(pc),a1
 	fmove.l		d0,fp0				/* ...convert to floating-format */
 	move.l		d0,L_SCR1(a6)		/* ...save N temporarily */
 	andi.l		#0x3F,d0			/* ...D0 is J = N mod 64 */
@@ -718,7 +714,7 @@ EM1MAIN:
 	fmovem.x	fp2-fp2/fp3,-(a7)	/* ...save fp2 */
 /* 	move.w		#0x3F81,EM1A4		...prefetch in CB mode */
 	fmove.l		fp0,d0				/* ...N = int( X * 64/log2 ) */
-	lea		EXPTBL,a1
+	lea		EXPTBL.w(pc),a1
 	fmove.l		d0,fp0				/* ...convert to floating-format */
 
 	move.l		d0,L_SCR1(a6)		/* ...save N temporarily */
@@ -741,7 +737,7 @@ EM1MAIN:
 	.ELSE
 	fmul.s		#-0.0108304247260093689,fp0		/* ...N * L1, L1 = lead(-log2/64) */
 	.ENDC
-	fmul.x		L2,fp2				/* ...N * L2, L1+L2 = -log2/64 */
+	fmul.x		L2.w(pc),fp2				/* ...N * L2, L1+L2 = -log2/64 */
 	fadd.x		fp1,fp0	 			/* ...X + N*L1 */
 	fadd.x		fp2,fp0	 			/* ...fp0 is R, reduced arg. */
 /* 	MOVE.W		#0x3FC5,EM1A2		...load EM1A2 in cache */
@@ -772,8 +768,8 @@ EM1MAIN:
 	fmul.s		#0.00138888997025787830,fp3		/* ...fp3 IS S*A5 */
 	.ENDC
 
-	fadd.d		EM1A4,fp2			/* ...fp2 IS A4+S*A6 */
-	fadd.d		EM1A3,fp3			/* ...fp3 IS A3+S*A5 */
+	fadd.d		EM1A4.w(pc),fp2			/* ...fp2 IS A4+S*A6 */
+	fadd.d		EM1A3.w(pc),fp3			/* ...fp3 IS A3+S*A5 */
 	move.w		d0,SC(a6)			/* ...SC is 2^(M) in extended */
 	clr.w		SC+2(a6)
 	move.l		#0x80000000,SC+4(a6)
@@ -784,12 +780,8 @@ EM1MAIN:
 	neg.w		d0					/* ...D0 is -M */
 	fmul.x		fp1,fp3				/* ...fp3 IS S*(A3+S*A5) */
 	addi.w		#0x3FFF,d0			/* ...biased expo. of 2^(-M) */
-	fadd.d		EM1A2,fp2			/* ...fp2 IS A2+S*(A4+S*A6) */
-	.IFNE GAS
-	fadd.s		#0x3F000000,fp3		/* ...fp3 IS A1+S*(A3+S*A5) */
-	.ELSE
-	fadd.s		#0.5,fp3			/* ...fp3 IS A1+S*(A3+S*A5) */
-	.ENDC
+	fadd.d		EM1A2.w(pc),fp2			/* ...fp2 IS A2+S*(A4+S*A6) */
+	fadd.s		ONEHALF.w(pc),fp3	/* ...fp3 IS A1+S*(A3+S*A5) */
 
 	fmul.x		fp1,fp2				/* ...fp2 IS S*(A2+S*(A4+S*A6)) */
 	ori.w		#0x8000,d0			/* ...signed/expo. of -2^(-M) */
@@ -891,13 +883,13 @@ EM12TINY:
  * --Step 8.3
  */
 	fmove.x		(a0),fp0
-	fmul.d		TWO140,fp0
+	fmul.d		TWO140.w(pc),fp0
 	move.l		#0x80010000,SC(a6)
 	move.l		#0x80000000,SC+4(a6)
 	clr.l		SC+8(a6)
 	fadd.x		SC(a6),fp0
 	fmove.l		d1,FPCR
-	fmul.d		TWON140,fp0
+	fmul.d		TWON140.w(pc),fp0
 
 	bra		t_frcinx
 
@@ -930,25 +922,25 @@ EM1POLY:
 	.ELSE
 	fadd.s		#2.75573285080099595e-07,fp2		/* ...fp2 is B9+S*... */
 	.ENDC
-	fadd.d		EM1B8,fp1			/* ...fp1 is B8+S*... */
+	fadd.d		EM1B8.w(pc),fp1		/* ...fp1 is B8+S*... */
 
 	fmul.x		fp0,fp2				/* ...fp2 is S*(B9+... */
 	fmul.x		fp0,fp1				/* ...fp1 is S*(B8+... */
 
-	fadd.d		EM1B7,fp2			/* ...fp2 is B7+S*... */
-	fadd.d		EM1B6,fp1			/* ...fp1 is B6+S*... */
+	fadd.d		EM1B7.w(pc),fp2		/* ...fp2 is B7+S*... */
+	fadd.d		EM1B6.w(pc),fp1		/* ...fp1 is B6+S*... */
 
 	fmul.x		fp0,fp2				/* ...fp2 is S*(B7+... */
 	fmul.x		fp0,fp1				/* ...fp1 is S*(B6+... */
 
-	fadd.d		EM1B5,fp2			/* ...fp2 is B5+S*... */
-	fadd.d		EM1B4,fp1			/* ...fp1 is B4+S*... */
+	fadd.d		EM1B5.w(pc),fp2		/* ...fp2 is B5+S*... */
+	fadd.d		EM1B4.w(pc),fp1		/* ...fp1 is B4+S*... */
 
 	fmul.x		fp0,fp2				/* ...fp2 is S*(B5+... */
 	fmul.x		fp0,fp1				/* ...fp1 is S*(B4+... */
 
-	fadd.d		EM1B3,fp2			/* ...fp2 is B3+S*... */
-	fadd.x		EM1B2,fp1			/* ...fp1 is B2+S*... */
+	fadd.d		EM1B3.w(pc),fp2		/* ...fp2 is B3+S*... */
+	fadd.x		EM1B2.w(pc),fp1		/* ...fp1 is B2+S*... */
 
 	fmul.x		fp0,fp2				/* ...fp2 is S*(B3+... */
 	fmul.x		fp0,fp1				/* ...fp1 is S*(B2+... */
@@ -956,11 +948,7 @@ EM1POLY:
 	fmul.x		fp0,fp2				/* ...fp2 is S*S*(B3+...) */
 	fmul.x		(a0),fp1			/* ...fp1 is X*S*(B2... */
 
-	.IFNE GAS
-	fmul.s		#0x3F000000,fp0		/* ...fp0 is S*B1 */
-	.ELSE
-	fmul.s		#0.5,fp0			/* ...fp0 is S*B1 */
-	.ENDC
+	fmul.s		ONEHALF.w(pc),fp0		/* ...fp0 is S*B1 */
 	fadd.x		fp2,fp1				/* ...fp1 is Q */
 									/* ...fp2 released */
 

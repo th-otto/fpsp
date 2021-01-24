@@ -75,17 +75,6 @@
 
 	.include "fpsp.h"
 
-/*
- * 	PTENRN, PTENRM, and PTENRP are arrays of powers of 10 rounded
- * 	to nearest, minus, and plus, respectively.  The tables include
- * 	10**{1,2,4,8,16,32,64,128,256,512,1024,2048,4096}.  No rounding
- * 	is required until the power is greater than 27, however, all
- * 	tables include the first 5 for ease of indexing.
- */
-	.xref	PTENRN
-	.xref	PTENRM
-	.xref	PTENRP
-
 	.text
 RTABLE:
 	.dc.b	0,0,0,0
@@ -107,11 +96,64 @@ RTABLE:
 	ESTRT = 4
 	EDIGITS = 2
 
-	.xref FZERO
 	.xref FONE
 	.xref FTEN
 
 	TEN = 10
+
+/*
+ * 	PTENRN, PTENRM, and PTENRP are arrays of powers of 10 rounded
+ * 	to nearest, minus, and plus, respectively.  The tables include
+ * 	10**{1,2,4,8,16,32,64,128,256,512,1024,2048,4096}.  No rounding
+ * 	is required until the power is greater than 27, however, all
+ * 	tables include the first 5 for ease of indexing.
+ */
+	.text
+	.globl	PTENRN
+PTENRN:
+	.dc.l 0x40020000,0xA0000000,0x00000000    /* 10 ^ 1 */
+	.dc.l 0x40050000,0xC8000000,0x00000000    /* 10 ^ 2 */
+	.dc.l 0x400C0000,0x9C400000,0x00000000    /* 10 ^ 4 */
+	.dc.l 0x40190000,0xBEBC2000,0x00000000    /* 10 ^ 8 */
+	.dc.l 0x40340000,0x8E1BC9BF,0x04000000    /* 10 ^ 16 */
+	.dc.l 0x40690000,0x9DC5ADA8,0x2B70B59E    /* 10 ^ 32 */
+	.dc.l 0x40D30000,0xC2781F49,0xFFCFA6D5    /* 10 ^ 64 */
+	.dc.l 0x41A80000,0x93BA47C9,0x80E98CE0    /* 10 ^ 128 */
+	.dc.l 0x43510000,0xAA7EEBFB,0x9DF9DE8E    /* 10 ^ 256 */
+	.dc.l 0x46A30000,0xE319A0AE,0xA60E91C7    /* 10 ^ 512 */
+	.dc.l 0x4D480000,0xC9767586,0x81750C17    /* 10 ^ 1024 */
+	.dc.l 0x5A920000,0x9E8B3B5D,0xC53D5DE5    /* 10 ^ 2048 */
+	.dc.l 0x75250000,0xC4605202,0x8A20979B    /* 10 ^ 4096 */
+	.globl	PTENRM
+PTENRM:
+	.dc.l 0x40020000,0xA0000000,0x00000000    /* 10 ^ 1 */
+	.dc.l 0x40050000,0xC8000000,0x00000000    /* 10 ^ 2 */
+	.dc.l 0x400C0000,0x9C400000,0x00000000    /* 10 ^ 4 */
+	.dc.l 0x40190000,0xBEBC2000,0x00000000    /* 10 ^ 8 */
+	.dc.l 0x40340000,0x8E1BC9BF,0x04000000    /* 10 ^ 16 */
+	.dc.l 0x40690000,0x9DC5ADA8,0x2B70B59D    /* 10 ^ 32 */
+	.dc.l 0x40D30000,0xC2781F49,0xFFCFA6D5    /* 10 ^ 64 */
+	.dc.l 0x41A80000,0x93BA47C9,0x80E98CDF    /* 10 ^ 128 */
+	.dc.l 0x43510000,0xAA7EEBFB,0x9DF9DE8D    /* 10 ^ 256 */
+	.dc.l 0x46A30000,0xE319A0AE,0xA60E91C6    /* 10 ^ 512 */
+	.dc.l 0x4D480000,0xC9767586,0x81750C17    /* 10 ^ 1024 */
+	.dc.l 0x5A920000,0x9E8B3B5D,0xC53D5DE5    /* 10 ^ 2048 */
+	.dc.l 0x75250000,0xC4605202,0x8A20979A    /* 10 ^ 4096 */
+	.globl	PTENRP
+PTENRP:
+	.dc.l 0x40020000,0xA0000000,0x00000000    /* 10 ^ 1 */
+	.dc.l 0x40050000,0xC8000000,0x00000000    /* 10 ^ 2 */
+	.dc.l 0x400C0000,0x9C400000,0x00000000    /* 10 ^ 4 */
+	.dc.l 0x40190000,0xBEBC2000,0x00000000    /* 10 ^ 8 */
+	.dc.l 0x40340000,0x8E1BC9BF,0x04000000    /* 10 ^ 16 */
+	.dc.l 0x40690000,0x9DC5ADA8,0x2B70B59E    /* 10 ^ 32 */
+	.dc.l 0x40D30000,0xC2781F49,0xFFCFA6D6    /* 10 ^ 64 */
+	.dc.l 0x41A80000,0x93BA47C9,0x80E98CE0    /* 10 ^ 128 */
+	.dc.l 0x43510000,0xAA7EEBFB,0x9DF9DE8E    /* 10 ^ 256 */
+	.dc.l 0x46A30000,0xE319A0AE,0xA60E91C7    /* 10 ^ 512 */
+	.dc.l 0x4D480000,0xC9767586,0x81750C18    /* 10 ^ 1024 */
+	.dc.l 0x5A920000,0x9E8B3B5D,0xC53D5DE6    /* 10 ^ 2048 */
+	.dc.l 0x75250000,0xC4605202,0x8A20979B    /* 10 ^ 4096 */
 
 	.text
 
@@ -188,7 +230,7 @@ e_save:
  */
 calc_m:
 	moveq.l	#1,d1			/* word counter, init to 1 */
-	fmove.s	FZERO,fp0		/* accumulator */
+	fmove.s	#0,fp0		/* accumulator */
 
 /*
  *   Since the packed number has a long word between the first & second parts,
@@ -206,7 +248,7 @@ loadlw:
 	moveq.l	#FSTRT,d3		/* counter to pick up digits */
 	moveq.l	#FNIBS,d2		/* reset number of digits per a0 ptr */
 md2b:
-	fmul.s	FTEN,fp0		/* fp0 = fp0 * 10 */
+	fmul.s	FTEN.w(pc),fp0		/* fp0 = fp0 * 10 */
 	bfextu	d4{d3:4},d0		/* get the digit and zero extend */
 	fadd.b	d0,fp0			/* fp0 = fp0 + digit */
 
@@ -321,9 +363,9 @@ ap_p_fx:
  *  zeros from the mantissa.
  */
 ap_p_fm:
-	move.l	#PTENRN,a1		/* get address of power-of-ten table */
+	lea		PTENRN.w(pc),a1		/* get address of power-of-ten table */
 	clr.l	d3				/* init table index */
-	fmove.s	FONE,fp1		/* init fp1 to 1 */
+	fmove.s	FONE.w(pc),fp1		/* init fp1 to 1 */
 	moveq.l	#3,d2			/* init d2 to count bits in counter */
 ap_p_el:
 	asr.l	#1,d0			/* shift lsb into carry */
@@ -369,9 +411,9 @@ ap_n_fx:
  *  zeros to the mantissa.
  */
 ap_n_fm:
-	move.l	#PTENRN,a1		/* get address of power-of-ten table */
+	lea		PTENRN.w(pc),a1		/* get address of power-of-ten table */
 	clr.l	d3				/* init table index */
-	fmove.s	FONE,fp1		/* init fp1 to 1 */
+	fmove.s	FONE.w(pc),fp1		/* init fp1 to 1 */
 	moveq.l	#3,d2			/* init d2 to count bits in counter */
 ap_n_el:
 	asr.l	#1,d0			/* shift lsb into carry */
@@ -439,15 +481,15 @@ pwrten:
 	fmove.l	d3,FPCR				/* write new FPCR */
 	asr.l	#1,d0				/* write correct PTENxx table */
 	bcc.s	not_rp_db			/* to a1 */
-	lea.l	PTENRP,a1			/* it is RP */
+	lea.l	PTENRP.w(pc),a1		/* it is RP */
 	bra.s	calc_p				/* go to init section */
 not_rp_db:
 	asr.l	#1,d0				/* keep checking */
 	bcc.s	not_rm
-	lea.l	PTENRM,a1			/* it is RM */
+	lea.l	PTENRM.w(pc),a1			/* it is RM */
 	bra.s	calc_p				/* go to init section */
 not_rm:
-	lea.l	PTENRN,a1			/* it is RN */
+	lea.l	PTENRN.w(pc),a1		/* it is RN */
 calc_p:
 	move.l	d1,d0				/* copy exp to d0;use d0 */
 	bpl.s	no_neg				/* if exp is negative, */
@@ -455,7 +497,7 @@ calc_p:
 	ori.l	#0x40000000,(a0)	/* and set SE bit */
 no_neg:
 	clr.l	d3					/* table index */
-	fmove.s	FONE,fp1			/* init fp1 to 1 */
+	fmove.s	FONE.w(pc),fp1			/* init fp1 to 1 */
 e_loop_db:
 	asr.l	#1,d0				/* shift next bit into carry */
 	bcc.s	e_next_db			/* if zero, skip the mul */

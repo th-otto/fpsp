@@ -51,7 +51,7 @@
 
 	.xref PIBY2
 
-	.data
+	.text
 
 ATANA3:	.dc.l 0xBFF6687E,0x314987D8
 ATANA2:	.dc.l 0x4002AC69,0x34A26DB3
@@ -326,12 +326,12 @@ ATANMAIN:
  */
 	fmove.x		fp0,fp1
 	fmul.x		fp1,fp1
-	fmove.d		ATANA3,fp2
+	fmove.d		ATANA3.w(pc),fp2
 	fadd.x		fp1,fp2		/*  ...A3+V */
 	fmul.x		fp1,fp2		/*  ...V*(A3+V) */
 	fmul.x		fp0,fp1		/*  ...U*V */
-	fadd.d		ATANA2,fp2	/*  ...A2+V*(A3+V) */
-	fmul.d		ATANA1,fp1	/*  ...A1*U*V */
+	fadd.d		ATANA2.w(pc),fp2	/*  ...A2+V*(A3+V) */
+	fmul.d		ATANA1.w(pc),fp1	/*  ...A1*U*V */
 	fmul.x		fp2,fp1		/*  ...A1*U*V*(A2+V*(A3+V)) */
 
 	fadd.x		fp1,fp0		/*  ...ATAN(U), FP1 RELEASED */
@@ -366,20 +366,20 @@ ATANSM:
 	fmove.x		fp0,fp1
 	fmul.x		fp1,fp1		/*  ...FP1 IS Z = Y*Y */
 
-	fmove.d		ATANB6,fp2
-	fmove.d		ATANB5,fp3
+	fmove.d		ATANB6.w(pc),fp2
+	fmove.d		ATANB5.w(pc),fp3
 
 	fmul.x		fp1,fp2		/*  ...Z*B6 */
 	fmul.x		fp1,fp3		/*  ...Z*B5 */
 
-	fadd.d		ATANB4,fp2	/*  ...B4+Z*B6 */
-	fadd.d		ATANB3,fp3	/*  ...B3+Z*B5 */
+	fadd.d		ATANB4.w(pc),fp2	/*  ...B4+Z*B6 */
+	fadd.d		ATANB3.w(pc),fp3	/*  ...B3+Z*B5 */
 
 	fmul.x		fp1,fp2		/*  ...Z*(B4+Z*B6) */
 	fmul.x		fp3,fp1		/*  ...Z*(B3+Z*B5) */
 
-	fadd.d		ATANB2,fp2	/*  ...B2+Z*(B4+Z*B6) */
-	fadd.d		ATANB1,fp1	/*  ...B1+Z*(B3+Z*B5) */
+	fadd.d		ATANB2.w(pc),fp2	/*  ...B2+Z*(B4+Z*B6) */
+	fadd.d		ATANB1.w(pc),fp1	/*  ...B1+Z*(B3+Z*B5) */
 
 	fmul.x		fp0,fp2		/*  ...Y*(B2+Z*(B4+Z*B6)) */
 	fmul.x		X(a6),fp0		/*  ...X*Y */
@@ -437,19 +437,19 @@ ATANBIG:
 	fmove.x		fp0,fp1
 	fmul.x		fp1,fp1		/*  ...FP1 IS Z = Y*Y */
 
-	fmove.d		ATANC5,fp3
-	fmove.d		ATANC4,fp2
+	fmove.d		ATANC5.w(pc),fp3
+	fmove.d		ATANC4.w(pc),fp2
 
 	fmul.x		fp1,fp3		/*  ...Z*C5 */
 	fmul.x		fp1,fp2		/*  ...Z*B4 */
 
-	fadd.d		ATANC3,fp3	/*  ...C3+Z*C5 */
-	fadd.d		ATANC2,fp2	/*  ...C2+Z*C4 */
+	fadd.d		ATANC3.w(pc),fp3	/*  ...C3+Z*C5 */
+	fadd.d		ATANC2.w(pc),fp2	/*  ...C2+Z*C4 */
 
 	fmul.x		fp3,fp1		/*  ...Z*(C3+Z*C5), FP3 RELEASED */
 	fmul.x		fp0,fp2		/*  ...Y*(C2+Z*C4) */
 
-	fadd.d		ATANC1,fp1	/*  ...C1+Z*(C3+Z*C5) */
+	fadd.d		ATANC1.w(pc),fp1	/*  ...C1+Z*(C3+Z*C5) */
 	fmul.x		X(a6),fp0		/*  ...X'*Y */
 
 	fadd.x		fp2,fp1		/*  ...[Y*(C2+Z*C4)]+[C1+Z*(C3+Z*C5)] */
@@ -465,11 +465,11 @@ ATANBIG:
 	beq.s		pos_big
 
 neg_big:
-	fadd.x		NPIBY2,fp0
+	fadd.x		NPIBY2.w(pc),fp0
 	bra		t_frcinx
 
 pos_big:
-	fadd.x		PIBY2,fp0
+	fadd.x		PIBY2.w(pc),fp0
 	bra		t_frcinx
 
 ATANHUGE:
@@ -480,13 +480,13 @@ ATANHUGE:
 	beq.s		pos_huge
 
 neg_huge:
-	fmove.x		NPIBY2,fp0
+	fmove.x		NPIBY2.w(pc),fp0
 	fmove.l		d1,fpcr
-	fsub.x		NTINY,fp0
+	fsub.x		NTINY.w(pc),fp0
 	bra		t_frcinx
 
 pos_huge:
-	fmove.x		PIBY2,fp0
+	fmove.x		PIBY2.w(pc),fp0
 	fmove.l		d1,fpcr
-	fsub.x		PTINY,fp0
+	fsub.x		PTINY.w(pc),fp0
 	bra		t_frcinx

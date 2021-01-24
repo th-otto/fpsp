@@ -18,14 +18,10 @@
 
 	.include "fpsp.h"
 
-	.data
+	.text
 mns_inf:  .dc.l 0xffff0000,0x00000000,0x00000000
 pls_inf:  .dc.l 0x7fff0000,0x00000000,0x00000000
 nan:      .dc.l 0x7fff0000,0xffffffff,0xffffffff
-	.globl PI
-PI:	.dc.l 0x40000000,0xC90FDAA2,0x2168C235,0x00000000
-	.globl PIBY2
-PIBY2:	.dc.l 0x3FFF0000,0xC90FDAA2,0x2168C235,0x00000000	/* +PI/2 */
 
 	.xref	 ovf_r_k
 	.xref	 unf_sub
@@ -83,11 +79,11 @@ t_dz:
 	beq.s	p_inf			/* branch if pos sign */
 
 m_inf:
-	fmovem.x mns_inf,fp0-fp0		/* load -inf */
+	fmovem.x mns_inf.w(pc),fp0-fp0		/* load -inf */
 	bset.b	#neg_bit,FPSR_CC(a6)	/* set neg bit in FPSR */
 	bra.s	set_fpsr
 p_inf:
-	fmovem.x pls_inf,fp0-fp0		/* load +inf */
+	fmovem.x pls_inf.w(pc),fp0-fp0		/* load +inf */
 set_fpsr:
 	or.l	#dzinf_mask,USER_FPSR(a6) /* set I,DZ,ADZ */
 	rts
@@ -121,7 +117,7 @@ t_operr:
 	btst.b	#operr_bit,FPCR_ENABLE(a6) /* test FPCR for operr enabled */
 	bne.s	op_ena
 
-	fmovem.x nan,fp0-fp0		/* load default nan */
+	fmovem.x nan.w(pc),fp0-fp0		/* load default nan */
 	rts
 op_ena:
 	st	STORE_FLG(a6)		/* do not corrupt destination */

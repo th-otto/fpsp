@@ -51,11 +51,17 @@
 
 	.text
 
+PI:	.dc.l 0x40000000,0xC90FDAA2,0x2168C235
+	.globl PIBY2
+PIBY2:	.dc.l 0x3FFF0000,0xC90FDAA2,0x2168C235	/* +PI/2 */
+
+	.text
+
 	.globl	sacosd
 sacosd:
 /* --ACOS(X) = PI/2 FOR DENORMALIZED X */
 	fmove.l		d1,fpcr		/*  ...load user's rounding mode/precision */
-	fmove.x		PIBY2,fp0
+	fmove.x		PIBY2.w(pc),fp0
 	bra		t_frcinx
 
 	.globl	sacos
@@ -110,7 +116,7 @@ ACOSBIG:
 
 /* --X = -1 */
 /* Returns PI and inexact exception */
-	fmove.x		PI,fp0
+	fmove.x		PI.w(pc),fp0
 	fmove.l		d1,FPCR
 	.IFNE GAS
 	fadd.s		#0x00800000,fp0

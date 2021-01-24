@@ -102,7 +102,7 @@ asinbig:
 
 /* --|X| = 1, ASIN(X) = +- PI/2. */
 
-	fmove.x		PIBY2,fp0
+	fmove.x		PIBY2.w(pc),fp0
 	move.l		(a0),d0
 	andi.l		#0x80000000,d0	/*  ...SIGN BIT OF X */
 	ori.l		#0x3F800000,d0	/*  ...+-1 IN SGL FORMAT */

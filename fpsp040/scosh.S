@@ -57,8 +57,6 @@
 	.xref	t_frcinx
 	.xref	setox
 
-	.data
-
 	.text
 
 	.globl T1

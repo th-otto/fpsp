@@ -89,7 +89,7 @@
 
 	.include "fpsp.h"
 
-	.data
+	.text
 	.globl TWOBYPI
 TWOBYPI:	.dc.l 0x3FE45F30,0x6DC9C883
 
@@ -99,11 +99,11 @@ SINA6:	.dc.l 0x3DE61209,0x7AAE8DA1
 SINA5:	.dc.l 0xBE5AE645,0x2A118AE4
 SINA4:	.dc.l 0x3EC71DE3,0xA5341531
 
-SINA3:	.dc.l 0xBF2A01A0,0x1A018B59,0x00000000,0x00000000
+SINA3:	.dc.l 0xBF2A01A0,0x1A018B59
 
-SINA2:	.dc.l 0x3FF80000,0x88888888,0x888859AF,0x00000000
+SINA2:	.dc.l 0x3FF80000,0x88888888,0x888859AF
 
-SINA1:	.dc.l 0xBFFC0000,0xAAAAAAAA,0xAAAAAA99,0x00000000
+SINA1:	.dc.l 0xBFFC0000,0xAAAAAAAA,0xAAAAAA99
 
 COSB8:	.dc.l 0x3D2AC4D0,0xD6011EE3
 COSB7:	.dc.l 0xBDA9396F,0x9F45AC19
@@ -111,9 +111,9 @@ COSB7:	.dc.l 0xBDA9396F,0x9F45AC19
 COSB6:	.dc.l 0x3E21EED9,0x0612C972
 COSB5:	.dc.l 0xBE927E4F,0xB79D9FCF
 
-COSB4:	.dc.l 0x3EFA01A0,0x1A01D423,0x00000000,0x00000000
+COSB4:	.dc.l 0x3EFA01A0,0x1A01D423
 
-COSB3:	.dc.l 0xBFF50000,0xB60B60B6,0x0B61D438,0x00000000
+COSB3:	.dc.l 0xBFF50000,0xB60B60B6,0x0B61D438
 
 COSB2:	.dc.l 0x3FFA0000,0xAAAAAAAA,0xAAAAAB5E
 COSB1:	.dc.l 0xBF000000
@@ -204,12 +204,12 @@ SINMAIN:
  * --THE ARGUMENT REDUCTION IS DONE BY TABLE LOOK UP.
  */
 	fmove.x		fp0,fp1
-	fmul.d		TWOBYPI,fp1		/* ...X*2/PI */
+	fmul.d		TWOBYPI.w(pc),fp1		/* ...X*2/PI */
 
 /*
  * --HIDE THE NEXT THREE INSTRUCTIONS
  */
-	lea		PITBL+0x200,a1		/* ...TABLE OF N*PI/2, N = -32,...,32 */
+	lea		PITBL+0x200.w(pc),a1		/* ...TABLE OF N*PI/2, N = -32,...,32 */
 
 
 /*
@@ -255,8 +255,8 @@ SINPOLY:
 /*
  * ---HIDE THE NEXT TWO WHILE WAITING FOR FP0
  */
-	fmove.d		SINA7,fp3
-	fmove.d		SINA6,fp2
+	fmove.d		SINA7.w(pc),fp3
+	fmove.d		SINA6.w(pc),fp2
 /*
  * --FP0 IS NOW READY
  */
@@ -272,19 +272,19 @@ SINPOLY:
 	fmul.x		fp1,fp3	/* ...TA7 */
 	fmul.x		fp1,fp2	/* ...TA6 */
 
-	fadd.d		SINA5,fp3 /* ...A5+TA7 */
-	fadd.d		SINA4,fp2 /* ...A4+TA6 */
+	fadd.d		SINA5.w(pc),fp3 /* ...A5+TA7 */
+	fadd.d		SINA4.w(pc),fp2 /* ...A4+TA6 */
 
 	fmul.x		fp1,fp3	/* ...T(A5+TA7) */
 	fmul.x		fp1,fp2	/* ...T(A4+TA6) */
 
-	fadd.d		SINA3,fp3 /* ...A3+T(A5+TA7) */
-	fadd.x		SINA2,fp2 /* ...A2+T(A4+TA6) */
+	fadd.d		SINA3.w(pc),fp3 /* ...A3+T(A5+TA7) */
+	fadd.x		SINA2.w(pc),fp2 /* ...A2+T(A4+TA6) */
 
 	fmul.x		fp3,fp1	/* ...T(A3+T(A5+TA7)) */
 
 	fmul.x		fp0,fp2	/* ...S(A2+T(A4+TA6)) */
-	fadd.x		SINA1,fp1 /* ...A1+T(A3+T(A5+TA7)) */
+	fadd.x		SINA1.w(pc),fp1 /* ...A1+T(A3+T(A5+TA7)) */
 	fmul.x		X(a6),fp0	/* ...R'*S */
 
 	fadd.x		fp2,fp1	/* ...[A1+T(A3+T(A5+TA7))]+[S(A2+T(A4+TA6))] */
@@ -318,8 +318,8 @@ COSPOLY:
 /*
  * ---HIDE THE NEXT TWO WHILE WAITING FOR FP0
  */
-	fmove.d		COSB8,fp2
-	fmove.d		COSB7,fp3
+	fmove.d		COSB8.w(pc),fp2
+	fmove.d		COSB7.w(pc),fp3
 /*
  * --FP0 IS NOW READY
  */
@@ -346,20 +346,20 @@ COSPOLY:
 	ori.l		#0x3F800000,d0	/* ...D0 IS SGN IN SINGLE */
 	move.l		d0,POSNEG1(a6)
 
-	fadd.d		COSB6,fp2 /* ...B6+TB8 */
-	fadd.d		COSB5,fp3 /* ...B5+TB7 */
+	fadd.d		COSB6.w(pc),fp2 /* ...B6+TB8 */
+	fadd.d		COSB5.w(pc),fp3 /* ...B5+TB7 */
 
 	fmul.x		fp1,fp2	/* ...T(B6+TB8) */
 	fmul.x		fp1,fp3	/* ...T(B5+TB7) */
 
-	fadd.d		COSB4,fp2 /* ...B4+T(B6+TB8) */
-	fadd.x		COSB3,fp3 /* ...B3+T(B5+TB7) */
+	fadd.d		COSB4.w(pc),fp2 /* ...B4+T(B6+TB8) */
+	fadd.x		COSB3.w(pc),fp3 /* ...B3+T(B5+TB7) */
 
 	fmul.x		fp1,fp2	/* ...T(B4+T(B6+TB8)) */
 	fmul.x		fp3,fp1	/* ...T(B3+T(B5+TB7)) */
 
-	fadd.x		COSB2,fp2 /* ...B2+T(B4+T(B6+TB8)) */
-	fadd.s		COSB1,fp1 /* ...B1+T(B3+T(B5+TB7)) */
+	fadd.x		COSB2.w(pc),fp2 /* ...B2+T(B4+T(B6+TB8)) */
+	fadd.s		COSB1.w(pc),fp1 /* ...B1+T(B3+T(B5+TB7)) */
 
 	fmul.x		fp2,fp0	/* ...S(B2+T(B4+T(B6+TB8))) */
 /*
@@ -621,12 +621,12 @@ SCMAIN:
  * --THE ARGUMENT REDUCTION IS DONE BY TABLE LOOK UP.
  */
 	fmove.x		fp0,fp1
-	fmul.d		TWOBYPI,fp1	/* ...X*2/PI */
+	fmul.d		TWOBYPI.w(pc),fp1	/* ...X*2/PI */
 
 /*
  * --HIDE THE NEXT THREE INSTRUCTIONS
  */
-	lea		PITBL+0x200,a1 /* ...TABLE OF N*PI/2, N = -32,...,32 */
+	lea		PITBL+0x200.w(pc),a1 /* ...TABLE OF N*PI/2, N = -32,...,32 */
 
 
 /*
@@ -659,8 +659,8 @@ NODD_ssin:
  */
 	fmove.x		fp0,RPRIME(a6)
 	fmul.x		fp0,fp0	 			/* ...FP0 IS S = R*R */
-	fmove.d		SINA7,fp1		/* ...A7 */
-	fmove.d		COSB8,fp2		/* ...B8 */
+	fmove.d		SINA7.w(pc),fp1		/* ...A7 */
+	fmove.d		COSB8.w(pc),fp2		/* ...B8 */
 	fmul.x		fp0,fp1			/* ...SA7 */
 	move.l		d2,-(a7)
 	move.l		d0,d2
@@ -668,10 +668,10 @@ NODD_ssin:
 	ror.l		#1,d2
 	andi.l		#0x80000000,d2
 
-	fadd.d		SINA6,fp1		/* ...A6+SA7 */
+	fadd.d		SINA6.w(pc),fp1		/* ...A6+SA7 */
 	eor.l		d0,d2
 	andi.l		#0x80000000,d2
-	fadd.d		COSB7,fp2		/* ...B7+SB8 */
+	fadd.d		COSB7.w(pc),fp2		/* ...B7+SB8 */
 
 	fmul.x		fp0,fp1			/* ...S(A6+SA7) */
 	eor.l		d2,RPRIME(a6)
@@ -680,36 +680,36 @@ NODD_ssin:
 	ror.l		#1,d0
 	andi.l		#0x80000000,d0
 
-	fadd.d		SINA5,fp1	/* ...A5+S(A6+SA7) */
+	fadd.d		SINA5.w(pc),fp1	/* ...A5+S(A6+SA7) */
 	move.l		#0x3F800000,POSNEG1(a6)
 	eor.l		d0,POSNEG1(a6)
-	fadd.d		COSB6,fp2	/* ...B6+S(B7+SB8) */
+	fadd.d		COSB6.w(pc),fp2	/* ...B6+S(B7+SB8) */
 
 	fmul.x		fp0,fp1	 /* ...S(A5+S(A6+SA7)) */
 	fmul.x		fp0,fp2	 /* ...S(B6+S(B7+SB8)) */
 	fmove.x		fp0,SPRIME(a6)
 
-	fadd.d		SINA4,fp1	/* ...A4+S(A5+S(A6+SA7)) */
+	fadd.d		SINA4.w(pc),fp1	/* ...A4+S(A5+S(A6+SA7)) */
 	eor.l		d0,SPRIME(a6)
-	fadd.d		COSB5,fp2	/* ...B5+S(B6+S(B7+SB8)) */
+	fadd.d		COSB5.w(pc),fp2	/* ...B5+S(B6+S(B7+SB8)) */
 
 	fmul.x		fp0,fp1	 /* ...S(A4+...) */
 	fmul.x		fp0,fp2	 /* ...S(B5+...) */
 
-	fadd.d		SINA3,fp1	/* ...A3+S(A4+...) */
-	fadd.d		COSB4,fp2	/* ...B4+S(B5+...) */
+	fadd.d		SINA3.w(pc),fp1	/* ...A3+S(A4+...) */
+	fadd.d		COSB4.w(pc),fp2	/* ...B4+S(B5+...) */
 
 	fmul.x		fp0,fp1	 /* ...S(A3+...) */
 	fmul.x		fp0,fp2	 /* ...S(B4+...) */
 
-	fadd.x		SINA2,fp1	/* ...A2+S(A3+...) */
-	fadd.x		COSB3,fp2	/* ...B3+S(B4+...) */
+	fadd.x		SINA2.w(pc),fp1	/* ...A2+S(A3+...) */
+	fadd.x		COSB3.w(pc),fp2	/* ...B3+S(B4+...) */
 
 	fmul.x		fp0,fp1	 /* ...S(A2+...) */
 	fmul.x		fp0,fp2	 /* ...S(B3+...) */
 
-	fadd.x		SINA1,fp1	/* ...A1+S(A2+...) */
-	fadd.x		COSB2,fp2	/* ...B2+S(B3+...) */
+	fadd.x		SINA1.w(pc),fp1	/* ...A1+S(A2+...) */
+	fadd.x		COSB2.w(pc),fp2	/* ...B2+S(B3+...) */
 
 	fmul.x		fp0,fp1	 /* ...S(A1+...) */
 	fmul.x		fp2,fp0	 /* ...S(B2+...) */
@@ -717,7 +717,7 @@ NODD_ssin:
 
 
 	fmul.x		RPRIME(a6),fp1	/* ...R'S(A1+...) */
-	fadd.s		COSB1,fp0	/* ...B1+S(B2...) */
+	fadd.s		COSB1.w(pc),fp0	/* ...B1+S(B2...) */
 	fmul.x		SPRIME(a6),fp0	/* ...S'(B1+S(B2+...)) */
 
 	move.l		d1,-(sp)	/* restore users mode & precision */
@@ -737,15 +737,15 @@ NEVEN:
  */
 	fmove.x		fp0,RPRIME(a6)
 	fmul.x		fp0,fp0	 /* ...FP0 IS S = R*R */
-	fmove.d		COSB8,fp1			/* ...B8 */
-	fmove.d		SINA7,fp2			/* ...A7 */
+	fmove.d		COSB8.w(pc),fp1			/* ...B8 */
+	fmove.d		SINA7.w(pc),fp2			/* ...A7 */
 	fmul.x		fp0,fp1	 /* ...SB8 */
 	fmove.x		fp0,SPRIME(a6)
 	fmul.x		fp0,fp2	 /* ...SA7 */
 	ror.l		#1,d0
 	andi.l		#0x80000000,d0
-	fadd.d		COSB7,fp1	/* ...B7+SB8 */
-	fadd.d		SINA6,fp2	/* ...A6+SA7 */
+	fadd.d		COSB7.w(pc),fp1	/* ...B7+SB8 */
+	fadd.d		SINA6.w(pc),fp2	/* ...A6+SA7 */
 	eor.l		d0,RPRIME(a6)
 	eor.l		d0,SPRIME(a6)
 	fmul.x		fp0,fp1	 /* ...S(B7+SB8) */
@@ -753,39 +753,39 @@ NEVEN:
 	move.l		d0,POSNEG1(a6)
 	fmul.x		fp0,fp2	 /* ...S(A6+SA7) */
 
-	fadd.d		COSB6,fp1	/* ...B6+S(B7+SB8) */
-	fadd.d		SINA5,fp2	/* ...A5+S(A6+SA7) */
+	fadd.d		COSB6.w(pc),fp1	/* ...B6+S(B7+SB8) */
+	fadd.d		SINA5.w(pc),fp2	/* ...A5+S(A6+SA7) */
 
 	fmul.x		fp0,fp1	 /* ...S(B6+S(B7+SB8)) */
 	fmul.x		fp0,fp2	 /* ...S(A5+S(A6+SA7)) */
 
-	fadd.d		COSB5,fp1	/* ...B5+S(B6+S(B7+SB8)) */
-	fadd.d		SINA4,fp2	/* ...A4+S(A5+S(A6+SA7)) */
+	fadd.d		COSB5.w(pc),fp1	/* ...B5+S(B6+S(B7+SB8)) */
+	fadd.d		SINA4.w(pc),fp2	/* ...A4+S(A5+S(A6+SA7)) */
 
 	fmul.x		fp0,fp1	 /* ...S(B5+...) */
 	fmul.x		fp0,fp2	 /* ...S(A4+...) */
 
-	fadd.d		COSB4,fp1	/* ...B4+S(B5+...) */
-	fadd.d		SINA3,fp2	/* ...A3+S(A4+...) */
+	fadd.d		COSB4.w(pc),fp1	/* ...B4+S(B5+...) */
+	fadd.d		SINA3.w(pc),fp2	/* ...A3+S(A4+...) */
 
 	fmul.x		fp0,fp1	 /* ...S(B4+...) */
 	fmul.x		fp0,fp2	 /* ...S(A3+...) */
 
-	fadd.x		COSB3,fp1	/* ...B3+S(B4+...) */
-	fadd.x		SINA2,fp2	/* ...A2+S(A3+...) */
+	fadd.x		COSB3.w(pc),fp1	/* ...B3+S(B4+...) */
+	fadd.x		SINA2.w(pc),fp2	/* ...A2+S(A3+...) */
 
 	fmul.x		fp0,fp1	 /* ...S(B3+...) */
 	fmul.x		fp0,fp2	 /* ...S(A2+...) */
 
-	fadd.x		COSB2,fp1	/* ...B2+S(B3+...) */
-	fadd.x		SINA1,fp2	/* ...A1+S(A2+...) */
+	fadd.x		COSB2.w(pc),fp1	/* ...B2+S(B3+...) */
+	fadd.x		SINA1.w(pc),fp2	/* ...A1+S(A2+...) */
 
 	fmul.x		fp0,fp1	 /* ...S(B2+...) */
 	fmul.x		fp2,fp0	 /* ...s(a1+...) */
 
 
 
-	fadd.s		COSB1,fp1	/* ...B1+S(B2...) */
+	fadd.s		COSB1.w(pc),fp1	/* ...B1+S(B2...) */
 	fmul.x		RPRIME(a6),fp0	/* ...R'S(A1+...) */
 	fmul.x		SPRIME(a6),fp1	/* ...S'(B1+S(B2+...)) */
 

@@ -72,14 +72,13 @@
 	.XREF FONE
 
 	.text
+/* Constants in single precision */
 BOUNDS1_slogn:  .dc.l 0x3FFEF07D,0x3FFF8841
 BOUNDS2_slogn:  .dc.l 0x3FFE8000,0x3FFFC000
 
-	.data
+	.text
 LOGOF2:	.dc.l 0x3FFE0000,0xB17217F7,0xD1CF79AC,0x00000000
 
-zero:	.dc.l 0x00000000
-infty:	.dc.l 0x7F800000
 negone:	.dc.l 0xBF800000
 
 LOGA6:	.dc.l 0x3FC2499A,0xB5E4040B
@@ -360,7 +359,7 @@ LOGMAIN:
 	asr.l	#8,d0		/*  ...SHIFTED 16 BITS, BIASED EXPO. OF X */
 	subi.l	#0x3FFF,d0	/*  ...THIS IS K */
 	add.l	ADJK(a6),d0	/*  ...ADJUST K, ORIGINAL INPUT MAY BE  DENORM. */
-	lea	LOGTBL,a0	/*  ...BASE ADDRESS OF 1/F AND LOG(F) */
+	lea	LOGTBL.w(pc),a0	/*  ...BASE ADDRESS OF 1/F AND LOG(F) */
 	fmove.l	d0,fp1		/*  ...CONVERT K TO FLOATING-POINT FORMAT */
 
 /*
@@ -391,7 +390,7 @@ LP1CONT1:
  * --AN RE-ENTRY POINT FOR LOGNP1
  */
 	fmul.x	(a0),fp0	/*  ...FP0 IS U = (Y-F)/F */
-	fmul.x	LOGOF2,fp1	/*  ...GET K*LOG2 WHILE FP0 IS NOT READY */
+	fmul.x	LOGOF2.w(pc),fp1	/*  ...GET K*LOG2 WHILE FP0 IS NOT READY */
 	fmove.x	fp0,fp2
 	fmul.x	fp2,fp2		/*  ...FP2 IS V=U*U */
 	fmove.x	fp1,KLOG2(a6)	/*  ...PUT K*LOG2 IN MEMORY, FREE FP1 */
@@ -404,17 +403,17 @@ LP1CONT1:
 	fmove.x	fp2,fp3
 	fmove.x	fp2,fp1
 
-	fmul.d	LOGA6,fp1	/*  ...V*A6 */
-	fmul.d	LOGA5,fp2	/*  ...V*A5 */
+	fmul.d	LOGA6.w(pc),fp1	/*  ...V*A6 */
+	fmul.d	LOGA5.w(pc),fp2	/*  ...V*A5 */
 
-	fadd.d	LOGA4,fp1	/*  ...A4+V*A6 */
-	fadd.d	LOGA3,fp2	/*  ...A3+V*A5 */
+	fadd.d	LOGA4.w(pc),fp1	/*  ...A4+V*A6 */
+	fadd.d	LOGA3.w(pc),fp2	/*  ...A3+V*A5 */
 
 	fmul.x	fp3,fp1		/*  ...V*(A4+V*A6) */
 	fmul.x	fp3,fp2		/*  ...V*(A3+V*A5) */
 
-	fadd.d	LOGA2,fp1	/*  ...A2+V*(A4+V*A6) */
-	fadd.d	LOGA1,fp2	/*  ...A1+V*(A3+V*A5) */
+	fadd.d	LOGA2.w(pc),fp1	/*  ...A2+V*(A4+V*A6) */
+	fadd.d	LOGA1.w(pc),fp2	/*  ...A1+V*(A3+V*A5) */
 
 	fmul.x	fp3,fp1		/*  ...V*(A2+V*(A4+V*A6)) */
 	adda.w	#16,a0		/*  ...ADDRESS OF LOG(F) */
@@ -437,8 +436,8 @@ LOGNEAR1:
  * --REGISTERS SAVED: FPCR, FP1. FP0 CONTAINS THE INPUT.
  */
 	fmove.x	fp0,fp1
-	fsub.s	FONE,fp1		/*  ...FP1 IS X-1 */
-	fadd.s	FONE,fp0		/*  ...FP0 IS X+1 */
+	fsub.s	FONE.w(pc),fp1		/*  ...FP1 IS X-1 */
+	fadd.s	FONE.w(pc),fp0		/*  ...FP0 IS X+1 */
 	fadd.x	fp1,fp1		/*  ...FP1 IS 2(X-1) */
 /*
  * --LOG(X) = LOG(1+U/2)-LOG(1-U/2) WHICH IS AN ODD POLYNOMIAL
@@ -462,20 +461,20 @@ LP1CONT2:
 	fmove.x	fp0,fp1
 	fmul.x	fp1,fp1	/*  ...FP1 IS W */
 
-	fmove.d	LOGB5,fp3
-	fmove.d	LOGB4,fp2
+	fmove.d	LOGB5.w(pc),fp3
+	fmove.d	LOGB4.w(pc),fp2
 
 	fmul.x	fp1,fp3	/*  ...W*B5 */
 	fmul.x	fp1,fp2	/*  ...W*B4 */
 
-	fadd.d	LOGB3,fp3 /*  ...B3+W*B5 */
-	fadd.d	LOGB2,fp2 /*  ...B2+W*B4 */
+	fadd.d	LOGB3.w(pc),fp3 /*  ...B3+W*B5 */
+	fadd.d	LOGB2.w(pc),fp2 /*  ...B2+W*B4 */
 
 	fmul.x	fp3,fp1	/*  ...W*(B3+W*B5), FP3 RELEASED */
 
 	fmul.x	fp0,fp2	/*  ...V*(B2+W*B4) */
 
-	fadd.d	LOGB1,fp1 /*  ...B1+W*(B3+W*B5) */
+	fadd.d	LOGB1.w(pc),fp1 /*  ...B1+W*(B3+W*B5) */
 	fmul.x	SAVEU(a6),fp0 /*  ...FP0 IS U*V */
 
 	fadd.x	fp2,fp1	/*  ...B1+W*(B3+W*B5) + V*(B2+W*B4), FP2 RELEASED */
@@ -509,7 +508,7 @@ slognp1:
  */
 	fmove.x	(a0),fp0	/*  ...LOAD INPUT */
 	fabs.x	fp0		/* test magnitude */
-	fcmp.x	LTHOLD,fp0	/* compare with min threshold */
+	fcmp.x	LTHOLD.w(pc),fp0	/* compare with min threshold */
 	fbgt	LP1REAL		/* if greater, continue */
 	fmove.l	#0,fpsr		/* clr N flag from compare */
 	fmove.l	d1,fpcr
@@ -520,7 +519,7 @@ LP1REAL:
 	fmove.x	(a0),fp0	/*  ...LOAD INPUT */
 	move.l	#0x00000000,ADJK(a6)
 	fmove.x	fp0,fp1		/*  ...FP1 IS INPUT Z */
-	fadd.s	FONE,fp0	/*  ...X := ROUND(1+Z) */
+	fadd.s	FONE.w(pc),fp0	/*  ...X := ROUND(1+Z) */
 	fmove.x	fp0,X(a6)
 	move.w	XFRAC(a6),XDCARE(a6)
 	move.l	X(a6),d0
@@ -546,7 +545,7 @@ LP1ONE16:
  * --WHERE U = 2Z/(2+Z) = 2Z/(1+X).
  */
 	fadd.x	fp1,fp1	/*  ...FP1 IS 2Z */
-	fadd.s	FONE,fp0	/*  ...FP0 IS 1+X */
+	fadd.s	FONE.w(pc),fp0	/*  ...FP0 IS 1+X */
 /*
  * --U = FP1/FP0
  */
@@ -570,7 +569,7 @@ LP1CARE:
 	bge.s	KISZERO
 
 KISNEG1:
-	fmove.s	TWO,fp0
+	fmove.s	TWO.w(pc),fp0
 	move.l	#0x3fff0000,F(a6)
 	clr.l	F+8(a6)
 	fsub.x	F(a6),fp0	/*  ...2-F */
@@ -582,13 +581,13 @@ KISNEG1:
 	fadd.x	fp1,fp1		/*  ...GET 2Z */
 	fmovem.x fp2-fp2/fp3,-(sp)	/*  ...SAVE FP2 */
 	fadd.x	fp1,fp0		/*  ...FP0 IS Y-F = (2-F)+2Z */
-	lea	LOGTBL,a0	/*  ...A0 IS ADDRESS OF 1/F */
+	lea	LOGTBL.w(pc),a0	/*  ...A0 IS ADDRESS OF 1/F */
 	adda.l	d0,a0
-	fmove.s	negone,fp1	/*  ...FP1 IS K = -1 */
+	fmove.s	negone.w(pc),fp1	/*  ...FP1 IS K = -1 */
 	bra	LP1CONT1
 
 KISZERO:
-	fmove.s	FONE,fp0
+	fmove.s	FONE.w(pc),fp0
 	move.l	#0x3fff0000,F(a6)
 	clr.l	F+8(a6)
 	fsub.x	F(a6),fp0		/*  ...1-F */
@@ -599,9 +598,9 @@ KISZERO:
 	asr.l	#4,d0
 	fadd.x	fp1,fp0		/*  ...FP0 IS Y-F */
 	fmovem.x fp2-fp2/fp3,-(sp)	/*  ...FP2 SAVED */
-	lea	LOGTBL,a0
+	lea	LOGTBL.w(pc),a0
 	adda.l	d0,a0		/*  ...A0 IS ADDRESS OF 1/F */
-	fmove.s	zero,fp1	/*  ...FP1 IS K = 0 */
+	fmove.s	#0,fp1	/*  ...FP1 IS K = 0 */
 	bra	LP1CONT1
 
 LP1NEG0:
@@ -611,13 +610,13 @@ LP1NEG0:
 	tst.l	d0
 	blt.s	LP1NEG
 LP1ZERO:
-	fmove.s	negone,fp0
+	fmove.s	negone.w(pc),fp0
 
 	fmove.l	d1,fpcr
 	bra t_dz
 
 LP1NEG:
-	fmove.s	zero,fp0
+	fmove.s	#0,fp0
 
 	fmove.l	d1,fpcr
 	bra	t_operr

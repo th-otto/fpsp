@@ -1,3 +1,36 @@
+/*
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * MOTOROLA MICROPROCESSOR & MEMORY TECHNOLOGY GROUP
+ * M68000 Hi-Performance Microprocessor Division
+ * M68060 Software Package
+ * Production Release P1.00 -- October 10, 1994
+ * 
+ * M68060 Software Package Copyright © 1993, 1994 Motorola Inc.  All rights reserved.
+ * 
+ * THE SOFTWARE is provided on an "AS IS" basis and without warranty.
+ * To the maximum extent permitted by applicable law,
+ * MOTOROLA DISCLAIMS ALL WARRANTIES WHETHER EXPRESS OR IMPLIED,
+ * INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE
+ * and any warranty against infringement with regard to the SOFTWARE
+ * (INCLUDING ANY MODIFIED VERSIONS THEREOF) and any accompanying written materials.
+ * 
+ * To the maximum extent permitted by applicable law,
+ * IN NO EVENT SHALL MOTOROLA BE LIABLE FOR ANY DAMAGES WHATSOEVER
+ * (INCLUDING WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS,
+ * BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY LOSS)
+ * ARISING OF THE USE OR INABILITY TO USE THE SOFTWARE.
+ * Motorola assumes no responsibility for the maintenance and support of the SOFTWARE.
+ * 
+ * You are hereby granted a copyright license to use, modify, and distribute the SOFTWARE
+ * so long as this entire notice is retained without alteration in any modified and/or
+ * redistributed versions, and that such modified versions are clearly identified as such.
+ * No licenses are granted by implication, estoppel or otherwise under any patents
+ * or trademarks of Motorola, Inc.
+ */
+
+XBRA      = 0x58425241              /* "XBRA" */
+XBRA_ID   = 0x46505350              /* "FPSP" */
+
 _movecd = 0x4e7a /* used for movec xx,dn */
 _movec  = 0x4e7b /* used for movec d0,xx */
 _cacr   = 0x0002
@@ -8,240 +41,58 @@ _dtt1   = 0x0007
 _pcr    = 0x0808
 
 
-XBRA      = 0x58425241              /* "XBRA" */
-XBRA_ID   = 0x46505350              /* "FPSP" */
-XBRA_AB40 = 0x41423430              /* "AB40" */
-XBRA_MCSP = 0x4d435350              /* "MCSP" */
+	.globl install_060
+install_060:
+	lea        new_int_instr(pc),a0
+	move.l     0xf4(a1),-4(a0)                  /* save old unimplemented integer vector */
+	move.l     a0,0xf4(a1)                      /* set new unimplemented integer vector */
 
-        .text
+	lea        new_snan(pc),a0
+	move.l     0xd8(a1),-4(a0)                  /* save old snan vector */
+	move.l     a0,0xd8(a1)                      /* set new snan vector */
+
+	lea        new_operr(pc),a0
+	move.l     0xd0(a1),-4(a0)                  /* save old operr vector */
+	move.l     a0,0xd0(a1)                      /* set new operr vector */
+
+	lea        new_overflow(pc),a0
+	move.l     0xd4(a1),-4(a0)                  /* save old overflow vector */
+	move.l     a0,0xd4(a1)                      /* set new overflow vector */
+
+	lea        new_underflow(pc),a0
+	move.l     0xcc(a1),-4(a0)                  /* save old underflow vector */
+	move.l     a0,0xcc(a1)                      /* set new undeflow vector */
+
+	lea        new_div_zero(pc),a0
+	move.l     0xc8(a1),-4(a0)                  /* save old div-by-zero vector */
+	move.l     a0,0xc8(a1)                      /* set new div-by-zero vector */
+
+	lea        new_inex(pc),a0
+	move.l     0xc4(a1),-4(a0)                  /* save old inex vector */
+	move.l     a0,0xc4(a1)                      /* set new inex vector */
+
+	lea        new_fline(pc),a0
+	move.l     0x2c(a1),-4(a0)                  /* save old linef vector */
+	move.l     a0,0x2c(a1)                      /* set new linef vector */
+
+	lea        new_unsupp(pc),a0
+	move.l     0xdc(a1),-4(a0)                  /* save old unsupp vector */
+	move.l     a0,0xdc(a1)                      /* set new unsupp vector */
+
+	lea        new_effadd(pc),a0
+	move.l     0xf0(a1),-4(a0)                  /* save old effective address vector */
+	move.l     a0,0xf0(a1)                      /* set new effective address vector */
+
+	.dc.w      0xf23c,0x9000,0,0                /* fmovem.l #0,fpcr */
+
+	rts
+
 
 /*
- * GEMDOS startup code:
- * get basepage, calculate program size, and shrink memory
+ * =========================================================
+ * unimplemented integer routines
+ * =========================================================
  */
-        move.l  4(a7),a3
-        move.l  12(a3),a5
-        add.l   20(a3),a5
-        add.l   28(a3),a5
-        lea     256(a5),a5
-/* Setup a (very small) stack in the commandline */
-        lea     256(a3),a7
-/* Free not required memory */
-        move.l  a5,-(a7)
-        move.l  a3,-(a7)
-        clr.w   -(a7)
-        move.w  #0x4a,-(a7)             /* Mshrink */
-        trap    #1
-        lea.l   12(a7),a7
-
-/* do the installation */
-        pea     doinstall(pc)
-        move.w  #38,-(a7)               /* Supexec */
-        trap    #14
-        addq.w  #6,a7
-
-		tst.w   d0
-		beq.s   done
-        lea no_060_msg(pc),a0
-        subq.w  #1,d0
-        beq.s   exit
-        lea already_installed_msg(pc),a0
-        subq.w  #1,d0
-        beq.s   exit
-        lea already_installed_msg2(pc),a0
-        subq.w  #1,d0
-        beq.s   exit
-        lea already_installed_msg3(pc),a0
-        bra.s   exit
-
-done:
-/* terminate and stay resident */
-        clr.w   -(a7)
-        move.l  a5,-(a7)
-        move.w  #49,-(a7)               /* Ptermres */
-        trap    #1
-term:
-        bra.s   term                    /* just in case */
-
-exit:
-	    bsr.s print_string
-exitloop:
-        bsr.s  waitkey
-        clr.w -(a7)                     /* Pterm0 */
-        trap #1
-        bra.s exitloop                  /* just in case */
-
-waitkey:
-        lea waitkey_msg(pc),a0
-        bsr.s print_string
-        move.w #8,-(a7)                 /* Cnecin */
-        trap #1
-        addq.l #2,a7
-        rts
-
-print_string:
-        move.l a0,-(a7)
-        move.w #9,-(a7)                 /* Cconws */
-        trap   #1
-        addq.w #6,a7
-        rts
-
-
-already_installed_msg:
-        .ascii "FPSP already installed!"
-        .dc.b  13,10,0
-already_installed_msg2:
-        .ascii "AB40 emulation detected, FPSP not installed!"
-        .dc.b  13,10,0
-already_installed_msg3:
-        .ascii "Milan emulation detected, FPSP not installed!"
-        .dc.b  13,10,0
-no_060_msg:
-        .ascii "No 060 CPU detected, FPSP not installed!"
-        .dc.b  13,10,0
-waitkey_msg:
-        .ascii "Press any key to continue!"
-crnl:
-        .dc.b  13,10,0
-
-        .even
-
-/*
- * actual installation code, executed in supervisor mode
- */
-doinstall:
-		bsr get_cpu_typ
-		cmpi.w   #60,d0
-		bne      no_060
-		movec    vbr,a1
-		move.l   0x2c(a1),a0
-		cmp.l    #XBRA,-12(a0)
-		bne.s    doinstall1
-		cmp.l    #XBRA_ID,-8(a0)
-		beq      already_installed
-		cmp.l    #XBRA_AB40,-8(a0)
-		beq      already_installed2
-		cmp.l    #XBRA_MCSP,-8(a0)
-		beq      already_installed3
-doinstall1:
- lea      new_int_instr(pc),a0
- move.l   0xf4(a1),-4(a0)                  /* save old unimplemented integer vector */
- move.l   a0,0xf4(a1)                      /* set new unimplemented integer vector */
-
- lea      new_snan(pc),a0
- move.l   0xd8(a1),-4(a0)                  /* save old snan vector */
- move.l   a0,0xd8(a1)                      /* set new snan vector */
-
- lea      new_operr(pc),a0
- move.l   0xd0(a1),-4(a0)                  /* save old operr vector */
- move.l   a0,0xd0(a1)                      /* set new operr vector */
-
- lea      new_overflow(pc),a0
- move.l   0xd4(a1),-4(a0)                  /* save old overflow vector */
- move.l   a0,0xd4(a1)                      /* set new overflow vector */
-
- lea      new_underflow(pc),a0
- move.l   0xcc(a1),-4(a0)                  /* save old underflow vector */
- move.l   a0,0xcc(a1)                      /* set new undeflow vector */
-
- lea      new_div_zero(pc),a0
- move.l   0xc8(a1),-4(a0)                  /* save old div-by-zero vector */
- move.l   a0,0xc8(a1)                      /* set new div-by-zero vector */
-
- lea      new_inex(pc),a0
- move.l   0xc4(a1),-4(a0)                  /* save old inex vector */
- move.l   a0,0xc4(a1)                      /* set new inex vector */
-
- lea      new_fline(pc),a0
- move.l   0x2c(a1),-4(a0)                  /* save old linef vector */
- move.l   a0,0x2c(a1)                      /* set new linef vector */
-
- lea      new_unsupp(pc),a0
- move.l   0xdc(a1),-4(a0)                  /* save old unsupp vector */
- move.l   a0,0xdc(a1)                      /* set new unsupp vector */
-
- lea      new_effadd(pc),a0
- move.l   0xf0(a1),-4(a0)                  /* save old effective address vector */
- move.l   a0,0xf0(a1)                      /* set new effective address vector */
-
- .dc.w    0xf23c,0x9000,0,0                /* fmovem.l #0,fpcr */
- moveq #0,d0                               /* no error */
- rts
-
-
-no_060:
- moveq #1,d0                               /* flag error */
- rts
-
-already_installed:
- moveq #2,d0                               /* flag error */
- rts
-
-already_installed2:
- moveq #3,d0                               /* flag error */
- rts
-
-already_installed3:
- moveq #4,d0                               /* flag error */
- rts
-
-/*
- **********************************************************************
- *
- * int get_cpu_typ( void )
- *
- * Determine processor type
- */
-
-get_cpu_typ:
- move.l   0x10.w,-(a7)             /* save illegal instruction */
- move.l   0x2c.w,-(a7)             /* save line F */
- move.l   0xf4.w,-(a7)             /* save unimplemented instruction */
- move.l   sp,a0                    /* save stack ptr */
- moveq    #0,d0                    /* default CPU is 68000 */
- nop                               /* flush pipelines */
- lea      set_cpu_typ(pc),a1       /* here we go on illegal instruction */
- move.l   a1,0x10.w                /* illegal instruction */
- move.l   a1,0x2c.w                /* line F */
- move.l   a1,0xf4.w                /* unimplemented instruction */
-
- move     ccr,d1
- moveq    #10,d0                   /* move.w ccr,d0 legal on 68010+ */
- movec.l  cacr,d1                  /* d1 = get cache control register */
- move.l   d1,d0                    /* hold a copy for later */
- ori.w    #0x0101,d1               /* enable '020 instr. and '030 data caches */
-
- movec    d1,cacr                  /* set new cache controls from d1 */
- movec    cacr,d1                  /*   & read it back again to check */
- movec    d0,cacr                  /* always restore cacr */
- btst     #0,d1                    /* if '020 instr. cache was not enabled, this is a 68040+ */
- beq.s    x040
- moveq    #20,d0                   /* assume 68020 */
- btst     #8,d1                    /* check if 68030 data cache was enabled */
- beq.b    set_cpu_typ              /* no data cache, we are done */
- .dc.w 0xf039,0x4200,0,64          /* pmove    tc,12.l; try to access the TC register */
- moveq    #30,d0                   /* no fault -> this is a 030 */
- bra.s    set_cpu_typ
-
-/* can only be 040 or 060 */
-
-x040:
- moveq    #40,d0                   /* assume 68040 */
- dc.w     0x4e7a,0x1808            /* movec pcr,d1 */
- moveq    #60,d0                   /* no fault -> this is 68060 */
- 
- .dc.w    0x06d0,0x0000            /* check for apollo addiw.l instruction */
- moveq    #40,d0                   /* no fault, force 68040 detection */
- 
-set_cpu_typ:
- move.l   a0,sp                    /* restore stack ptr */
- nop                               /* flush pipelines */
- move.l   (a7)+,0xf4.w             /* restore unimplemented instruction */
- move.l   (a7)+,0x2c.w             /* restore line F */
- move.l   (a7)+,0x10.w             /* restore illegal instruction */
- rts
-
-/* ******************************************************************************************************************* */
 
     .dc.l XBRA
     .dc.l XBRA_ID
@@ -324,12 +175,6 @@ x060_real_lock_page:
 x060_real_unlock_page:
         clr.l d0
         rts
-
-/*
- * =========================================================
- * unimplemented integer routines
- * =========================================================
- */
 
 EXC_SR = 4
 
@@ -575,6 +420,8 @@ xI_CALL_TOP:
 unim_int_instr:
 	    .include "isp.sa"
 
+/* ******************************************************************************************************************* */
+
 /*
  * =======================================================
  * floating point routines
@@ -591,7 +438,7 @@ x060_real_inex:
         dc.w      0xf327                    /* fsave         -(sp) */
         move.w    #0x6000,2(sp)
         dc.w      0xf35f                    /* frestore (sp)+ */
-        dc.w      0xf23c,0x9000,0,0         /* fmovem.l #0,fpcr */
+        /* dc.w      0xf23c,0x9000,0,0 */         /* fmovem.l #0,fpcr */
         rte
 
 x060_real_fline:

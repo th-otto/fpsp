@@ -82,12 +82,13 @@ EXTRA = \
 	src/hdr.fpu \
 	$(empty)
 
-FPSP060_OBJS = $(FPSP060_SRCS:.S=.o)
+fpsp060_obj = fpsp060.o skel060.o
 
 all: fpsp.sa isp.sa fpsp060.prg ftest.sa itest.sa fpsptst.tos
 
-fpsp060.prg: fpsp060.s fpsp.sa isp.sa
-	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
+fpsp060.prg: $(fpsp060_obj) fpsp.sa isp.sa
+	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp060_obj)
+	@-stripex $@
 
 fpsptst.tos: fpsptst.s ftest.sa itest.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<

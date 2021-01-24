@@ -1,15 +1,24 @@
 /*
- * FPSP installer, version for 040 only
+ * FPSP installer, version for 060 only
  */
+_movecd = 0x4e7a /* used for movec xx,dn */
+_movec  = 0x4e7b /* used for movec d0,xx */
+_cacr   = 0x0002
+_itt0   = 0x0004
+_itt1   = 0x0005
+_dtt0   = 0x0006
+_dtt1   = 0x0007
+_pcr    = 0x0808
+
 
 XBRA      = 0x58425241              /* "XBRA" */
 XBRA_ID   = 0x46505350              /* "FPSP" */
 XBRA_AB40 = 0x41423430              /* "AB40" */
 XBRA_MCSP = 0x4d435350              /* "MCSP" */
 
-	.xref	install_040
+	.xref	install_060
 
-	.text
+        .text
 
 /*
  * GEMDOS startup code:
@@ -41,7 +50,7 @@ XBRA_MCSP = 0x4d435350              /* "MCSP" */
 
 		tst.w   d0
 		beq.s   done
-        lea no_040_msg(pc),a0
+        lea no_060_msg(pc),a0
         subq.w  #1,d0
         beq.s   exit
         lea already_installed_msg(pc),a0
@@ -97,9 +106,6 @@ welcome_msg:
 	.ascii "***************************************"
 	.dc.b 0
 
-installed_msg:
-        .ascii "FPSP installed!"
-        .dc.b  13,10,0
 already_installed_msg:
         .ascii "FPSP already installed!"
         .dc.b  13,10,0
@@ -109,20 +115,24 @@ already_installed_msg2:
 already_installed_msg3:
         .ascii "Milan emulation detected, FPSP not installed!"
         .dc.b  13,10,0
-no_040_msg:
-        .ascii "No 040 CPU detected, FPSP not installed!"
+no_060_msg:
+        .ascii "No 060 CPU detected, FPSP not installed!"
         .dc.b  13,10,0
 waitkey_msg:
         .ascii "Press any key to continue!"
 crnl:
         .dc.b  13,10,0
-		.even
 
+        .even
+
+/*
+ * actual installation code, executed in supervisor mode
+ */
 doinstall:
 		bsr get_cpu_typ
-		lea      install_040.w(pc),a2
-		cmpi.w   #40,d0
-		bne      no_040
+		lea      install_060.w(pc),a2
+		cmpi.w   #60,d0
+		bne      no_060
 		movec    vbr,a1
 		move.l   0x2c(a1),a0
 		cmp.l    #XBRA,-12(a0)
@@ -134,24 +144,24 @@ doinstall:
 		cmp.l    #XBRA_MCSP,-8(a0)
 		beq      already_installed3
 doinstall1:
-		jsr (a2)
-		moveq #0,d0                            /* no error */
+		jsr      (a2)
+		moveq #0,d0                        /* no error */
 		rts
 
-no_040:
-		moveq #1,d0                            /* flag error */
+no_060:
+		moveq #1,d0                        /* flag error */
 		rts
 
 already_installed:
-		moveq #2,d0                            /* flag error */
+		moveq #2,d0                        /* flag error */
 		rts
 
 already_installed2:
-		moveq #3,d0                            /* flag error */
+		moveq #3,d0                        /* flag error */
 		rts
 
 already_installed3:
-		moveq #4,d0                            /* flag error */
+		moveq #4,d0                        /* flag error */
 		rts
 
 /*

@@ -6,6 +6,7 @@ fpsp040.prg
 .L[-S=0] ; no stack needed
 =
 fpsp040.S
+skel040.S
 
 tbldo.S
 

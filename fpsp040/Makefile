@@ -56,7 +56,7 @@ obj = \
 
 all: fpsp040.a fpsp040.prg
 
-fpsp040_obj = fpsp040.o $(obj)
+fpsp040_obj = fpsp040.o skel040.o $(obj)
 
 fpsp040.prg: $(fpsp040_obj) Makefile
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp040_obj)

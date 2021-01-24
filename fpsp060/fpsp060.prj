@@ -3,4 +3,5 @@ fpsp060.prg
 .S[-S]
 .L[-S=0] ; no stack needed
 =
-fpsp060.s
+fpsp060.S
+skel060.S

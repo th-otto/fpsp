@@ -552,8 +552,8 @@ fmovml_0:
 	fmovem.x	fp0-fp7,IFPREGS(a6)
 	fmovem.l	fpcr/fpsr/fpiar,IFPCREGS(a6)
 
-	/* fmovem.l	#0xffffffffffffffff,fpcr/fpsr */      /* test #3 */
-    .dc.l 0xf23c9800,0xffffffff,0xffffffff /* sometimes miscompiled by gas */
+	/* fmovem.l	#0xfffffff0ffffffff,fpcr/fpsr */      /* test #3 */
+    .dc.l 0xf23c9800,0xfffffff0,0xffffffff /* sometimes miscompiled by gas */
     
 	move.w		ccr,SCCR(a6)
 	movem.l		d0-d7/a0-a6,SREGS(a6)
@@ -580,8 +580,8 @@ fmovml_1:
 	fmovem.x	fp0-fp7,IFPREGS(a6)
 	fmovem.l	fpcr/fpsr/fpiar,IFPCREGS(a6)
 
-	/* fmovem.l	#0xffffffffffffffff,fpcr/fpiar */      /* test #4 */
-    .dc.l 0xf23c9400,0xffffffff,0xffffffff /* sometimes miscompiled by gas */
+	/* fmovem.l	#0xfffffff0ffffffff,fpcr/fpiar */      /* test #4 */
+    .dc.l 0xf23c9400,0xfffffff0,0xffffffff /* sometimes miscompiled by gas */
 
 	move.w		ccr,SCCR(a6)
 	movem.l		d0-d7/a0-a6,SREGS(a6)
@@ -636,8 +636,8 @@ fmovml_3:
 	fmovem.x	fp0-fp7,IFPREGS(a6)
 	fmovem.l	fpcr/fpsr/fpiar,IFPCREGS(a6)
 
-	/* fmovem.l	#0xffffffffffffffffffffffff,fpcr/fpsr/fpiar */      /* test #6 */
-    .dc.l 0xf23c9c00,0xffffffff,0xffffffff,0xffffffff /* sometimes miscompiled by gas */
+	/* fmovem.l	#0xfffffff0ffffffffffffffff,fpcr/fpsr/fpiar */      /* test #6 */
+    .dc.l 0xf23c9c00,0xfffffff0,0xffffffff,0xffffffff /* sometimes miscompiled by gas */
 
 	move.w		ccr,SCCR(a6)
 	movem.l		d0-d7/a0-a6,SREGS(a6)

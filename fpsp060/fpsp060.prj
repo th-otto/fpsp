@@ -4,4 +4,6 @@ fpsp060.prg
 .L[-S=0] ; no stack needed
 =
 fpsp060.S
+..\fpspany\getcpu.S
+..\fpspany\hades.S
 skel060.S

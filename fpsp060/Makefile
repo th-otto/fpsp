@@ -82,9 +82,15 @@ EXTRA = \
 	src/hdr.fpu \
 	$(empty)
 
-fpsp060_obj = fpsp060.o skel060.o
+fpsp060_obj = fpsp060.o getcpu.o hades.o skel060.o
 
 all: fpsp.sa isp.sa fpsp060.prg ftest.sa itest.sa fpsptst.tos
+
+getcpu.o: ../fpspany/getcpu.S
+	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
+
+hades.o: ../fpspany/hades.S
+	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
 
 fpsp060.prg: $(fpsp060_obj) fpsp.sa isp.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp060_obj)
@@ -94,9 +100,9 @@ fpsptst.tos: fpsptst.s ftest.sa itest.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $<
 
 fpsp.bin: $(FPSP060_SRCS) Makefile
-	cat $(FPSP060_SRCS) > fpsp.S
-	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib fpsp.S
-	$(RM) fpsp.S
+	cat $(FPSP060_SRCS) > tmp.S
+	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib tmp.S
+	$(RM) tmp.S
 
 fpsp.sa: fpsp.bin dfpsp
 	./dfpsp $< > $@

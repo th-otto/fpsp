@@ -56,7 +56,13 @@ obj = \
 
 all: fpsp040.a fpsp040.prg
 
-fpsp040_obj = fpsp040.o skel040.o $(obj)
+fpsp040_obj = fpsp040.o getcpu.o hades.o skel040.o $(obj)
+
+getcpu.o: ../fpspany/getcpu.S
+	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
+
+hades.o: ../fpspany/hades.S
+	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
 
 fpsp040.prg: $(fpsp040_obj) Makefile
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp040_obj)

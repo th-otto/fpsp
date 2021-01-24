@@ -51,16 +51,16 @@ easier reference.
 
         - Integer instructions
         
-           - DIVU.L         &lt;ea&gt;,Dr:Dq              64/32  32r,32q
-           - DIVS.L         &lt;ea&gt;,Dr:Dq              64/32  32r,32q
-           - MULU.L         &lt;ea&gt;,Dr:Dq              32*32  64
-           - MULS.L         &lt;ea&gt;,Dr:Dq              32*32  64
+           - DIVU.L         <ea>,Dr:Dq                    64/32  32r,32q
+           - DIVS.L         <ea>,Dr:Dq                    64/32  32r,32q
+           - MULU.L         <ea>,Dr:Dq                    32*32  64
+           - MULS.L         <ea>,Dr:Dq                    32*32  64
            - MOVEP          Dx,(d16,Ay)                   size = W or L
            - MOVEP          (d16,Ay),Dx                   size = W or L
-           - CHK2           &lt;ea&gt;,Rn                 size = B, W, or L
-           - CMP2           &lt;ea&gt;,Rn                 size = B, W, or L
+           - CHK2           <ea>,Rn                       size = B, W, or L
+           - CMP2           <ea>,Rn                       size = B, W, or L
            - CAS2           Dc1:Dc2,Du1:Du2,(Rn1):(Rn2)   size = W or L
-           - CAS            Dc,Du,&lt;ea&gt;              size = W or L, misaligned &lt;ea&gt;
+           - CAS            Dc,Du,<ea>                    size = W or L, misaligned <ea>
 
         - Monadic FP instructions
 

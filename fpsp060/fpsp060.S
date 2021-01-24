@@ -107,6 +107,7 @@ welcome_msg:
 	.ascii " Floating Point Handler Version 1.5    "
 	.dc.b 13,10
 	.ascii "***************************************"
+	.dc.b 13,10
 	.dc.b 0
 
 already_installed_msg:

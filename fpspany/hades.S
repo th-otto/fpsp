@@ -1293,7 +1293,7 @@ install_inf:
 	move.l     #kbd_handler,(a5)
 	move.l     a5,new_kbd_sys
 
-	move.w     #0,-(a7)
+	clr.w      -(a7)
 	pea.l      xytastatur_inf(pc)
 	move.w     #0x003D,-(a7)            /* Fopen */
 	trap       #1
@@ -1311,6 +1311,7 @@ install_inf:
 	bmi.s      install_inf_fail
 	cmpi.w     #3584,d0
 	bne.s      install_inf_fail
+
 	move.w     #1,-(a7)
 	move.w     #14,-(a7)
 	trap       #14						/* Iorec */
@@ -1318,6 +1319,7 @@ install_inf:
 	move.l     d0,old_iorec
 	movea.l    d0,a0
 	move.w     8(a0),ibuftl
+
 	movea.l    _sysbase.l,a0
 	move.l     36(a0),pkbshift
 	move.l     0x00000118.w,new_acia-4
@@ -1503,33 +1505,33 @@ xytastatur_inf:
 	.dc.b 0
 	.even
 
-	.data
+	.bss
 kbd_vec:
-	.dc.l 0
+	.ds.l 1
 
 new_kbd_sys:
-	.dc.l 0
+	.ds.l 1
 
 kbd_timeout:
-	.dc.l 0
+	.ds.l 1
 
 old_kbd_sys:
-	.dc.l 0
+	.ds.l 1
 
 kbd_lock:
-	.dc.w 0
+	.ds.w 1
 
 inf_buf:
 	.ds.b 3584
 
 old_iorec:
-	.dc.l 0
+	.ds.l 1
 
 ibuftl:
-	.dc.w 0
+	.ds.w 1
 
 pkbshift:
-	.dc.l 0
+	.ds.l 1
 
 shifty:
-	.dc.w 0
+	.ds.w 1

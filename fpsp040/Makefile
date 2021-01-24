@@ -3,12 +3,12 @@
 #
 
 CROSS=m68k-atari-mint-
-AS=$(CROSS)as
-AR=$(CROSS)ar
-CC=$(CROSS)gcc
-CFLAGS=-m68040
-ASFLAGS=-m68040 -Wall -Werror -Wa,--register-prefix-optional -Wa,--defsym,GAS=1
-LDFLAGS=
+CC = $(CROSS)gcc
+AS = $(CC)
+AR = $(CROSS)ar
+CFLAGS = -m68040
+ASFLAGS = -m68040 -Wall -Werror -Wa,--register-prefix-optional -Wa,--defsym,GAS=1
+LDFLAGS = -s
 
 obj = \
 	tbldo.o \
@@ -59,10 +59,10 @@ all: fpsp040.a fpsp040.prg
 fpsp040_obj = fpsp040.o getcpu.o hades.o skel040.o $(obj)
 
 getcpu.o: ../fpspany/getcpu.S
-	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
+	$(CC) $(ASFLAGS) -c -o $@ $<
 
 hades.o: ../fpspany/hades.S
-	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
+	$(CC) $(ASFLAGS) -c -o $@ $<
 
 fpsp040.prg: $(fpsp040_obj) Makefile
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp040_obj)
@@ -70,9 +70,7 @@ fpsp040.prg: $(fpsp040_obj) Makefile
 
 fpsp040.a: $(obj) Makefile
 	$(RM) $@
-	$(AR) rcs $@ $^
-
-EXTRA_LDFLAGS := -x
+	$(AR) rcs $@ $(obj)
 
 $(fpsp040_obj): fpsp.h
 

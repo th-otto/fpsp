@@ -1,7 +1,13 @@
+#
+# Makefile for fpsp040 source directory
+#
+
 CROSS=m68k-atari-mint-
 CC = $(CROSS)gcc
 AS = $(CC)
-ASFLAGS = -m68060 -Wall -Werror -Wa,--register-prefix-optional
+AR = $(CROSS)ar
+CFLAGS = -m68040
+ASFLAGS = -m68040 -Wall -Werror -Wa,--register-prefix-optional -Wa,--defsym,GAS=1
 LDFLAGS = -s
 
 CC_FOR_BUILD = gcc
@@ -87,10 +93,13 @@ fpsp060_obj = fpsp060.o getcpu.o hades.o skel060.o
 all: fpsp.sa isp.sa fpsp060.prg ftest.sa itest.sa fpsptst.tos
 
 getcpu.o: ../fpspany/getcpu.S
-	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
+	$(CC) $(ASFLAGS) -c -o $@ $<
 
 hades.o: ../fpspany/hades.S
-	$(CC) $(ASFLAGS) $(LDFLAGS) -c -o $@ $<
+	$(CC) $(ASFLAGS) -c -o $@ $<
+
+skel060.o: skel060.S fpsp.sa isp.sa
+	$(CC) $(ASFLAGS) -c -o $@ $<
 
 fpsp060.prg: $(fpsp060_obj) fpsp.sa isp.sa
 	$(CC) $(ASFLAGS) $(LDFLAGS) -o $@ -nostartfiles -nostdlib $(fpsp060_obj)

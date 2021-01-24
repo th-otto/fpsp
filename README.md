@@ -1,22 +1,27 @@
 # What is this?
 
-This is the FPSP060 (an emulation package for the instructions that
-were removed from the 68060 processor), installable as standalone program
-on Atari's. It's main intention is to be used in conjunction with
-[EmuTOS](https://github.com/emutos/emutos). You normally won't need it
-when using machines that have the same package already built into ROM
-(Hades, Milan, CT60 etc.)
+This is the FPSP (an emulation package for the instructions that were
+removed from the 68040/68060 processors), installable as standalone
+program on Atari's. It's main intention is to be used in conjunction
+with [EmuTOS](https://github.com/emutos/emutos). It can also be used
+as replacement on machines that have such routines already built into ROM
+(Hades, Milan, CT60 etc.), to allow faster exection from RAM. In that
+case it will replace programs like FPU__M2.PRG (Milan), or FPU__3.PRG
+(Hades).
 
 # Installing
 
-Just put fpsp060.prg in your AUTO folder. It only installs itself when run
-on a '060 processor.
+There are 3 flavours of the program, FPSP040.PRG (for 040 only),
+FPSP060.PRG (for 060 only), and FPSPANY.PRG (for any of them). Just put
+the correct one in your AUTO folder. It only installs itself when run
+on the correct processor.
 
 # Building
 
-Change to the FPSP060 directory and type "make". This will build fpsp060.prg
-(the emulation package) and fpsptst.tos (a test program). You will need
-a cross-compilation toolchain for this (available at http://tho-otto.de/crossmint.php , or 
+Change to the top-level directory and type "make". This will build the
+above mentioned programs (the emulation package) and fpsp060/fpsptst.tos (a
+test program). You will need a cross-compilation toolchain for this
+(available at http://tho-otto.de/crossmint.php , or 
 http://vincent.riviere.free.fr/soft/m68k-atari-mint/ )
 
 # Changes made
@@ -40,9 +45,12 @@ several changes have been made to the original source, to be able to compile the
      of those instructions is to test those addressing modes
    - explicit .w modifiers from fbcc instructions have been removed,
      because they are not accepted by gas
-   - currently, two tests from the integer test program are disabled,
-     because they crash Hatari. This seems to be a bug in Hatari, rather
-     than the test program or the emulation.
+
+There have also been a few fixes compared to the emulation packages for
+Hades/Milan. Most of these were related to exception handling (which
+are normally disabled), so you may not have encountered them yet, but
+they are there ;)
+
 
 # Emulated instructions
 
@@ -99,4 +107,3 @@ easier reference.
            - FMOVEM.X #immediate of 2 or 3 control regs
            - F<op>.X #immediate,FPn
            - F<op>.P #immediate,FPn
-

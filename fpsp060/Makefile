@@ -6,6 +6,7 @@ CROSS=m68k-atari-mint-
 CC = $(CROSS)gcc
 AS = $(CC)
 AR = $(CROSS)ar
+OBJDUMP = $(CROSS)objdump
 CFLAGS = -m68040
 ASFLAGS = -m68040 -Wall -Werror -Wa,--register-prefix-optional -Wa,--defsym,GAS=1
 LDFLAGS = -s
@@ -110,25 +111,53 @@ fpsptst.tos: fpsptst.s ftest.sa itest.sa
 
 fpsp.bin: $(FPSP060_SRCS) Makefile
 	cat $(FPSP060_SRCS) > tmp.S
+	@$(CC) $(ASFLAGS) -c -o tmp.o $<
+	@if $(OBJDUMP) -r tmp.o | grep -w 32; then \
+		$(OBJDUMP) -r tmp.o; \
+		echo "$< contains relocations" >&2; \
+		exit 1; \
+	fi
+	@$(RM) ftest.o
 	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib tmp.S
-	$(RM) tmp.S
+	$(RM) tmp.S tmp.o
 
 fpsp.sa: fpsp.bin dfpsp
 	./dfpsp $< > $@
 
 isp.bin: $(ISP060_SRCS) Makefile
+	@$(CC) $(ASFLAGS) -c -o isp.o $<
+	@if $(OBJDUMP) -r isp.o | grep -w 32; then \
+		$(OBJDUMP) -r isp.o; \
+		echo "$< contains relocations" >&2; \
+		exit 1; \
+	fi
+	@$(RM) isp.o
 	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib $<
 
 isp.sa: isp.bin dfpsp
 	./dfpsp $< > $@
 
 ftest.bin: src/ftest.S Makefile
+	@$(CC) $(ASFLAGS) -c -o ftest.o $<
+	@if $(OBJDUMP) -r ftest.o | grep -w 32; then \
+		$(OBJDUMP) -r ftest.o; \
+		echo "$< contains relocations" >&2; \
+		exit 1; \
+	fi
+	@$(RM) ftest.o
 	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib $<
 
 ftest.sa: ftest.bin dfpsp
 	./dfpsp $< > $@
 
 itest.bin: src/itest.S Makefile
+	@$(CC) $(ASFLAGS) -c -o itest.o $<
+	@if $(OBJDUMP) -r itest.o | grep -w 32; then \
+		$(OBJDUMP) -r itest.o; \
+		echo "$< contains relocations" >&2; \
+		exit 1; \
+	fi
+	@$(RM) itest.o
 	$(CC) $(ASFLAGS) $(LDFLAGS) -Wl,--oformat,binary -o $@ -nostartfiles -nostdlib $<
 
 itest.sa: itest.bin dfpsp

@@ -1,3 +1,5 @@
+_longframe = 0x59e
+
         .text
 
 /*
@@ -30,7 +32,7 @@
         bmi     fail
 
 		pea get_stderr(pc)
-		move.w #38,-(a7)
+		move.w #38,-(a7)				/* Supexec */
 		trap #14
 		addq.l #6,a7
 
@@ -96,6 +98,9 @@ no_natfeats:
 		move.l d0,stderr_id
 		move.l a0,a7					/* restore sp */
 		move.l a1,0x10.w                /* restore illegal instruction vector */
+		move.w _longframe.w,d0
+		move.w d0,isp_cputype
+		move.w d0,fpsp_cputype
 		rts
 
 printhex:
@@ -534,8 +539,9 @@ _print_num_loop:
 _060ISP_TEST:
 	    .dc.l	_print_str-_060ISP_TEST
 	    .dc.l	_print_num-_060ISP_TEST
-	    .ds.b 120
-
+	    .ds.b 118
+isp_cputype:
+		.dc.w 0
 	    .include "itest.sa"
 
 
@@ -552,7 +558,9 @@ _060FPSP_TEST:
 	    .dc.l	_print_num-_060FPSP_TEST
 	    .dc.l	_real_debug_dregs-_060FPSP_TEST
 	    .dc.l	_real_debug_fregs-_060FPSP_TEST
-	    .ds.b 112
+	    .ds.b 110
+fpsp_cputype:
+		.dc.w 0
 
 	    .include "ftest.sa"
 

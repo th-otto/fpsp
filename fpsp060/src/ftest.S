@@ -45,6 +45,7 @@ LOCAL_SIZE = -388
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 TESTTOP:
+CPUTYPE = TESTTOP-2
 	bra.l		_060TESTS_
 	.dc.w		0x0000
 
@@ -388,6 +389,7 @@ unimp_3_pc:
 	fmovem.l	fpcr/fpsr/fpiar,SFPCREGS(a6)
 	move.l		#0x0f008080,IFPCREGS+0x4(a6)
 	lea			unimp_3_pc(pc),a0
+	bsr         zero_fpiar_if_040
 	move.l		a0,IFPCREGS+0x8(a6)
 
 	bsr.l		chkregs
@@ -422,6 +424,7 @@ unimp_4_pc:
 	move.w		#0xffff,IREGS+28+2(a6)
 	move.l		#0x0f008080,IFPCREGS+0x4(a6)
 	lea			unimp_4_pc(pc),a0
+	bsr         zero_fpiar_if_040
 	move.l		a0,IFPCREGS+0x8(a6)
 
 	bsr.l		chkregs
@@ -454,6 +457,7 @@ unimp_5_pc:
 	fmovem.l	fpcr/fpsr/fpiar,SFPCREGS(a6)
 	move.l		#0x0f008080,IFPCREGS+0x4(a6)
 	lea			unimp_5_pc(pc),a0
+	bsr         zero_fpiar_if_040
 	move.l		a0,IFPCREGS+0x8(a6)
 
 	bsr.l		chkregs
@@ -1417,4 +1421,9 @@ _real_debug_fregs:
 
 /* ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; */
 
-	.dc.l	0x00000000,0x00000000,0x00000000
+zero_fpiar_if_040:
+	cmpi.w #40,CPUTYPE.w(pc)
+	bne.s   zero_fpiar1
+	suba.l  a0,a0
+zero_fpiar1:
+	rts

@@ -163,34 +163,157 @@ new_effadd:
 
 /* unimplemented integer instruction handler (fuer movep,mulx.l,divx.l) */
 
+/*
+ * _060_real_chk():
+ *
+ * This is an alternate exit point for the Unimplemented Integer
+ * Instruction exception handler. If the instruction was a "chk2"
+ * and the operand was out of bounds, then _isp_unimp() creates
+ * a CHK exception stack frame from the Unimplemented Integer Instrcution
+ * stack frame and branches to this routine.
+ */
 x060_real_chk:
-        move.l 0x18.w,-(a7)
-        rts
+		tst.b	(sp)				/* is tracing enabled? */
+		bpl.s	real_chk_end		/* no */
+/*
+ *          CHK FRAME              TRACE FRAME
+ *      *****************       *****************
+ *      *   Current PC  *       *   Current PC  *
+ *      *****************       *****************
+ *      * 0x2 *  0x018  *       * 0x2 *  0x024  *
+ *      *****************       *****************
+ *      *     Next      *       *     Next      *
+ *      *      PC       *       *      PC       *
+ *      *****************       *****************
+ *      *      SR       *       *      SR       *
+ *      *****************       *****************
+ */
+		move.b	#0x24,7(sp)		/* set trace vecno */
+		bra.w	x060_real_trace
+real_chk_end:
+        rte
 
+/*
+ * _060_real_divbyzero:
+ *
+ * This is an alternate exit point for the Unimplemented Integer 
+ * Instruction exception handler isp_unimp(). If the instruction is a 64-bit
+ * integer divide where the source operand is a zero, then the _isp_unimp() 
+ * creates a Divide-by-zero exception stack frame from the Unimplemented
+ * Integer Instruction stack frame and branches to this routine.
+ *
+ * Remember that a trace exception may be pending. The code below performs
+ * no action associated with the "chk" exception. If tracing is enabled,
+ * then it create a Trace exception stack frame from the "chk" exception
+ * stack frame and branches to the _real_trace() entry point.
+ */
 x060_real_divbyzero:
-        move.l 0x14.w,-(a7)
-        rts
+        tst.b   (sp)            /* is tracing enabled? */
+        bpl.b   real_divbyzero_end  /* no */
+/*
+ *       DIVBYZERO FRAME           TRACE FRAME
+ *      *****************       *****************
+ *      *   Current PC  *       *   Current PC  *
+ *      *****************       *****************
+ *      * 0x2 *  0x014  *       * 0x2 *  0x024  *
+ *      *****************       *****************
+ *      *     Next      *       *     Next      *
+ *      *      PC       *       *      PC       *
+ *      *****************       *****************
+ *      *      SR       *       *      SR       *
+ *      *****************       *****************
+ */
+        move.b  #0x24,7(sp)     /* set trace vecno */
+        bra.w   x060_real_trace
+real_divbyzero_end:
+        rte
 
+/*
+ * _060_lock_page():
+ *
+ * Entry point for the operating system's routine to "lock" a page
+ * from being paged out. This routine is needed by the cas/cas2
+ * algorithms so that no page faults occur within the "core" code
+ * region. Note: the routine must lock two pages if the operand 
+ * spans two pages.
+ * NOTE: THE ROUTINE SHOULD RETURN AN FSLW VALUE IN D0 ON FAILURE
+ * SO THAT THE 060SP CAN CREATE A PROPER ACCESS ERROR FRAME.
+ * Arguments:
+ *	a0 = operand address
+ *	d0 = `xxxxxxff -> supervisor; `xxxxxx00 -> user
+ *	d1 = `xxxxxxff -> longword; `xxxxxx00 -> word
+ * Expected outputs:
+ *	d0 = 0 -> success; non-zero -> failure
+ */
 x060_real_lock_page:
+/*
+ * _060_unlock_page():
+ *
+ * Entry point for the operating system's routine to "unlock" a
+ * page that has been "locked" previously with _real_lock_page.
+ * Note: the routine must unlock two pages if the operand spans
+ * two pages.
+ * Arguments:
+ * 	a0 = operand address
+ *	d0 = `xxxxxxff -> supervisor; `xxxxxx00 -> user
+ *	d1 = `xxxxxxff -> longword; `xxxxxx00 -> word
+ */
 x060_real_unlock_page:
         clr.l d0
         rts
 
 EXC_SR = 4
 
+/*
+ * _060_fpsp_done():
+ *
+ * This is the main exit point for the 68060 Floating-Point
+ * Software Package. For a normal exit, all 060FPSP routines call this
+ * routine. The operating system can do system dependent clean-up or
+ * simply execute an 'rte' as with the sample code below.
+ */
 x060_fpsp_done:
-x060_real_trap:
-x060_real_trace:
-x060_real_access:
 x060_isp_done:
+/*
+ * _060_real_trap():
+ *
+ * This is the exit point for the 060FPSP when an emulated 'ftrapcc'
+ * instruction discovers that the trap condition is true and it should
+ * branch to the operating system handler for the trap exception vector
+ * number 7.
+ *
+ * The sample code below simply executes an 'rte'.
+ */
+x060_real_trap:
         rte
 
+/*
+ * _060_real_cas():
+ *
+ * Entry point for the selected cas emulation code implementation.
+ * If the implementation provided by the 68060ISP is sufficient,
+ * then this routine simply re-enters the package through _isp_cas.
+ */
 x060_real_cas:
         bra.l          xI_CALL_TOP+0x80+0x08
 
+/*
+ * _060_real_cas2():
+ *
+ * Entry point for the selected cas2 emulation code implementation.
+ * If the implementation provided by the 68060ISP is sufficient,
+ * then this routine simply re-enters the package through _isp_cas2.
+ */
 x060_real_cas2:
         bra.l          xI_CALL_TOP+0x80+0x10
 
+x060_real_trace:
+        move.l  0x24,-(sp)
+        rts
+
+x060_real_access:
+        move.l  0x08,-(sp)
+        rts
 
 /*
  * Reads from data/instruction memory while in supervisor mode.

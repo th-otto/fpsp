@@ -440,12 +440,15 @@ super_write:
 	bne.s	super_write
 	rts
 user_write:
+copyout:
 	move.l	d1,-(sp)	/* preserve d1 just in case */
-	move.l	d0,-(sp)
-	move.l	a1,-(sp)
-	move.l	a0,-(sp)
-	bsr copyout
-	adda.w	#12,sp
+	subq.l	#1,d0		/* dec count by 1 for dbra */
+	moveq.l	#1,d1
+	movec	d1,DFC		/* set dfc for user data space */
+moreout:
+	move.b	(a0)+,d1	/* fetch supervisor byte */
+	moves.b	d1,(a1)+	/* write user byte */
+	dbf	d0,moreout
 	move.l	(sp)+,d1
 	rts
 
@@ -480,44 +483,14 @@ super_read:
 	bne.s	super_read
 	rts
 user_read:
-	move.l	d1,-(sp)	/* preserve d1 just in case */
-	move.l	d0,-(sp)
-	move.l	a1,-(sp)
-	move.l	a0,-(sp)
-	bsr copyin
-	adda.w	#12,sp
-	move.l	(sp)+,d1
-	rts
-
-/*
- *  Use these routines if your kernel doesn't have copyout/copyin equivalents.
- *  Assumes that D0/D1/A0/A1 are scratch registers. copyout overwrites DFC,
- *  and copyin overwrites SFC.
- */
-copyout:
-	move.l	4(sp),a0	/* source */
-	move.l	8(sp),a1	/* destination */
-	move.l	12(sp),d0	/* count */
-	subq.l	#1,d0		/* dec count by 1 for dbra */
-	moveq.l	#1,d1
-	movec	d1,DFC		/* set dfc for user data space */
-moreout:
-	move.b	(a0)+,d1	/* fetch supervisor byte */
-out_ea:
-	moves.b	d1,(a1)+	/* write user byte */
-	dbf	d0,moreout
-	rts
-
 copyin:
-	move.l	4(sp),a0	/* source */
-	move.l	8(sp),a1	/* destination */
-	move.l	12(sp),d0	/* count */
+	move.l	d1,-(sp)	/* preserve d1 just in case */
 	subq.l	#1,d0		/* dec count by 1 for dbra */
 	moveq.l	#1,d1
 	movec	d1,SFC		/* set sfc for user space */
 morein:
-in_ea:
 	moves.b	(a0)+,d1	/* fetch user byte */
 	move.b	d1,(a1)+	/* write supervisor byte */
 	dbf	d0,morein
+	move.l	(sp)+,d1
 	rts

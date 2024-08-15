@@ -102,7 +102,7 @@ welcome_msg:
 	.dc.b 13,10,10
 	.ascii "***************************************"
 	.dc.b 13,10
-	.ascii " Unimplemented Integer Instruction und "
+	.ascii " Unimplemented Integer Instruction and "
 	.dc.b 13,10
 	.ascii " Floating Point Handler Version 1.5    "
 	.dc.b 13,10
@@ -138,7 +138,7 @@ doinstall:
 		cmpi.w   #60,d0
 		bne      no_060
 		movec    vbr,a1
-		move.l   0x2c(a1),a0
+		move.l   0xf4(a1),a0
 		cmp.l    #XBRA,-12(a0)
 		bne.s    doinstall1
 		cmp.l    #XBRA_ID,-8(a0)
